@@ -25,7 +25,7 @@ export default function HomePage() {
     <div className="flex flex-col items-center justify-center mt-9">
       <div className="w-[70%] md:w-[50%] lg:w-[55%]">
         <Hero />
-        {posts.length > 0 ? <Posts posts={posts} /> : <p>Loading...</p>}
+        {posts.length > 0 ? <Posts posts={posts} /> : <p>Loading....</p>}
       </div>
     </div>
   );
