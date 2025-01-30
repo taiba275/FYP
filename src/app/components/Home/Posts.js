@@ -1,36 +1,47 @@
 import React, { useEffect } from "react";
+import Link from "next/link";
 
 function Posts({ posts }) {
   useEffect(() => {
     console.log("Posts", posts);
   }, [posts]);
+
   return (
-    <div>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {posts.map((post, index) => (
-        <div
-          key={index}
-          className="max-w-sm bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700 mb-4"
-        >
-          <img
-            className="rounded-t-lg w-full h-[180px] object-cover"
-            src={post.image || "@public/Images/A.jpeg"}
-            alt={post.title}
-          />
-          <div className="p-5">
-            <h5 className="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
-              {post.title}
+        <Link key={post._id} href={`/jobs/${post._id}`} passHref>
+          <div className="cursor-pointer max-w-[350px] w-full bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700 p-5 hover:shadow-lg transition flex flex-col h-[300px]">
+            
+            {/* Title */}
+            <h5 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
+              {post.Title}
             </h5>
-            <p className="mb-3 font-normal text-gray-700 dark:text-gray-400">
-              {post.description}
+
+            {/* Company */}
+            <p className="text-lg font-semibold text-gray-700 dark:text-gray-300">
+              {post.Company}
             </p>
-            <a
-              href={post.link}
-              className="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-            >
-              Read more
-            </a>
+
+            {/* Job Location */}
+            <p className="text-gray-600 dark:text-gray-400 truncate">
+              📍 {post["Job Location"]}
+            </p>
+
+            {/* Salary */}
+            <p className="text-green-600 font-bold">
+              💰 {post.Salary || "Salary Not Disclosed"}
+            </p>
+
+            {/* Spacer to push the button to the bottom */}
+            <div className="flex-grow"></div>
+
+            {/* Apply Button */}
+            <button className="mt-4 inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800">
+              View Details
+            </button>
+
           </div>
-        </div>
+        </Link>
       ))}
     </div>
   );
