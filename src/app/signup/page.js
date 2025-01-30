@@ -15,7 +15,6 @@ export default function SignupPage() {
     e.preventDefault();
     setError("");
 
-    // Basic validation
     if (!email.includes("@") || !email.includes(".")) {
       setError("Please enter a valid email address.");
       return;
@@ -31,19 +30,16 @@ export default function SignupPage() {
       return;
     }
 
-    // Proceed with signup logic (e.g., API call)
     console.log("Signup - Email:", email, "Password:", password);
-
-    // Redirect to login page after successful signup
     router.push("/login");
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-indigo-200 via-purple-300 to-indigo-400">
-      <div className="relative bg-white/80 backdrop-blur-lg p-8 rounded-3xl shadow-2xl w-96 border border-white/30">
-        {/* Glow Effect */}
-        <div className="absolute inset-0 bg-gradient-to-r from-purple-400 to-purple-600 blur-3xl opacity-40"></div>
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-indigo-200 via-purple-300 to-indigo-400 relative">
+      {/* Glow Effect */}
+      <div className="absolute inset-0 bg-gradient-to-r from-purple-400 to-purple-600 blur-3xl opacity-40 pointer-events-none"></div>
 
+      <div className="relative z-10 bg-white/80 backdrop-blur-lg p-8 rounded-3xl shadow-2xl w-96 border border-white/30">
         <h2 className="text-4xl font-extrabold text-gray-800 text-center mb-6 drop-shadow-lg">
           Create Account
         </h2>
@@ -55,7 +51,7 @@ export default function SignupPage() {
           <input
             type="email"
             placeholder="Email"
-            className="w-full p-4 border border-purple-300 rounded-lg bg-white text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-300"
+            className="w-full p-4 border border-purple-300 rounded-lg bg-white text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
@@ -64,7 +60,7 @@ export default function SignupPage() {
           <input
             type="password"
             placeholder="Password"
-            className="w-full p-4 border border-purple-300 rounded-lg bg-white text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-300"
+            className="w-full p-4 border border-purple-300 rounded-lg bg-white text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
