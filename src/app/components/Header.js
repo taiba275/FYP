@@ -101,27 +101,29 @@ const Header = () => {
                                 <div className="absolute mt-2 py-2 w-48 bg-white rounded-md shadow-xl dark:bg-gray-700">
                                     <a
                                         href="#"
+                                        // onClick={() => fetchFilteredJobs('date')}
                                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600"
                                     >
-                                        By Category
+                                        Blogs
                                     </a>
                                     <a
                                         href="#"
                                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600"
                                     >
-                                        By Technology
+                                        By city
+                                    </a>
+                                    <a
+                                        href="#"
+                                        // onClick={() => fetchFilteredJobs('job.date')}
+                                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600"
+                                    >
+                                        Docs
                                     </a>
                                     <a
                                         href="#"
                                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600"
                                     >
                                         Collections
-                                    </a>
-                                    <a
-                                        href="#"
-                                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600"
-                                    >
-                                        Blogs
                                     </a>
                                 </div>
                             )}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import FilterComponent from "./components/Home/Filter";
 import Hero from "./components/Home/Hero";
 import Posts from "./components/Home/Posts";
 
@@ -22,8 +23,11 @@ export default function HomePage() {
   }, []);
 
   return (
-    <div className="flex flex-col items-center justify-center mt-9">
-      <div className="w-[70%] md:w-[50%] lg:w-[55%]">
+    
+    <div className="flex justify-center w-full">
+       {/* w-[70%] md:w-[50%] lg:w-[95%] */}
+      <div className="w-full"> 
+        <FilterComponent />
         <Hero />
         {posts.length > 0 ? <Posts posts={posts} /> : <p>Loading....</p>}
       </div>
