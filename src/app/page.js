@@ -1,32 +1,18 @@
-"use client";
-
-import { useState, useEffect } from "react";
+import React from "react";
+import Link from "next/link";
 import Hero from "./components/Home/Hero";
-import Posts from "./components/Home/Posts";
 
-export default function HomePage() {
-  const [posts, setPosts] = useState([]);
-
-  useEffect(() => {
-    // Fetch posts from the API
-    async function fetchPosts() {
-      try {
-        const response = await fetch("/api/posts");
-        const data = await response.json();
-        setPosts(data); // Update state with fetched posts
-      } catch (error) {
-        console.error("Error fetching posts:", error);
-      }
-    }
-    fetchPosts();
-  }, []);
-
+export default function Page() {
   return (
     <div className="flex flex-col items-center justify-center mt-9">
-      <div className="w-[70%] md:w-[50%] lg:w-[55%]">
         <Hero />
-        {posts.length > 0 ? <Posts posts={posts} /> : <p>Loading....</p>}
-      </div>
+        <div className="mt-4">
+          <Link href="/all-jobs">
+            <button className="px-8 py-4 bg-blue-500 text-white rounded hover:bg-blue-600 transition duration-200">
+              Show All Jobs
+            </button>
+          </Link>
+        </div>
     </div>
   );
 }
