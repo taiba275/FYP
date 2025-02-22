@@ -5,7 +5,7 @@ export async function GET() {
     console.log("✅ Connecting to MongoDB Atlas...");
     const client = await clientPromise;
     const db = client.db("test");  // Ensure correct database name
-    const jobsCollection = db.collection("Rozee.pk");  // Collection name
+    const jobsCollection = db.collection("RozeeFinal");  // Collection name
 
     const jobs = await jobsCollection.find({}).toArray();
 

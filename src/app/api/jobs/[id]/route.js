@@ -10,7 +10,7 @@ export async function GET(req, { params }) {
     const client = await clientPromise;
     const db = client.db("test"); // Ensure correct database name
 
-    const job = await db.collection("Rozee.pk").findOne({ _id: ObjectId.createFromHexString(params.id) });
+    const job = await db.collection("RozeeFinal").findOne({ _id: ObjectId.createFromHexString(params.id) });
 
     if (!job) {
       return new Response(JSON.stringify({ message: "Job not found" }), { status: 404 });
