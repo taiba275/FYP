@@ -100,7 +100,7 @@ export default function Posts() {
         ))}
       </div>
       {filteredPosts.length > jobsToShow && (
-        <button onClick={loadMoreJobs} className="mt-6 px-6 py-4 bg-blue-500 text-white font-bold text-xl rounded hover:bg-blue-600">
+        <button onClick={loadMoreJobs} className="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none">
           Show More
         </button>
       )}

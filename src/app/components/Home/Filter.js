@@ -261,7 +261,7 @@ const FilterComponent = ({ onFilterChange }) => {
   };
 
   return (
-    <div className="flex text-black flex-wrap items-center justify-between p-2 bg-gray-100 rounded-lg m-8 gap-4">
+    <div className="flex text-black flex-wrap items-center justify-between p-2 bg-[#ededed] rounded-lg m-8 gap-4">
       {/* Category Dropdown */}
       <div className="relative">
         {/* <label className="block text-gray-700 text-sm font-bold mb-2">Category</label> */}
@@ -313,7 +313,7 @@ const FilterComponent = ({ onFilterChange }) => {
           name="experience"
           value={filters.experience}
           onChange={handleChange}
-          className="p-2 border rounded"
+          className="p-2 rounded"
         >
           <option value="">Experience</option>
           <option value="Not mentioned">Not mentioned</option>

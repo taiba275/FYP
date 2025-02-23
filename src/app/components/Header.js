@@ -12,29 +12,7 @@ const Header = () => {
   return (
     <>
       {/* Moving Strip */}
-      {/* <div className="w-full bg-gray-200 py-2 overflow-hidden">
-        <div className="whitespace-nowrap animate-marquee flex space-x-10">
-          <span className="font-bold text-gray-900">New skills! 😊</span>
-          <span className="text-gray-700">All Courses at $9.99</span>
-          <span className="font-bold text-gray-900">New season, New skills! 😊</span>
-          <span className="text-gray-700">All Courses at $9.99</span>
-          <span className="font-bold text-gray-900">New skills! 😊</span>
-          <span className="text-gray-700">All Courses at $9.99</span>
-          <span className="font-bold text-gray-900">New season, New skills! 😊</span>
-          <span className="text-gray-700">All Courses at $9.99</span>
-          <span className="font-bold text-gray-900">New skills! 😊</span>
-          <span className="text-gray-700">All Courses at $9.99</span>
-          <span className="font-bold text-gray-900">New season, New skills! 😊</span>
-          <span className="text-gray-700">All Courses at $9.99</span>
-          <span className="font-bold text-gray-900">New skills! 😊</span>
-          <span className="text-gray-700">All Courses at $9.99</span>
-          <span className="font-bold text-gray-900">New season, New skills! 😊</span>
-          <span className="text-gray-700">All Courses at $9.99</span>
-        </div>
-      </div> */}
-
-      {/* Moving Strip */}
-      <div className="w-full bg-gray-200 py-2 overflow-hidden">
+      <div className="w-full bg-[#ededed] py-2 overflow-hidden">
         <div className="flex whitespace-nowrap animate-marquee-loop">
           {[...Array(20)].map((_, i) => (
             <span key={i} className="font-bold text-gray-900 mx-4">
@@ -69,14 +47,14 @@ const Header = () => {
                   Log in
                 </a>
               </li>
-              {/* <li>
+              <li>
                     <a
                         href="#"
                         className="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-blue-500 md:dark:hover:bg-transparent dark:border-gray-700"
                     >
                         Sign Up
                     </a>
-                </li> */}
+                </li>
             </ul>
           </div>
           <div className="flex md:order-2">

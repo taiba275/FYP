@@ -2,23 +2,42 @@ import React from 'react';
 
 function Hero() {
     return (
-        <div className="relative text-center p-4">
-            <h1 className="text-6xl md:text-9xl font-extrabold text-black leading-none relative">
-                THE JOBS BOARD
-                <span className="text-sm md:text-lg block text-black font-normal leading-none mt-4 mx-auto max-w-xl">
-                    Latest Vacancies in Your Desired Field and Expertise
-                </span>
-                <img
-                    src="./Images/hiring.png"
-                    alt="hiring emoji"
-                    className="absolute bottom-0 md:bottom-20 left-1/2 transform -translate-x-1/2 md:left-auto md:translate-x-0 md:left-3/4 w-14 h-14"
+        <div className="relative text-center p-14 bg-white flex flex-col items-center">
+            {/* Main Heading */}
+            <div className="relative">
+                <h1 className="text-6xl md:text-9xl font-extrabold text-black leading-tight inline-block">
+                    THE JOBS<br/> BOARD
+                </h1>
+                {/* Hiring Badge */}
+                <img 
+                    src="./Images/hiring.png" 
+                    alt="hiring icon" 
+                    className="absolute right-10 bottom-0 flex items-center ml-1 w-16 h-13" 
                 />
-                {/* Optionally uncomment to use:
-                <span className="text-xs md:text-base absolute m-[100] block text-black font-normal leading-none mx-auto mt-4">24 job opportunities waiting.</span>
-                */}
-            </h1>
+            </div>
+
+            {/* Subheading */}
+            <p className="text-lg md:text-xl text-gray-600 mt-4">
+                Latest Vacancies in Web Design <br /> and UX/UI Design
+            </p>
+
+            {/* Job Opportunities Count */}
+            <div className="absolute bottom-0 left-10 text-sm md:text-base text-gray-700">
+                <strong className="text-black">27</strong> job opportunities waiting.
+            </div>
+
+            {/* Sidebar Promotion Box */}
+            <div className="absolute right-10 top-12 bg-white shadow-lg rounded-lg p-4 text-black max-w-xs">
+                <p>Post one job for $90 or buy a pack of 3 jobs for $180 and get one free.</p>
+            </div>
+
+            {/* Additional Information */}
+            <div className="absolute bottom-0 right-10 text-sm text-gray-700">
+                Find Your Dream Job in Web, UI/UX, and Frontend Development... <a href="#" className="text-blue-500">Read more</a>
+            </div>
         </div>
     );
 }
 
-export default Hero
+export default Hero;
+
