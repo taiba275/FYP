@@ -23,12 +23,12 @@ function Hero() {
 
             {/* Job Opportunities Count */}
             <div className="absolute bottom-0 left-10 text-sm md:text-base text-gray-700">
-                <strong className="text-black">27</strong> job opportunities waiting.
+                <strong className="text-black">509</strong> job opportunities waiting.
             </div>
 
             {/* Sidebar Promotion Box */}
-            <div className="absolute right-10 top-12 bg-white shadow-lg rounded-lg p-4 text-black max-w-xs">
-                <p>Post one job for $90 or buy a pack of 3 jobs for $180 and get one free.</p>
+            <div className="absolute right-5 top-40 bg-white shadow-lg rounded-lg p-4 text-black max-w-xs">
+                <p>Unlock premium job listings with exclusive member benefits. Get your first posting free!</p>
             </div>
 
             {/* Additional Information */}

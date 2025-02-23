@@ -44,7 +44,7 @@ export default function Posts() {
       filtered = filtered.filter((post) => post["Job Type"].toLowerCase().includes(filters.type.toLowerCase()));
     }
     if (filters.city) {
-      filtered = filtered.filter((post) => post["Job Location"].toLowerCase().includes(filters.city.toLowerCase()));
+      filtered = filtered.filter((post) => post.City.toLowerCase().includes(filters.city.toLowerCase())); // Fixed Here
     }
     if (filters.experience) {
       filtered = filtered.filter((post) => post.Experience.toLowerCase().includes(filters.experience.toLowerCase()));
@@ -52,9 +52,9 @@ export default function Posts() {
     if (filters.dateFrom) {
       filtered = filtered.filter((post) => new Date(post["Posting Date"]) >= new Date(filters.dateFrom));
     }
-    if (filters.dateTo) {
-      filtered = filtered.filter((post) => new Date(post["Posting Date"]) <= new Date(filters.dateTo));
-    }
+    // if (filters.dateTo) {
+    //   filtered = filtered.filter((post) => new Date(post["Posting Date"]) <= new Date(filters.dateTo));
+    // }
     if (filters.salaryOrder === "ascending") {
       filtered = filtered.sort((a, b) => parseInt(a.Salary.replace(/\D/g, "")) - parseInt(b.Salary.replace(/\D/g, "")));
     } else if (filters.salaryOrder === "descending") {

@@ -279,10 +279,10 @@ const FilterComponent = ({ onFilterChange }) => {
       <div className="relative">
         <select name="type" value={filters.type} onChange={handleChange} className="p-2 rounded w-full">
           <option value="">Job Type</option>
-          <option value="full-time">Full Time/Permanent</option>
-          <option value="contract">Contract</option>
-          <option value="internship">Internship</option>
-          <option value="part-time">Part Time</option>
+          <option value="Full Time/Permanent">Full Time/Permanent</option>
+          <option value="Contract">Contract</option>
+          <option value="Internship">Internship</option>
+          <option value="Part Time">Part Time</option>
         </select>
       </div>
 
@@ -294,6 +294,25 @@ const FilterComponent = ({ onFilterChange }) => {
           <option value="lahore">Lahore</option>
           <option value="islamabad">Islamabad</option>
           <option value="quetta">Quetta</option>
+          <option value="sialkot">Sialkot</option>
+          <option value="Faisalabad">Faisalabad</option>
+          <option value="rawalpindi">Rawalpindi</option>
+          <option value="multan">Multan</option>
+          <option value="jhelum">Jhelum</option>
+          <option value="chiniot">Chiniot</option>
+          <option value="gujrat">Gujrat</option>
+          <option value="sargodha">Sargodha</option>
+          <option value="jaffarabad">Jaffarabad</option>
+          <option value="tobatek singh">TobaTek Singh</option>
+          <option value="mirpur khas">Mirpur Khas</option>
+          <option value="muslim bagh">Muslim bagh</option>
+          <option value="mian walli">Mian Walli</option>
+          <option value="rahimyar khan">Rahimyar Khan</option>
+          <option value="hari pur">Hari Pur</option>
+          <option value="sukkar">Sukkar</option>
+          <option value="daska">Daska</option>
+          <option value="attock">Attock</option>
+          <option value="bahawalnagar">Bahawalnagar</option>
         </select>
       </div>
 
@@ -330,10 +349,10 @@ const FilterComponent = ({ onFilterChange }) => {
         <input type="date" name="dateFrom" value={filters.dateFrom} onChange={handleChange} className="p-1.5 rounded w-full" placeholder="Date From" />
       </div>
 
-      {/* Date To */}
+      {/* Date To
       <div className="relative">
         <input type="date" name="dateTo" value={filters.dateTo} onChange={handleChange} className="p-1.5 rounded w-full" placeholder="Date To" />
-      </div>
+      </div> */}
 
       {/* Reset Button */}
       <button
