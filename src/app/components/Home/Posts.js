@@ -42,7 +42,6 @@ export default function Posts({ initialJobs = [], viewMode = 'grid' }) {
   // Apply filters
   useEffect(() => {
     let filtered = allPosts;
-
     if (filters.category) {
       filtered = filtered.filter((post) => post.Industry.toLowerCase().includes(filters.category.toLowerCase()));
     }
@@ -50,7 +49,7 @@ export default function Posts({ initialJobs = [], viewMode = 'grid' }) {
       filtered = filtered.filter((post) => post["Job Type"].toLowerCase().includes(filters.type.toLowerCase()));
     }
     if (filters.city) {
-      filtered = filtered.filter((post) => post.City.toLowerCase().includes(filters.city.toLowerCase())); // Fixed Here
+      filtered = filtered.filter((post) => post.City.toLowerCase().includes(filters.city.toLowerCase()));
     }
     if (filters.experience) {
       filtered = filtered.filter((post) => post.Experience.toLowerCase().includes(filters.experience.toLowerCase()));
@@ -58,9 +57,6 @@ export default function Posts({ initialJobs = [], viewMode = 'grid' }) {
     if (filters.dateFrom) {
       filtered = filtered.filter((post) => new Date(post["Posting Date"]) >= new Date(filters.dateFrom));
     }
-    // if (filters.dateTo) {
-    //   filtered = filtered.filter((post) => new Date(post["Posting Date"]) <= new Date(filters.dateTo));
-    // }
     if (filters.salaryOrder === "ascending") {
       filtered = filtered.sort((a, b) => parseInt(a.Salary.replace(/\D/g, "")) - parseInt(b.Salary.replace(/\D/g, "")));
     } else if (filters.salaryOrder === "descending") {
@@ -71,6 +67,7 @@ export default function Posts({ initialJobs = [], viewMode = 'grid' }) {
 
   // Load More Jobs
   const loadMoreJobs = () => {
+    setJobsToShow(jobsToShow + 20);
     setJobsToShow(jobsToShow + 20);
   };
 
@@ -113,6 +110,7 @@ export default function Posts({ initialJobs = [], viewMode = 'grid' }) {
           </Link>
         ))}
       </div>
+
       {filteredPosts.length > jobsToShow && (
         <button onClick={loadMoreJobs} className="mt-6 px-6 py-4 bg-blue-500 text-white font-bold text-xl rounded hover:bg-blue-600">
           Show More
