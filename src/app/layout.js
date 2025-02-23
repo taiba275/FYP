@@ -3,7 +3,7 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 
 export const metadata = {
-  title: 'Final Year Project',
+  title: 'Job Finder',
   description: 'A sample Next.js application',
 };
 

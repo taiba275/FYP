@@ -19,12 +19,12 @@ function Hero({ setViewMode }) {
 
             {/* Subheading */}
             <p className="text-lg md:text-xl text-gray-600 mt-4">
-                Latest Vacancies in Web Design <br /> and UX/UI Design
+                Find your dream job in Pakistan <br />
             </p>
 
             {/* Additional Information + View Mode Icons */}
             <div className="absolute bottom-0 right-10 flex items-center space-x-3 text-sm text-gray-700">
-                <p>Find Your Dream Job in Web, UI/UX, and Frontend Development... <a href="#" className="text-blue-500">Read more</a></p>
+                {/* <p>Find Your Dream Job in Web, UI/UX, and Frontend Development... <a href="#" className="text-blue-500">Read more</a></p> */}
 
                 {/* View Mode Toggle Icons */}
                 <button 

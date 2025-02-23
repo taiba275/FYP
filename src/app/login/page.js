@@ -1,72 +1,72 @@
 "use client"
+
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
-export default function Login() {
-    const router = useRouter();
-    const [credentials, setCredentials] = useState({
-        email: '',
-        password: ''
-    });
+export default function LoginPage() {
+  const router = useRouter();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        // Add your authentication logic here
-        
-        // For now, just redirect to home
-        router.push('/');
-    };
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');  // Reset previous errors
 
-    return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-md w-full space-y-8">
-                <div>
-                    <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-                        Log in to your account
-                    </h2>
-                </div>
-                <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-                    <input type="hidden" name="remember" value="true" />
-                    <div className="rounded-md shadow-sm -space-y-px">
-                        <div>
-                            <input
-                                type="email"
-                                required
-                                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                                placeholder="Email address"
-                                value={credentials.email}
-                                onChange={(e) => setCredentials({...credentials, email: e.target.value})}
-                            />
-                        </div>
-                        <div>
-                            <input
-                                type="password"
-                                required
-                                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                                placeholder="Password"
-                                value={credentials.password}
-                                onChange={(e) => setCredentials({...credentials, password: e.target.value})}
-                            />
-                        </div>
-                    </div>
+    // API call to login
+    try {
+      const response = await fetch('/api/auth/login', {  // Adjust this URL to where your backend handles login
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
 
-                    <div>
-                        <button
-                            type="submit"
-                            className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                        >
-                            Log in
-                        </button>
-                    </div>
-                </form>
-                <p className="text-center text-black text-sm mt-4">
-                    Don't have an account?{" "}
-                    <Link href="/signup" className="text-blue-400 hover:text-blue-300">
-                        Sign Up
-                    </Link>
-                </p>
-            </div>
-        </div>
-    );
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Something went wrong');
+      }
+
+      // Redirect to dashboard or wherever you need
+      router.push('/');
+    } catch (err) {
+      setError(err.message || 'Failed to login');
+    }
+  };
+
+  return (
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-500 to-purple-600">
+      <div className="bg-white/20 backdrop-blur-md p-8 rounded-2xl shadow-lg w-96 border border-white/30">
+        <h2 className="text-3xl font-bold text-white text-center mb-6">Welcome Back</h2>
+        {error && <p className="text-red-500 text-center mb-4">{error}</p>}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="relative">
+            <input
+              type="email"
+              placeholder="Email"
+              className="w-full p-3 border border-white/40 rounded-lg bg-white/10 text-white placeholder-white focus:outline-none focus:ring-2 focus:ring-blue-300"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
+          <div className="relative">
+            <input
+              type="password"
+              placeholder="Password"
+              className="w-full p-3 border border-white/40 rounded-lg bg-white/10 text-white placeholder-white focus:outline-none focus:ring-2 focus:ring-blue-300"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
+          <button className="w-full p-3 rounded-lg bg-blue-500 text-white font-semibold hover:bg-blue-600 transition-all duration-200">Login</button>
+        </form>
+        <p className="text-center text-white text-sm mt-4">
+          Don't have an account? <Link href="/signup" className="text-blue-200 hover:text-blue-300">Sign Up</Link>
+        </p>
+      </div>
+    </div>
+  );
 }

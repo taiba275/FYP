@@ -6,16 +6,10 @@ function Footer() {
 <footer className="bg-white text-gray-800 font-sans text-sm px-10 py-5">
     <div className="max-w-screen-xl mx-auto flex justify-between items-center">
         <div className="flex items-center space-x-10">
-            <div>W.</div>
+            <div>Job Finder</div>
             <div className="flex space-x-10">
                 <div className="flex flex-col space-y-3 font-bold">
-                    <a href="#" className="text-lg hover:text-gray-600">Websites</a>
-                    <a href="#" className="text-lg hover:text-gray-600">Collections</a>
-                    <a href="#" className="text-lg hover:text-gray-600">Elements</a>
-                </div>
-                <div className="flex flex-col space-y-3 font-bold">
-                    <a href="#" className="text-lg hover:text-gray-600">Academy</a>
-                    <a href="#" className="text-lg hover:text-gray-600">Jobs</a>
+                    <a href="#" className="text-lg hover:text-gray-600">Trends</a>
                     <a href="#" className="text-lg hover:text-gray-600">Market</a>
                 </div>
                 <div className="flex flex-col space-y-3 font-bold">
@@ -47,7 +41,7 @@ function Footer() {
             <a href="#" className="hover:text-gray-600">Pinterest</a>
         </div>
         <div className="text-gray-600">
-            Sponsored by Webflow
+            Sponsored by Us
         </div>
     </div>
 </footer>

@@ -58,16 +58,15 @@ export default function Posts({ initialJobs = [], viewMode = 'grid' }) {
       filtered = filtered.filter((post) => new Date(post["Posting Date"]) >= new Date(filters.dateFrom));
     }
     if (filters.salaryOrder === "ascending") {
-      filtered = filtered.sort((a, b) => parseInt(a.Salary.replace(/\D/g, "")) - parseInt(b.Salary.replace(/\D/g, "")));
+      filtered = filtered.sort((a, b) => a.Salary - b.Salary);
     } else if (filters.salaryOrder === "descending") {
-      filtered = filtered.sort((a, b) => parseInt(b.Salary.replace(/\D/g, "")) - parseInt(a.Salary.replace(/\D/g, "")));
+      filtered = filtered.sort((a, b) => b.Salary - a.Salary);
     }
     setFilteredPosts(filtered);
   }, [filters, allPosts]);
 
   // Load More Jobs
   const loadMoreJobs = () => {
-    setJobsToShow(jobsToShow + 20);
     setJobsToShow(jobsToShow + 20);
   };
 

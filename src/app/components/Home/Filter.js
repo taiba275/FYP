@@ -265,7 +265,7 @@ const FilterComponent = ({ onFilterChange }) => {
       {/* Category Dropdown */}
       <div className="relative">
         {/* <label className="block text-gray-700 text-sm font-bold mb-2">Category</label> */}
-        <select name="category" value={filters.category} onChange={handleChange} className="p-2  rounded">
+        <select name="category" value={filters.category} onChange={handleChange} className="p-2 bg-white rounded">
           <option value="">Categories</option>
           {Object.keys(categories).map((category) => (
             <option key={category} value={category.toLowerCase()}>
@@ -277,7 +277,7 @@ const FilterComponent = ({ onFilterChange }) => {
 
       {/* Job Type Dropdown */}
       <div className="relative">
-        <select name="type" value={filters.type} onChange={handleChange} className="p-2 rounded w-full">
+        <select name="type" value={filters.type} onChange={handleChange} className="p-2 bg-white rounded w-full">
           <option value="">Job Type</option>
           <option value="Full Time/Permanent">Full Time/Permanent</option>
           <option value="Contract">Contract</option>
@@ -288,7 +288,7 @@ const FilterComponent = ({ onFilterChange }) => {
 
       {/* City Dropdown */}
       <div className="relative">
-        <select name="city" value={filters.city} onChange={handleChange} className="p-2 rounded w-full">
+        <select name="city" value={filters.city} onChange={handleChange} className="p-2 bg-white rounded w-full">
           <option value="">City</option>
           <option value="karachi">Karachi</option>
           <option value="lahore">Lahore</option>
@@ -318,7 +318,7 @@ const FilterComponent = ({ onFilterChange }) => {
 
       {/* Salary Order Dropdown */}
       <div className="relative">
-        <select name="salaryOrder" value={filters.salaryOrder} onChange={handleChange} className="p-2 rounded w-full">
+        <select name="salaryOrder" value={filters.salaryOrder} onChange={handleChange} className="p-2 bg-white rounded w-full">
           <option value="">Sort Salary</option>
           <option value="ascending">Ascending</option>
           <option value="descending">Descending</option>
@@ -332,7 +332,7 @@ const FilterComponent = ({ onFilterChange }) => {
           name="experience"
           value={filters.experience}
           onChange={handleChange}
-          className="p-2 rounded"
+          className="p-2 bg-white rounded"
         >
           <option value="">Experience</option>
           <option value="Not mentioned">Not mentioned</option>

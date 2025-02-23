@@ -27,13 +27,14 @@ const Header = () => {
         <div className="max-w-screen-xl mx-auto flex items-center justify-between px-6 py-3">
           {/* Left Section (Logo) */}
           <a href="/" className="flex items-center space-x-2">
-            <span className="text-2xl font-bold text-black">W.</span>
+            <span className="text-2xl font-bold text-black">Job Finder</span>
           </a>
 
           {/* Middle Section (Navigation Links) */}
           <ul className="hidden md:flex space-x-6 text-gray-900 font-medium">
             <li className="relative group">
-              <button
+              <a href="#">Trends</a>
+              {/* <button
                 onClick={toggleDropdown}
                 className="flex items-center space-x-1 hover:text-blue-600"
               >
@@ -69,16 +70,11 @@ const Header = () => {
                     Blogs
                   </a>
                 </div>
-              )}
+              )} */}
             </li>
             <li>
               <a href="#" className="hover:text-blue-600">
                 Directory
-              </a>
-            </li>
-            <li>
-              <a href="#" className="hover:text-blue-600">
-                Academy
               </a>
             </li>
             <li className="relative">
@@ -123,11 +119,16 @@ const Header = () => {
 
             {/* Profile & Notifications */}
             <div className="relative flex items-center">
-              <img
+              <a
+                href="/UserProfile"
+                >
+                 <img
                 src="./Images/founder.jpeg"
                 alt="Profile"
                 className="w-11 h-10 rounded-full border border-gray-300"
               />
+              </a>
+             
               {/* <span className="absolute -top-1 -right-1 bg-blue-500 text-white text-xs font-semibold rounded-full px-2">
                 2
               </span> */}
@@ -135,16 +136,16 @@ const Header = () => {
 
             {/* Buttons */}
             <a
-              href="#"
+              href="/signup"
               className="bg-black text-white px-4 py-2 rounded-lg font-medium"
             >
-              Be Pro
+              Sign Up
             </a>
             <a
-              href="#"
+              href="/login"
               className="bg-blue-500 text-white px-4 py-2 rounded-lg font-medium"
             >
-              Post a Job
+              Log In
             </a>
           </div>
         </div>
