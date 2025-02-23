@@ -70,7 +70,6 @@ export default function Posts() {
 
   return (
     <div className="flex flex-col items-center justify-center mt-9">
-      {/* <h1 className="text-3xl text-black font-bold mb-6">All Job Posts</h1> */}
       <FilterComponent onFilterChange={setFilters} />
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full px-4 md:px-8">
         {filteredPosts.slice(0, jobsToShow).map((post) => (
@@ -86,7 +85,10 @@ export default function Posts() {
               <p className="text-sm text-gray-600 line-clamp-2 mb-3 overflow-hidden">{post.Description}</p>
               <div className="flex flex-col text-sm text-gray-500 mb-3">
                 <p className="truncate">
-                  <span className="font-semibold">📍 Location:</span> {post["Job Location"]}
+                  <span className="font-semibold">📍 Area:</span> {post.Area || "Not mentioned"}
+                </p>
+                <p className="truncate">
+                  <span className="font-semibold">🌆 City:</span> {post.City}
                 </p>
                 <p className={`font-bold ${post.Salary ? "text-green-500" : "text-yellow-500"}`}>
                   <span className="font-semibold">💰 Salary:</span> {post.Salary || "Not Disclosed"}
@@ -100,10 +102,11 @@ export default function Posts() {
         ))}
       </div>
       {filteredPosts.length > jobsToShow && (
-        <button onClick={loadMoreJobs} className="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none">
+        <button onClick={loadMoreJobs} className="mt-6 px-6 py-4 bg-blue-500 text-white font-bold text-xl rounded hover:bg-blue-600">
           Show More
         </button>
       )}
     </div>
   );
+
 }
