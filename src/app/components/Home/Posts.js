@@ -58,9 +58,9 @@ export default function Posts({ initialJobs = [], viewMode = 'grid' }) {
       filtered = filtered.filter((post) => new Date(post["Posting Date"]) >= new Date(filters.dateFrom));
     }
     if (filters.salaryOrder === "ascending") {
-      filtered = filtered.sort((a, b) => a.Salary - b.Salary);
+      filtered = filtered.sort((a, b) => parseInt(a.Salary.replace(/\D/g, "")) - parseInt(b.Salary.replace(/\D/g, "")));
     } else if (filters.salaryOrder === "descending") {
-      filtered = filtered.sort((a, b) => b.Salary - a.Salary);
+      filtered = filtered.sort((a, b) => parseInt(b.Salary.replace(/\D/g, "")) - parseInt(a.Salary.replace(/\D/g, "")));
     }
     setFilteredPosts(filtered);
   }, [filters, allPosts]);
