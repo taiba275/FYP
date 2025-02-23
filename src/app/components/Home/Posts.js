@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import FilterComponent from "./Filter";
 
-export default function Posts() {
+export default function Posts({ viewMode }) {
   const [allPosts, setAllPosts] = useState([]);
   const [filteredPosts, setFilteredPosts] = useState([]);
   const [filters, setFilters] = useState({
@@ -16,7 +16,8 @@ export default function Posts() {
     dateFrom: "",
     dateTo: "",
   });
-  const [jobsToShow, setJobsToShow] = useState(20); // Initially show 20 jobs
+  const [jobsToShow, setJobsToShow] = useState(20);
+  
   useEffect(() => {
     async function fetchPosts() {
       console.log("Fetching posts...");
@@ -36,7 +37,6 @@ export default function Posts() {
   // Apply filters
   useEffect(() => {
     let filtered = allPosts;
-
     if (filters.category) {
       filtered = filtered.filter((post) => post.Industry.toLowerCase().includes(filters.category.toLowerCase()));
     }
@@ -44,7 +44,7 @@ export default function Posts() {
       filtered = filtered.filter((post) => post["Job Type"].toLowerCase().includes(filters.type.toLowerCase()));
     }
     if (filters.city) {
-      filtered = filtered.filter((post) => post.City.toLowerCase().includes(filters.city.toLowerCase())); // Fixed Here
+      filtered = filtered.filter((post) => post.City.toLowerCase().includes(filters.city.toLowerCase()));
     }
     if (filters.experience) {
       filtered = filtered.filter((post) => post.Experience.toLowerCase().includes(filters.experience.toLowerCase()));
@@ -52,9 +52,6 @@ export default function Posts() {
     if (filters.dateFrom) {
       filtered = filtered.filter((post) => new Date(post["Posting Date"]) >= new Date(filters.dateFrom));
     }
-    // if (filters.dateTo) {
-    //   filtered = filtered.filter((post) => new Date(post["Posting Date"]) <= new Date(filters.dateTo));
-    // }
     if (filters.salaryOrder === "ascending") {
       filtered = filtered.sort((a, b) => parseInt(a.Salary.replace(/\D/g, "")) - parseInt(b.Salary.replace(/\D/g, "")));
     } else if (filters.salaryOrder === "descending") {
@@ -65,16 +62,18 @@ export default function Posts() {
 
   // Load More Jobs
   const loadMoreJobs = () => {
-    setJobsToShow(jobsToShow + 20); // Increase the number of jobs displayed by 20
+    setJobsToShow(jobsToShow + 20);
   };
 
   return (
     <div className="flex flex-col items-center justify-center mt-9">
       <FilterComponent onFilterChange={setFilters} />
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full px-4 md:px-8">
+      
+      {/* 🔥 Apply viewMode class to job listings container */}
+      <div className={`w-full px-4 md:px-8 ${viewMode === 'list' ? 'list-view' : 'grid-view'}`}>
         {filteredPosts.slice(0, jobsToShow).map((post) => (
           <Link key={post._id} href={`/jobs/${post._id}`} passHref>
-            <div className="cursor-pointer w-full bg-white rounded-lg shadow-md p-5 border border-gray-200 hover:shadow-xl transition-transform hover:-translate-y-1 flex flex-col h-auto overflow-hidden">
+            <div className="job cursor-pointer w-full bg-white rounded-lg shadow-md p-5 border border-gray-200 hover:shadow-xl transition-transform hover:-translate-y-1 flex flex-col h-auto overflow-hidden">
               <div className="flex justify-between items-center mb-3">
                 <h5 className="text-lg font-semibold text-gray-900 truncate w-4/5">{post.Company}</h5>
                 {post.Remote && (
@@ -101,6 +100,7 @@ export default function Posts() {
           </Link>
         ))}
       </div>
+
       {filteredPosts.length > jobsToShow && (
         <button onClick={loadMoreJobs} className="mt-6 px-6 py-4 bg-blue-500 text-white font-bold text-xl rounded hover:bg-blue-600">
           Show More
@@ -108,5 +108,4 @@ export default function Posts() {
       )}
     </div>
   );
-
 }
