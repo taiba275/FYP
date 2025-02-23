@@ -1,12 +1,13 @@
-import React from 'react';
+import React from "react";
+import { FaThLarge, FaList } from "react-icons/fa"; // Import icons
 
-function Hero() {
+function Hero({ setViewMode }) {
     return (
         <div className="relative text-center p-14 bg-white flex flex-col items-center">
             {/* Main Heading */}
             <div className="relative">
                 <h1 className="text-6xl md:text-9xl font-extrabold text-black leading-tight inline-block">
-                    THE JOBS<br/> BOARD
+                    THE JOBS<br /> BOARD
                 </h1>
                 {/* Hiring Badge */}
                 <img 
@@ -21,6 +22,27 @@ function Hero() {
                 Latest Vacancies in Web Design <br /> and UX/UI Design
             </p>
 
+            {/* Additional Information + View Mode Icons */}
+            <div className="absolute bottom-0 right-10 flex items-center space-x-3 text-sm text-gray-700">
+                <p>Find Your Dream Job in Web, UI/UX, and Frontend Development... <a href="#" className="text-blue-500">Read more</a></p>
+
+                {/* View Mode Toggle Icons */}
+                <button 
+                    onClick={() => setViewMode('list')} 
+                    className="bg-gray-200 hover:bg-gray-400 p-1 rounded transition"
+                    title="List View"
+                >
+                    <FaList className="w-4 h-4 text-gray-700" /> {/* ⬅️ Smaller Icon */}
+                </button>
+                <button 
+                    onClick={() => setViewMode('grid')} 
+                    className="bg-gray-200 hover:bg-gray-400 p-1 rounded transition"
+                    title="Grid View"
+                >
+                    <FaThLarge className="w-4 h-4 text-gray-700" /> {/* ⬅️ Smaller Icon */}
+                </button>
+            </div>
+
             {/* Job Opportunities Count */}
             <div className="absolute bottom-0 left-10 text-sm md:text-base text-gray-700">
                 <strong className="text-black">509</strong> job opportunities waiting.
@@ -30,14 +52,8 @@ function Hero() {
             <div className="absolute right-5 top-40 bg-white shadow-lg rounded-lg p-4 text-black max-w-xs">
                 <p>Unlock premium job listings with exclusive member benefits. Get your first posting free!</p>
             </div>
-
-            {/* Additional Information */}
-            <div className="absolute bottom-0 right-10 text-sm text-gray-700">
-                Find Your Dream Job in Web, UI/UX, and Frontend Development... <a href="#" className="text-blue-500">Read more</a>
-            </div>
         </div>
     );
 }
 
 export default Hero;
-

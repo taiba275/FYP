@@ -1,24 +1,26 @@
-import clientPromise from "../../../../library/mongodb";
-import { ObjectId } from "mongodb";
+import { mongoose } from "../../../../library/mongodb";
+
+const JobSchema = new mongoose.Schema({
+  // Add your job fields here
+}, { collection: 'RozeeFinal' });
+
+const Job = mongoose.models.Job || mongoose.model('Job', JobSchema);
 
 export async function GET(req, { params }) {
   try {
-    if (!params || !params.id) {
-      return new Response(JSON.stringify({ message: "Invalid Job ID" }), { status: 400 });
+    if (!params?.id) {
+      return Response.json({ message: "Invalid Job ID" }, { status: 400 });
     }
 
-    const client = await clientPromise;
-    const db = client.db("test"); // Ensure correct database name
-
-    const job = await db.collection("RozeeFinal").findOne({ _id: ObjectId.createFromHexString(params.id) });
+    const job = await Job.findById(params.id).lean();
 
     if (!job) {
-      return new Response(JSON.stringify({ message: "Job not found" }), { status: 404 });
+      return Response.json({ message: "Job not found" }, { status: 404 });
     }
 
-    return new Response(JSON.stringify(job), { status: 200 });
+    return Response.json(job, { status: 200 });
   } catch (error) {
     console.error("Error fetching job:", error);
-    return new Response(JSON.stringify({ message: "Error fetching job", error: error.message }), { status: 500 });
+    return Response.json({ message: "Error fetching job", error: error.message }, { status: 500 });
   }
 }

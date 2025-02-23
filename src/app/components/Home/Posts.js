@@ -4,9 +4,10 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import FilterComponent from "./Filter";
 
-export default function Posts() {
-  const [allPosts, setAllPosts] = useState([]);
-  const [filteredPosts, setFilteredPosts] = useState([]);
+export default function Posts({ initialJobs = [], viewMode = 'grid' }) {
+  const [allPosts, setAllPosts] = useState(initialJobs);
+  const [filteredPosts, setFilteredPosts] = useState(initialJobs);
+  const [isLoading, setIsLoading] = useState(false);
   const [filters, setFilters] = useState({
     category: "",
     type: "",
@@ -16,22 +17,27 @@ export default function Posts() {
     dateFrom: "",
     dateTo: "",
   });
-  const [jobsToShow, setJobsToShow] = useState(20); // Initially show 20 jobs
+  const [jobsToShow, setJobsToShow] = useState(20);
+
   useEffect(() => {
-    async function fetchPosts() {
-      console.log("Fetching posts...");
-      try {
-        const response = await fetch("/api/posts");
-        if (!response.ok) throw new Error("Failed to fetch posts");
-        const data = await response.json();
-        setAllPosts(data);
-        setFilteredPosts(data);
-      } catch (error) {
-        console.error("Error fetching posts:", error);
+    if (initialJobs.length === 0) {
+      async function fetchPosts() {
+        setIsLoading(true);
+        try {
+          const response = await fetch("/api/posts");
+          if (!response.ok) throw new Error("Failed to fetch posts");
+          const data = await response.json();
+          setAllPosts(data);
+          setFilteredPosts(data);
+        } catch (error) {
+          console.error("Error fetching posts:", error);
+        } finally {
+          setIsLoading(false);
+        }
       }
+      fetchPosts();
     }
-    fetchPosts();
-  }, []);
+  }, [initialJobs.length]);
 
   // Apply filters
   useEffect(() => {
@@ -65,16 +71,22 @@ export default function Posts() {
 
   // Load More Jobs
   const loadMoreJobs = () => {
-    setJobsToShow(jobsToShow + 20); // Increase the number of jobs displayed by 20
+    setJobsToShow(jobsToShow + 20);
   };
 
   return (
     <div className="flex flex-col items-center justify-center mt-9">
       <FilterComponent onFilterChange={setFilters} />
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full px-4 md:px-8">
+      <div className={`w-full px-4 md:px-8 ${
+        viewMode === 'list' 
+          ? 'flex flex-col gap-4' 
+          : 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'
+      }`}>
         {filteredPosts.slice(0, jobsToShow).map((post) => (
           <Link key={post._id} href={`/jobs/${post._id}`} passHref>
-            <div className="cursor-pointer w-full bg-white rounded-lg shadow-md p-5 border border-gray-200 hover:shadow-xl transition-transform hover:-translate-y-1 flex flex-col h-auto overflow-hidden">
+            <div className={`cursor-pointer bg-white rounded-lg shadow-md p-5 border border-gray-200 
+              hover:shadow-xl transition-transform hover:-translate-y-1 flex flex-col h-auto overflow-hidden
+              ${viewMode === 'list' ? 'w-full' : ''}`}>
               <div className="flex justify-between items-center mb-3">
                 <h5 className="text-lg font-semibold text-gray-900 truncate w-4/5">{post.Company}</h5>
                 {post.Remote && (
@@ -108,5 +120,4 @@ export default function Posts() {
       )}
     </div>
   );
-
 }

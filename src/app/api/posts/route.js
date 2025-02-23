@@ -1,15 +1,10 @@
-import clientPromise from "../../../library/mongodb";
+import { connectDB } from "../../../library/mongodb";
+import Job from '../../models/Job';
 
 export async function GET() {
   try {
-    console.log("✅ Connecting to MongoDB Atlas...");
-    const client = await clientPromise;
-    const db = client.db("test");  // Ensure correct database name
-    const jobsCollection = db.collection("RozeeFinal");  // Collection name
-
-    const jobs = await jobsCollection.find({}).toArray();
-
-    console.log("✅ Jobs fetched:", jobs.length);
+    await connectDB();
+    const jobs = await Job.find({}).lean();
     return Response.json(jobs, { status: 200 });
   } catch (error) {
     console.error("❌ Error fetching jobs:", error);
