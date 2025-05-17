@@ -93,9 +93,10 @@ const Header = () => {
           </ul>
 
           {/* Right Section (Search, Profile, Buttons) */}
+          {/* Search Bar */}
           <div className="flex items-center space-x-4">
             {/* Search Bar */}
-            <div className="relative hidden md:block">
+            {/* <div className="relative hidden md:block">
               <input
                 type="text"
                 className="w-64 pl-10 pr-4 py-2 text-gray-900 border border-gray-300 rounded-lg bg-gray-100 focus:ring-blue-500 focus:border-blue-500"
@@ -115,7 +116,7 @@ const Header = () => {
                   d="M8 11a4 4 0 100-8 4 4 0 000 8zm2 2h2m4-4v2m2 2a6 6 0 00-6 6m6-6h2m-4 4v2"
                 />
               </svg>
-            </div>
+            </div> */}
 
             {/* Profile & Notifications */}
             <div className="relative flex items-center">

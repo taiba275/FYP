@@ -6,21 +6,19 @@ const JobSchema = new mongoose.Schema({
 
 const Job = mongoose.models.Job || mongoose.model('Job', JobSchema);
 
-export async function GET(req, { params }) {
-  try {
-    if (!params?.id) {
-      return Response.json({ message: "Invalid Job ID" }, { status: 400 });
-    }
+export async function GET(req, context) {
+  // context.params is a Promise, await it
+  const params = await context.params;
 
-    const job = await Job.findById(params.id).lean();
-
-    if (!job) {
-      return Response.json({ message: "Job not found" }, { status: 404 });
-    }
-
-    return Response.json(job, { status: 200 });
-  } catch (error) {
-    console.error("Error fetching job:", error);
-    return Response.json({ message: "Error fetching job", error: error.message }, { status: 500 });
+  if (!params?.id) {
+    return new Response(JSON.stringify({ message: "Invalid Job ID" }), { status: 400 });
   }
+
+  const job = await Job.findById(params.id).lean();
+
+  if (!job) {
+    return new Response(JSON.stringify({ message: "Job not found" }), { status: 404 });
+  }
+
+  return new Response(JSON.stringify(job), { status: 200 });
 }

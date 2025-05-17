@@ -14,8 +14,10 @@ async function getJob(jobId) {
   return res.json();
 }
 
-export default async function JobDetails({ params }) {
-  if (!params || !params?.id) {
+export default async function JobDetails({ params: paramsPromise }) {
+  const params = await paramsPromise;
+
+  if (!params?.id) {
     return notFound();
   }
 
