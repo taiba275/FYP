@@ -43,6 +43,7 @@ export default function SignupPage() {
       const response = await fetch("/api/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: 'include',  // <--- important for cookies
         body: JSON.stringify({ username, email, password }),
       });
 
@@ -52,7 +53,18 @@ export default function SignupPage() {
         throw new Error(data.message || "Something went wrong");
       }
 
-      router.push("/login");
+      const loginRes = await fetch("/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: 'include',  // <--- important for cookies
+      body: JSON.stringify({ email, password }),
+      });
+      if (loginRes.ok) {
+          router.push("/UserProfile"); // Go to profile completion after signup
+      } else {
+        // Fallback: if login fails, go to login page
+        router.push("/login");
+      }
     } catch (err) {
       setError(err.message || "Failed to sign up");
     }

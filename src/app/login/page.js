@@ -20,6 +20,7 @@ export default function LoginPage() {
       const response = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: 'include',  // <--- important for cookies
         body: JSON.stringify({ email, password }),
       });
 
@@ -28,6 +29,12 @@ export default function LoginPage() {
       if (!response.ok) {
         throw new Error(data.message || "Something went wrong");
       }
+
+        // Store the token in cookies (browser handles the cookie storage automatically)
+      const token = data.token;
+
+      // Set the token in a cookie for subsequent requests
+      document.cookie = `token=${token}; path=/; max-age=604800`; // 7 days expiration for the token
 
       router.push("/");
     } catch (err) {

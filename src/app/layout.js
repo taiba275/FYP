@@ -1,3 +1,4 @@
+import 'react-phone-number-input/style.css';
 import './globals.css'; // Import global styles
 import Header from './components/Header';
 import Footer from './components/Footer';

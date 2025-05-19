@@ -1,19 +1,18 @@
-// Import necessary modules
+import { connectDB } from '../../../../library/mongodb';
 import User from '../../../models/User';
 import bcrypt from 'bcryptjs';
 import { NextResponse } from 'next/server';
-import { connectDB } from '../../../../library/mongodb';
+import jwt from 'jsonwebtoken';
 
+const SECRET = process.env.JWT_SECRET || 'your-secret';
 
-// Handler for POST requests
 export async function POST(request) {
   try {
-    // Connect to MongoDB
     await connectDB();
-    
-    const { email, password } = await request.json();
-    const existingUser = await User.findOne({ email });
+    const { email, password, username } = await request.json();
 
+    // Check if the user already exists
+    const existingUser = await User.findOne({ email: email.toLowerCase() });
     if (existingUser) {
       return NextResponse.json(
         { success: false, message: 'Email already in use.' },
@@ -21,17 +20,41 @@ export async function POST(request) {
       );
     }
 
+    // Hash password before saving
     const hashedPassword = await bcrypt.hash(password, 10);
+    
+    // Create the new user
     const user = new User({
-      email,
+      username,
+      email: email.toLowerCase(),
       password: hashedPassword,
     });
 
     await user.save();
-    return NextResponse.json(
-      { success: true, message: 'User created successfully.' },
+
+    // Create JWT token with username and email
+    const token = jwt.sign(
+      { userId: user._id, email: user.email }, 
+      SECRET, 
+      { expiresIn: '7d' }
+    );
+
+    // Return success response and set the cookie
+    const response = NextResponse.json(
+      { success: true, message: 'User created successfully' },
       { status: 201 }
     );
+
+    response.cookies.set("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',  // Set to true in production for HTTPS
+      sameSite: 'lax',  // Adjust this as needed
+      path: "/",
+      maxAge: 60 * 60 * 24 * 7  // Cookie expires in 7 days
+    });
+
+    return response;
+
   } catch (error) {
     console.error('Signup error:', error);
     return NextResponse.json(
@@ -39,9 +62,4 @@ export async function POST(request) {
       { status: 500 }
     );
   }
-}
-
-// If you also handle GET requests, define a handler for them
-export function get(req, res) {
-  res.status(405).json({ message: "GET method not allowed for signup" });
 }
