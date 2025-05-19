@@ -9,7 +9,6 @@ const FilterComponent = ({ onFilterChange }) => {
     salaryOrder: "",
     experience: "",
     dateFrom: "",
-    dateTo: "",
   });
 
   const handleChange = (e) => {
@@ -27,7 +26,6 @@ const FilterComponent = ({ onFilterChange }) => {
       salaryOrder: "",
       experience: "",
       dateFrom: "",
-      dateTo: "",
     };
     setFilters(resetFilters);
     onFilterChange(resetFilters);

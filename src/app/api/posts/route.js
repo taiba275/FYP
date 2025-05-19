@@ -1,6 +1,17 @@
 import { connectDB } from "../../../library/mongodb";
 import Job from '../../models/Job';
 
+const experienceMapping = {
+  "0": ["(0, 1)", "(1, 2)"],
+  "1": ["(1, 2)", "(0, 1)"],
+  "2": ["(2, 3)", "(1, 2)"],
+  "3": ["(3, 4)", "(2, 3)"],
+  "4": ["(4, 5)", "(3, 4)"],
+  "5": ["(4, 5)", "(5, 10)"],
+  "Not mentioned": []
+};
+
+
 export async function GET(req) {
   try {
     await connectDB();
@@ -32,7 +43,10 @@ export async function GET(req) {
       query.City = { $regex: `^${city}$`, $options: "i" };
     }
     if (experience) {
-      query.Experience = { $regex: `^${experience}$`, $options: "i" };
+      const mappedRanges = experienceMapping[experience];
+      if (mappedRanges && mappedRanges.length > 0) {
+        query["Experience Range"] = { $in: mappedRanges };
+      }
     }
     if (dateFrom) {
       query["Posting Date"] = {};

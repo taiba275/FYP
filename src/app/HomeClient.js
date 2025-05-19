@@ -17,7 +17,6 @@ export default function HomeClient({ initialJobs }) {
     salaryOrder: "",
     experience: "",
     dateFrom: "",
-    dateTo: "",
   });
 
   const [page, setPage] = useState(1);
