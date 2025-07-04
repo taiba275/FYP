@@ -49,9 +49,9 @@ function Hero({ setViewMode }) {
             </div>
 
             {/* Sidebar Promotion Box */}
-            <div className="absolute right-5 top-40 bg-white shadow-lg rounded-lg p-4 text-black max-w-xs">
+            {/* <div className="absolute right-5 top-40 bg-white shadow-lg rounded-lg p-4 text-black max-w-xs">
                 <p>Unlock premium job listings with exclusive member benefits. Get your first posting free!</p>
-            </div>
+            </div> */}
         </div>
     );
 }

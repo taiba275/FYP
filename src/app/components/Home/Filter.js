@@ -14,7 +14,6 @@ const FilterComponent = ({ onFilterChange, initialCategory = '' }) => {
     sortOrder: "",
   });
 
-
   const [filterOptions, setFilterOptions] = useState({
     industries: [],
     jobTypes: [],
@@ -62,13 +61,12 @@ const FilterComponent = ({ onFilterChange, initialCategory = '' }) => {
     };
     setFilters(resetFilters);
     onFilterChange(resetFilters);
-
   };
 
   const appliedFiltersCount = Object.values(filters).filter(val => val !== '').length;
 
   return (
-    <div className="flex text-black flex-wrap p-2 bg-[#ededed] rounded-lg m-8 gap-4 items-center">
+    <div className="flex text-black flex-wrap p-2 mx-8 bg-[#ededed] rounded-lg gap-4 z-10 items-center">
 
       {/* CATEGORY */}
       <div
@@ -80,14 +78,12 @@ const FilterComponent = ({ onFilterChange, initialCategory = '' }) => {
           }
           setHovered('category');
         }}
-
         onMouseLeave={() => {
           const timeout = setTimeout(() => {
             setHovered(null);
-          }, 150); // Adjust delay as needed (ms)
+          }, 250);
           setHoverTimeout(timeout);
         }}
-
       >
         <div className="p-2 bg-white rounded flex items-center justify-between cursor-pointer w-64 min-w-[16rem]">
           {filters.category || 'Categories'}
@@ -103,7 +99,7 @@ const FilterComponent = ({ onFilterChange, initialCategory = '' }) => {
         </div>
 
         {hovered === 'category' && (
-          <ul className="absolute z-10 bg-white border rounded shadow w-64 min-w-[16rem] mt-1 max-h-60 overflow-y-auto">
+          <ul className="absolute z-50 bg-white border rounded shadow w-64 min-w-[16rem] mt-1 max-h-60 overflow-y-auto">
             <li
               onClick={() => {
                 handleChange({ target: { name: 'category', value: '' } });
@@ -141,14 +137,12 @@ const FilterComponent = ({ onFilterChange, initialCategory = '' }) => {
           }
           setHovered('type');
         }}
-
         onMouseLeave={() => {
           const timeout = setTimeout(() => {
             setHovered(null);
-          }, 150); // Adjust delay as needed (ms)
+          }, 250);
           setHoverTimeout(timeout);
         }}
-
       >
         <div className="p-2 bg-white rounded flex items-center justify-between cursor-pointer w-40">
           {filters.type || 'Job Type'}
@@ -157,7 +151,7 @@ const FilterComponent = ({ onFilterChange, initialCategory = '' }) => {
           </svg>
         </div>
         {hovered === 'type' && (
-          <ul className="absolute z-10 bg-white border rounded shadow w-40 mt-1">
+          <ul className="absolute z-50 bg-white border rounded shadow w-40 mt-1">
             {['Permanent', 'Contract', 'Internship', 'Part Time'].map((type) => (
               <li key={type} onClick={() => { handleChange({ target: { name: 'type', value: type } }); setHovered(null); }} className="px-4 py-2 hover:bg-gray-100 cursor-pointer">
                 {type || 'Job Type'}
@@ -177,11 +171,10 @@ const FilterComponent = ({ onFilterChange, initialCategory = '' }) => {
           }
           setHovered('city');
         }}
-
         onMouseLeave={() => {
           const timeout = setTimeout(() => {
             setHovered(null);
-          }, 150); // Adjust delay as needed (ms)
+          }, 250);
           setHoverTimeout(timeout);
         }}
       >
@@ -199,7 +192,7 @@ const FilterComponent = ({ onFilterChange, initialCategory = '' }) => {
         </div>
 
         {hovered === 'city' && (
-          <ul className="absolute z-10 bg-white border rounded shadow w-40 mt-1 max-h-60 overflow-y-auto">
+          <ul className="absolute z-50 bg-white border rounded shadow w-40 mt-1 max-h-60 overflow-y-auto">
             <li
               onClick={() => {
                 handleChange({ target: { name: 'city', value: '' } });
@@ -237,11 +230,10 @@ const FilterComponent = ({ onFilterChange, initialCategory = '' }) => {
           }
           setHovered('salary');
         }}
-
         onMouseLeave={() => {
           const timeout = setTimeout(() => {
             setHovered(null);
-          }, 150);
+          }, 250);
           setHoverTimeout(timeout);
         }}
       >
@@ -252,7 +244,7 @@ const FilterComponent = ({ onFilterChange, initialCategory = '' }) => {
           </svg>
         </div>
         {hovered === 'salary' && (
-          <ul className="absolute z-10 bg-white border rounded shadow w-40 mt-1">
+          <ul className="absolute z-50 bg-white border rounded shadow w-40 mt-1">
             {['Ascending', 'Descending'].map((order) => (
               <li key={order} onClick={() => { handleChange({ target: { name: 'salaryOrder', value: order } }); setHovered(null); }} className="px-4 py-2 hover:bg-gray-100 cursor-pointer">
                 {order || 'Sort Salary'}
@@ -272,14 +264,12 @@ const FilterComponent = ({ onFilterChange, initialCategory = '' }) => {
           }
           setHovered('experience');
         }}
-
         onMouseLeave={() => {
           const timeout = setTimeout(() => {
             setHovered(null);
-          }, 150); // Adjust delay as needed (ms)
+          }, 250);
           setHoverTimeout(timeout);
         }}
-
       >
         <div className="p-2 bg-white rounded flex items-center justify-between cursor-pointer w-40">
           {filters.experience || 'Experience'}
@@ -288,7 +278,7 @@ const FilterComponent = ({ onFilterChange, initialCategory = '' }) => {
           </svg>
         </div>
         {hovered === 'experience' && (
-          <ul className="absolute z-10 bg-white border rounded shadow w-40 mt-1">
+          <ul className="absolute z-50 bg-white border rounded shadow w-40 mt-1">
             {['Not mentioned', '0', '1', '2', '3', '4'].map((exp) => (
               <li key={exp} onClick={() => { handleChange({ target: { name: 'experience', value: exp } }); setHovered(null); }} className="px-4 py-2 hover:bg-gray-100 cursor-pointer">
                 {exp === '' ? 'Experience' : exp === '0' ? 'Fresh' : exp === '4' ? '4+ Years' : exp === 'Not mentioned' ? 'Not mentioned' : `${exp} Year${exp === '1' ? '' : 's'}`}
@@ -308,11 +298,10 @@ const FilterComponent = ({ onFilterChange, initialCategory = '' }) => {
           }
           setHovered('date');
         }}
-
         onMouseLeave={() => {
           const timeout = setTimeout(() => {
             setHovered(null);
-          }, 150); // Adjust delay as needed (ms)
+          }, 250);
           setHoverTimeout(timeout);
         }}
       >
@@ -323,7 +312,7 @@ const FilterComponent = ({ onFilterChange, initialCategory = '' }) => {
           </svg>
         </div>
         {hovered === 'date' && (
-          <ul className="absolute z-10 bg-white border rounded shadow w-40 mt-1">
+          <ul className="absolute z-50 bg-white border rounded shadow w-40 mt-1">
             {['Newest', 'Oldest'].map((sort) => (
               <li key={sort} onClick={() => { handleChange({ target: { name: 'sortOrder', value: sort } }); setHovered(null); }} className="px-4 py-2 hover:bg-gray-100 cursor-pointer">
                 {sort || 'Sort by Date'}

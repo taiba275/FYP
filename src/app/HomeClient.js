@@ -5,7 +5,8 @@ import Hero from "./components/Home/Hero";
 import Posts from "./components/Home/Posts";
 import ScrollToTop from "./components/Home/ScrollToTop";
 import Filter from "./components/Home/Filter";
-import SearchBar from "./components/Home/SearchBar";
+import Header from "./components/Header";
+import './globals.css';
 
 export default function HomeClient({ initialJobs, initialCategory = "" }) {
   const [viewMode, setViewMode] = useState("grid");
@@ -69,14 +70,24 @@ export default function HomeClient({ initialJobs, initialCategory = "" }) {
 
   return (
     <div>
-      <Hero setViewMode={setViewMode} />
-      <SearchBar onSearch={setSearchTerm} />
+      <Header onSearch={setSearchTerm} /> 
       <Filter onFilterChange={setFilters} initialCategory={initialCategory} />
+      <Hero setViewMode={setViewMode} />
+
       {loading && page === 1 ? (
-        <p>Loading jobs...</p>
+        <div className="w-full h-[50vh] flex flex-col justify-center items-center color-blue bg-white">
+          <div className="custom-loader wrapper scale-[1.4] mb-6">
+            <div className="circle"></div>
+            <div className="circle"></div>
+            <div className="circle"></div>
+          </div>
+          <p className="text-gray-700 text-xl font-semibold mb-1">Loading Jobs list for You…</p>
+          <p className="text-gray-500 text-base">Please wait while we fetch the perfect matches</p>
+        </div>
       ) : (
         <Posts jobs={jobs} viewMode={viewMode} />
       )}
+
       {hasMore && !loading && (
         <button
           onClick={() => setPage((p) => p + 1)}
