@@ -51,7 +51,7 @@ a {
   height: 20px;
   position: absolute;
   border-radius: 50%;
-  background-color: #22c55e; /* Tailwind green-500 */
+  background-color: #3b82f6;
   left: 15%;
   transform-origin: 50%;
   animation: circle7124 0.5s alternate infinite ease;

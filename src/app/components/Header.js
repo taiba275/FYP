@@ -45,17 +45,17 @@ const Header = ({ onSearch }) => {
 
       {/* Header */}
       <nav>
-        <div className="w-full px-4 sm:px-6 lg:px-8 py-2 overflow-x-hidden">
+        <div className="w-full px-4 sm:px-6 lg:px-8 py-4 overflow-x-hidden">
           <div className="w-full flex flex-col md:flex-row md:items-center md:justify-between gap-4 flex-wrap">
 
             {/* Left: Logo + Nav */}
             <div className="flex flex-col md:flex-row md:items-center md:space-x-8">
-              <a href="/" className="text-2xl font-bold text-gray-900 mb-1 md:mb-0">Job Finder</a>
-              <ul className="flex space-x-4 text-sm text-gray-800 font-medium">
+              <a href="/" className="text-2xl font-bold text-gray-900 mb-1 md:mb-0">JobFinder.</a>
+              <ul className="flex space-x-4 text-lg text-black font-medium">
                 <li><a href="/trends" className="hover:text-blue-600">Trends</a></li>
                 <li><a href="#" className="hover:text-blue-600">Directory</a></li>
                 <li><a href="/industry" className="hover:text-blue-600">Industry</a></li>
-                <li><a href="#" className="hover:text-blue-600">Market</a></li>
+                <li><a href="#" className="hover:text-blue-600">Chatbot</a></li>
               </ul>
             </div>
 
@@ -107,10 +107,10 @@ const Header = ({ onSearch }) => {
                 </>
               ) : (
                 <>
-                  <a href="/signup" className="bg-black text-white font-bold py-2 px-4 rounded hover:bg-gray-900">
+                  <a href="/signup" className="bg-black text-white font-bold py-2 px-4 rounded hover:bg-gray-800">
                     Sign Up
                   </a>
-                  <a href="/login" className="bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600">
+                  <a href="/login" className="bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-700">
                     Log In
                   </a>
                 </>

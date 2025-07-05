@@ -4,13 +4,10 @@ import HomeClient from './HomeClient';
 
 export const revalidate = 3600; // 1 hour
 
-// 🔁 Accept optional category filter from query
 async function getJobs(category = '') {
   await connectDB();
 
   const query = {};
-
-  // Allow partial and case-insensitive match
   if (category) {
     query.Industry = { $regex: category, $options: 'i' };
   }

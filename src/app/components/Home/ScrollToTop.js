@@ -5,7 +5,7 @@ function ScrollToTop() {
     const [isVisible, setIsVisible] = useState(false);
 
     const toggleVisibility = () => {
-        if (window.pageYOffset > 300) {  // Adjust the number to suit when you want the button to appear
+        if (window.pageYOffset > 300) {
             setIsVisible(true);
         } else {
             setIsVisible(false);
@@ -21,7 +21,6 @@ function ScrollToTop() {
 
     useEffect(() => {
         window.addEventListener('scroll', toggleVisibility);
-
         return () => {
             window.removeEventListener('scroll', toggleVisibility);
         };
@@ -32,21 +31,36 @@ function ScrollToTop() {
             <div 
                 style={{
                     position: 'fixed',
-                    bottom: '20px',
-                    right: '20px',
+                    bottom: '30px',
+                    left: '30px',
                     cursor: 'pointer',
-                    background: '#000',
+                    background: '#111',
                     color: '#fff',
-                    width: '40px',
-                    height: '40px',
+                    width: '60px',
+                    height: '60px',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    borderRadius: '50%',
+                    borderRadius: '12px',
+                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.25)',
+                    zIndex: 9999,
+                    transition: 'opacity 0.3s ease-in-out'
                 }}
                 onClick={scrollToTop}
+                aria-label="Scroll to top"
             >
-                ↑  {/* You can replace this with an SVG or icon font */}
+                {/* SVG Up Arrow */}
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="white"
+                    strokeWidth={2.5}
+                    width="26"
+                    height="26"
+                >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
+                </svg>
             </div>
         )
     );

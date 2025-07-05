@@ -1,5 +1,7 @@
+"use client";
 
 import Link from "next/link";
+import { FaThLarge, FaList } from "react-icons/fa";
 
 function capitalizeWords(str = "") {
   return str
@@ -20,11 +22,36 @@ function capitalizeSentences(text = "") {
     .join("");
 }
 
-export default function Posts({ jobs = [], viewMode = "grid" }) {
+export default function Posts({ jobs = [], viewMode = "grid", setViewMode }) {
   return (
-    <div className="flex flex-col items-center justify-center mt-9">
+    <div className="flex flex-col items-center justify-center w-full pt-10 px-4 md:px-8">
+
+      {/* ✅ Dynamic job count and view toggle */}
+      <div className="w-full flex flex-col md:flex-row justify-between items-center mb-6">
+        <p className="text-sm md:text-base text-gray-700 mb-2 md:mb-0">
+          <strong className="text-black">{jobs.length}</strong> job opportunities waiting.
+        </p>
+        <div className="flex items-center space-x-3">
+          <button
+            onClick={() => setViewMode('list')}
+            className="bg-gray-200 hover:bg-gray-400 p-1 rounded transition"
+            title="List View"
+          >
+            <FaList className="w-4 h-4 text-gray-700" />
+          </button>
+          <button
+            onClick={() => setViewMode('grid')}
+            className="bg-gray-200 hover:bg-gray-400 p-1 rounded transition"
+            title="Grid View"
+          >
+            <FaThLarge className="w-4 h-4 text-gray-700" />
+          </button>
+        </div>
+      </div>
+
+      {/* ✅ Job cards grid */}
       <div
-        className={`w-full px-4 md:px-8 ${
+        className={`w-full ${
           viewMode === "list"
             ? "flex flex-col gap-4"
             : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
@@ -38,7 +65,9 @@ export default function Posts({ jobs = [], viewMode = "grid" }) {
                 ${viewMode === "list" ? "w-full" : ""}`}
             >
               <div className="flex justify-between items-center mb-3">
-                <h5 className="text-lg font-semibold text-gray-900 truncate w-4/5">{capitalizeWords(post.Company)}</h5>
+                <h5 className="text-lg font-semibold text-gray-900 truncate w-4/5">
+                  {capitalizeWords(post.Company)}
+                </h5>
                 {post.Remote && (
                   <span className="px-3 py-1 text-xs font-medium text-blue-700 bg-blue-100 rounded-md">REMOTE</span>
                 )}
@@ -67,8 +96,6 @@ export default function Posts({ jobs = [], viewMode = "grid" }) {
           </Link>
         ))}
       </div>
-
-    
     </div>
   );
 }

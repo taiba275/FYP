@@ -324,9 +324,11 @@ const FilterComponent = ({ onFilterChange, initialCategory = '' }) => {
 
       {/* Applied Filters Counter */}
       <div className="flex items-center gap-3 ml-auto">
-        <div className="flex items-center justify-center w-8 h-9 rounded-full bg-white text-blue-500 font-bold">
-          {appliedFiltersCount}
-        </div>
+        {appliedFiltersCount > 0 && (
+          <div className="flex items-center justify-center py-0 px-2 rounded-full text-blue-500 text-xl font-bold">
+            {appliedFiltersCount}
+          </div>
+        )}
         <button
           onClick={handleResetFilters}
           className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none"

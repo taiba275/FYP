@@ -25,7 +25,10 @@ export default function HomeClient({ initialJobs, initialCategory = "" }) {
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
 
-  // Reset page when filters/searchTerm change
+  const isDefaultFilters = Object.values(filters).every(value => value === "");
+  const isSearchEmpty = searchTerm.trim() === "";
+  const showHeroTop = isDefaultFilters && isSearchEmpty;
+
   useEffect(() => {
     setPage(1);
   }, [searchTerm, filters]);
@@ -70,32 +73,40 @@ export default function HomeClient({ initialJobs, initialCategory = "" }) {
 
   return (
     <div>
-      <Header onSearch={setSearchTerm} /> 
+      <Header onSearch={setSearchTerm} />
       <Filter onFilterChange={setFilters} initialCategory={initialCategory} />
-      <Hero setViewMode={setViewMode} />
+      <Hero setViewMode={setViewMode} showTop={showHeroTop} />
 
-      {loading && page === 1 ? (
-        <div className="w-full h-[50vh] flex flex-col justify-center items-center color-blue bg-white">
-          <div className="custom-loader wrapper scale-[1.4] mb-6">
-            <div className="circle"></div>
-            <div className="circle"></div>
-            <div className="circle"></div>
+      <div className={`transition-all duration-500 ease-in-out ${showHeroTop ? 'mt-12' : 'mt-4'}`}>
+        {loading && page === 1 ? (
+          <div className="w-full h-[50vh] flex flex-col justify-center items-center bg-white">
+            <div className="custom-loader wrapper scale-[1.4] mb-6">
+              <div className="circle"></div>
+              <div className="circle"></div>
+              <div className="circle"></div>
+            </div>
+            <p className="text-gray-700 text-xl font-semibold mb-1">Loading Jobs list for You…</p>
+            <p className="text-gray-500 text-base">Please wait while we fetch the perfect matches</p>
           </div>
-          <p className="text-gray-700 text-xl font-semibold mb-1">Loading Jobs list for You…</p>
-          <p className="text-gray-500 text-base">Please wait while we fetch the perfect matches</p>
-        </div>
-      ) : (
-        <Posts jobs={jobs} viewMode={viewMode} />
-      )}
+        ) : jobs.length === 0 ? (
+          <div className="w-full h-[50vh] flex flex-col justify-center items-center bg-white">
+            <p className="text-gray-800 text-xl font-semibold mb-2">No matching jobs found</p>
+            <p className="text-gray-500 text-base">Try adjusting your filters or search keywords</p>
+          </div>
+        ) : (
+          <Posts jobs={jobs} viewMode={viewMode} />
+        )}
 
-      {hasMore && !loading && (
-        <button
-          onClick={() => setPage((p) => p + 1)}
-          className="block mx-auto mt-6 px-6 py-4 bg-blue-500 text-white font-bold text-xl rounded hover:bg-blue-600"
-        >
-          Load More
-        </button>
-      )}
+        {hasMore && !loading && (
+          <button
+            onClick={() => setPage((p) => p + 1)}
+            className="block mx-auto mt-6 py-2 px-4 bg-blue-500 text-white font-bold text-xl rounded hover:bg-blue-700"
+          >
+            Load More
+          </button>
+        )}
+      </div>
+
       <ScrollToTop />
     </div>
   );
