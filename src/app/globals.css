@@ -93,6 +93,18 @@ a {
   animation-delay: 0.3s;
 }
 
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 9999px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+
 /* ✅ Global keyframes (must NOT be scoped) */
 @keyframes circle7124 {
   0% {

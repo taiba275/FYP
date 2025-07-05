@@ -24,7 +24,7 @@ function capitalizeSentences(text = "") {
 
 export default function Posts({ jobs = [], viewMode = "grid", setViewMode }) {
   return (
-    <div className="flex flex-col items-center justify-center w-full pt-10 px-4 md:px-8">
+    <div className="flex flex-col items-center justify-center w-full px-4 md:px-8">
 
       {/* ✅ Dynamic job count and view toggle */}
       <div className="w-full flex flex-col md:flex-row justify-between items-center mb-6">
