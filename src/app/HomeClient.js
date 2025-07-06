@@ -6,6 +6,8 @@ import Posts from "./components/Home/Posts";
 import ScrollToTop from "./components/Home/ScrollToTop";
 import Filter from "./components/Home/Filter";
 import Header from "./components/Header";
+import LoginModal from "./components/LoginModal";
+import SignupModal from "./components/SignupModel";
 import './globals.css';
 
 export default function HomeClient({ initialJobs, initialCategory = "" }) {
@@ -24,6 +26,9 @@ export default function HomeClient({ initialJobs, initialCategory = "" }) {
   const [jobs, setJobs] = useState(initialJobs || []);
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
+
+  const [showLogin, setShowLogin] = useState(false);
+  const [showSignup, setShowSignup] = useState(false);
 
   const isDefaultFilters = Object.values(filters).every(value => value === "");
   const isSearchEmpty = searchTerm.trim() === "";
@@ -73,7 +78,12 @@ export default function HomeClient({ initialJobs, initialCategory = "" }) {
 
   return (
     <div>
-      <Header onSearch={setSearchTerm} />
+      <Header
+        onSearch={setSearchTerm}
+        onLoginClick={() => setShowLogin(true)}
+        onSignupClick={() => setShowSignup(true)}
+      />
+
       <Filter onFilterChange={setFilters} initialCategory={initialCategory} />
       <Hero setViewMode={setViewMode} showTop={showHeroTop} />
 
@@ -108,6 +118,9 @@ export default function HomeClient({ initialJobs, initialCategory = "" }) {
       </div>
 
       <ScrollToTop />
+
+      {showLogin && <LoginModal onClose={() => setShowLogin(false)} />}
+      {showSignup && <SignupModal onClose={() => setShowSignup(false)} />}
     </div>
   );
 }

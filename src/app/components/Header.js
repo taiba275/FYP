@@ -1,10 +1,14 @@
 "use client";
 
+import LoginModal from "./LoginModal";
+import SignupModal from "./SignupModel";
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { FaSearch } from "react-icons/fa";
 
 const Header = ({ onSearch }) => {
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showSignupModal, setShowSignupModal] = useState(false);
   const [user, setUser] = useState(null);
   const [inputValue, setInputValue] = useState("");
   const router = useRouter();
@@ -32,17 +36,6 @@ const Header = ({ onSearch }) => {
 
   return (
     <>
-      {/* Marquee Strip
-      <div className=" bg-[#ededed] py-2 text-sm text-gray-700 font-medium">
-        <div className="flex whitespace-nowrap animate-marquee-loop px-4">
-          {[...Array(20)].map((_, i) => (
-            <span key={i} className="mx-6">
-              New season, New skills!
-            </span>
-          ))}
-        </div>
-      </div> */}
-
       {/* Header */}
       <nav>
         <div className="w-full px-4 sm:px-6 lg:px-8 py-4 overflow-x-hidden">
@@ -107,12 +100,21 @@ const Header = ({ onSearch }) => {
                 </>
               ) : (
                 <>
-                  <a href="/signup" className="bg-black text-white font-bold py-2 px-4 rounded hover:bg-gray-800">
+                  <button
+                    data-open-signup
+                    onClick={() => setShowSignupModal(true)}
+                    className="bg-black text-white font-bold py-2 px-4 rounded hover:bg-gray-800"
+                  >
                     Sign Up
-                  </a>
-                  <a href="/login" className="bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-700">
+                  </button>
+
+                  <button
+                    data-open-login
+                    onClick={() => setShowLoginModal(true)}
+                    className="bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-700"
+                  >
                     Log In
-                  </a>
+                  </button>
                 </>
               )}
             </div>
@@ -120,19 +122,9 @@ const Header = ({ onSearch }) => {
         </div>
       </nav>
 
-      {/* Marquee Animation */}
-      <style>{`
-        @keyframes marquee-loop {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(-100%); }
-        }
-        .animate-marquee-loop {
-          display: flex;
-          gap: 2rem;
-          animation: marquee-loop 30s linear infinite;
-          white-space: nowrap;
-        }
-      `}</style>
+      {/* Modals */}
+      {showSignupModal && <SignupModal onClose={() => setShowSignupModal(false)} />}
+      {showLoginModal && <LoginModal onClose={() => setShowLoginModal(false)} />}
     </>
   );
 };

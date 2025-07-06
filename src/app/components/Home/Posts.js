@@ -89,7 +89,7 @@ export default function Posts({ jobs = [], viewMode = "grid", setViewMode }) {
                   <span className="font-semibold">💰 Salary:</span> {post.Salary || "Not Disclosed"}
                 </p>
               </div>
-              <button className="w-full bg-gray-900 text-white py-2 rounded-md text-sm font-medium hover:bg-gray-700 transition">
+              <button className="w-full bg-gray-900 text-white py-2 rounded-md text-sm font-medium hover:bg-gray-800 transition">
                 View Details
               </button>
             </div>
