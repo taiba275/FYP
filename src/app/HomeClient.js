@@ -88,7 +88,7 @@ export default function HomeClient({ initialJobs, initialCategory = "" }) {
       />
 
       <Filter onFilterChange={setFilters} initialCategory={initialCategory} />
-      <Hero setViewMode={setViewMode} showTop={showHeroTop} />
+      <Hero setViewMode={setViewMode} showTop={showHeroTop} /> {/* Pass setViewMode to Hero */}
 
       <div className={`transition-all duration-500 ease-in-out ${showHeroTop ? 'mt-12' : 'mt-4'}`}>
         {loading && page === 1 ? (
@@ -107,8 +107,8 @@ export default function HomeClient({ initialJobs, initialCategory = "" }) {
             <p className="text-gray-500 text-base">Try adjusting your filters or search keywords</p>
           </div>
         ) : (
-          <Posts jobs={jobs} viewMode={viewMode} />
-        )}
+          <Posts jobs={jobs} viewMode={viewMode} setViewMode={setViewMode} /> 
+)}
 
         {hasMore && !loading && (
           <button
