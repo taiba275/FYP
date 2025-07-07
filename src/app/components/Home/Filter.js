@@ -104,17 +104,12 @@ const FilterComponent = ({ onFilterChange, initialCategory = '' }) => {
 
   return (
     <div className="flex text-black flex-wrap p-2 mx-8 bg-[#ededed] rounded-lg gap-4 z-10 items-center">
-
       {renderDropdown('Categories', 'category', [...filterOptions.industries.filter(i => i.toLowerCase() !== 'categories')])}
       {renderDropdown('Job Type', 'type', ['Permanent', 'Contract', 'Internship', 'Part Time'])}
-      {renderDropdown('City', 'city', filterOptions.cities
-        .filter(c => c.toLowerCase() !== 'city')
-        .map(c => c.charAt(0).toUpperCase() + c.slice(1).toLowerCase())
-      )}
+      {renderDropdown('City', 'city', filterOptions.cities.filter(c => c.toLowerCase() !== 'city').map(c => c.charAt(0).toUpperCase() + c.slice(1).toLowerCase()))}
       {renderDropdown('Sort Salary', 'salaryOrder', ['Ascending', 'Descending'])}
       {renderDropdown('Experience', 'experience', ['Not mentioned', '0', '1', '2', '3', '4'])}
       {renderDropdown('Sort by Date', 'sortOrder', ['Newest', 'Oldest'])}
-
       <div className="flex items-center gap-3 ml-auto">
         {appliedFiltersCount > 0 && (
           <div className="flex items-center justify-center py-0 px-2 rounded-full text-blue-500 text-xl font-bold">

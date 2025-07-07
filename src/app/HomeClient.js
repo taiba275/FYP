@@ -8,6 +8,7 @@ import Filter from "./components/Home/Filter";
 import Header from "./components/Header";
 import LoginModal from "./components/LoginModal";
 import SignupModal from "./components/SignupModel";
+import { useAuth } from "./context/AuthContext";
 import './globals.css';
 
 export default function HomeClient({ initialJobs, initialCategory = "" }) {
@@ -29,6 +30,8 @@ export default function HomeClient({ initialJobs, initialCategory = "" }) {
 
   const [showLogin, setShowLogin] = useState(false);
   const [showSignup, setShowSignup] = useState(false);
+
+  const { user } = useAuth(); // Just to trigger re-renders on login/logout
 
   const isDefaultFilters = Object.values(filters).every(value => value === "");
   const isSearchEmpty = searchTerm.trim() === "";

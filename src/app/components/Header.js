@@ -2,16 +2,22 @@
 
 import LoginModal from "./LoginModal";
 import SignupModal from "./SignupModel";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { FaSearch } from "react-icons/fa";
+import ReactDOM from "react-dom";
+import { useAuth } from "../context/AuthContext";
 
 const Header = ({ onSearch }) => {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showSignupModal, setShowSignupModal] = useState(false);
-  const [user, setUser] = useState(null);
   const [inputValue, setInputValue] = useState("");
+  const [showDropdown, setShowDropdown] = useState(false);
+  const dropdownAnchorRef = useRef(null);
   const router = useRouter();
+
+  const { user, setUser } = useAuth();
+  const dropdownTimer = useRef(null);
 
   // Debounced search
   useEffect(() => {
@@ -21,18 +27,114 @@ const Header = ({ onSearch }) => {
     return () => clearTimeout(handler);
   }, [inputValue, onSearch]);
 
-  // Check user authentication
+  // Fetch user on mount
   useEffect(() => {
-    fetch("/api/auth/me")
-      .then((res) => res.json())
-      .then((data) => setUser(data.authenticated ? data.user : null));
+    const fetchUser = async () => {
+      try {
+        const res = await fetch("/api/auth/me");
+        const data = await res.json();
+        if (data.authenticated) setUser(data.user);
+        else setUser(null);
+      } catch {
+        setUser(null);
+      }
+    };
+    fetchUser();
+  }, [setUser]);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (
+        dropdownAnchorRef.current &&
+        !dropdownAnchorRef.current.contains(e.target)
+      ) {
+        setShowDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      if (dropdownTimer.current) clearTimeout(dropdownTimer.current);
+    };
   }, []);
 
   const handleLogout = async () => {
-    await fetch("/api/auth/logout", { method: "POST" });
-    setUser(null);
-    router.push("/login");
+    try {
+      // 1. Logout (expire cookie)
+      await fetch("/api/auth/logout", {
+        method: "POST",
+        credentials: "include",
+      });
+
+      // 2. Wait briefly to ensure cookie clears
+      await new Promise((resolve) => setTimeout(resolve, 200));
+
+      // 3. Refetch /me with no-cache to confirm logout
+      const res = await fetch("/api/auth/me", {
+        method: "GET",
+        credentials: "include",
+        cache: "no-store", // <--- THIS IS CRITICAL
+      });
+
+      const data = await res.json();
+
+      if (!data.authenticated) {
+        setUser(null);
+        router.push("/"); // redirect if needed
+      } else {
+        console.warn("Still authenticated. Forcing logout UI.");
+        setUser(null); // fallback
+      }
+    } catch (err) {
+      console.error("Logout error:", err);
+      setUser(null); // fail-safe
+    }
   };
+
+  const renderDropdown = () =>
+    ReactDOM.createPortal(
+      <div
+        className="fixed w-48 mt-2 bg-white border border-gray-200 rounded-lg shadow-md z-[9999]"
+        style={{
+          top:
+            dropdownAnchorRef.current?.getBoundingClientRect().bottom + 8 + "px",
+          left:
+            dropdownAnchorRef.current?.getBoundingClientRect().right -
+            192 + "px",
+        }}
+      >
+        <div className="px-4 py-3 text-sm text-gray-900 font-semibold border-b">
+          {user?.username || user?.email}
+        </div>
+        <ul className="text-sm text-gray-700">
+          <li>
+            <a href="/UserProfile" className="block px-4 py-2 hover:bg-gray-100">
+              Profile
+            </a>
+          </li>
+          <li>
+            <a href="/dashboard" className="block px-4 py-2 hover:bg-gray-100">
+              Dashboard
+            </a>
+          </li>
+          <li>
+            <a href="/notifications" className="block px-4 py-2 hover:bg-gray-100">
+              Favorites
+            </a>
+          </li>
+          <li>
+            <button
+              onClick={handleLogout}
+              className="w-full text-left px-4 py-2 hover:bg-gray-100 text-red-600"
+            >
+              Logout
+            </button>
+          </li>
+        </ul>
+      </div>,
+      document.body
+    );
 
   return (
     <>
@@ -40,15 +142,24 @@ const Header = ({ onSearch }) => {
       <nav>
         <div className="w-full px-4 sm:px-6 lg:px-8 py-4 overflow-x-hidden">
           <div className="w-full flex flex-col md:flex-row md:items-center md:justify-between gap-4 flex-wrap">
-
             {/* Left: Logo + Nav */}
             <div className="flex flex-col md:flex-row md:items-center md:space-x-8">
-              <a href="/" className="text-2xl font-bold text-gray-900 mb-1 md:mb-0">JobFinder.</a>
+              <a href="/" className="text-2xl font-bold text-gray-900 mb-1 md:mb-0">
+                JobFinder.
+              </a>
               <ul className="flex space-x-4 text-lg text-black font-medium">
-                <li><a href="/trends" className="hover:text-blue-600">Trends</a></li>
-                <li><a href="#" className="hover:text-blue-600">Directory</a></li>
-                <li><a href="/industry" className="hover:text-blue-600">Industry</a></li>
-                <li><a href="#" className="hover:text-blue-600">Chatbot</a></li>
+                <li>
+                  <a href="/trends" className="hover:text-blue-600">Trends</a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-blue-600">Directory</a>
+                </li>
+                <li>
+                  <a href="/industry" className="hover:text-blue-600">Industry</a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-blue-600">Chatbot</a>
+                </li>
               </ul>
             </div>
 
@@ -74,29 +185,28 @@ const Header = ({ onSearch }) => {
               )}
             </div>
 
-            {/* Right: Auth Buttons */}
-            <div className="flex items-center space-x-3">
+            {/* Right: Auth Buttons or Profile */}
+            <div
+              className="flex items-center space-x-3 relative"
+              ref={dropdownAnchorRef}
+              onMouseEnter={() => {
+                if (dropdownTimer.current) clearTimeout(dropdownTimer.current);
+                setShowDropdown(true);
+              }}
+              onMouseLeave={() => {
+                dropdownTimer.current = setTimeout(() => {
+                  setShowDropdown(false);
+                }, 300);
+              }}
+            >
               {user ? (
                 <>
-                  <a href="/UserProfile">
-                    {user.photo ? (
-                      <img
-                        src={`/uploads/${user.photo}`}
-                        alt="Profile"
-                        className="w-9 h-9 rounded-full object-cover border border-gray-300"
-                      />
-                    ) : (
-                      <div className="w-9 h-9 bg-gray-200 rounded-full flex items-center justify-center font-semibold text-gray-700">
-                        {user.email?.[0]?.toUpperCase() || "U"}
-                      </div>
-                    )}
-                  </a>
-                  <button
-                    onClick={handleLogout}
-                    className="text-sm py-2 px-4 bg-red-600 text-white rounded hover:bg-red-700"
-                  >
-                    Logout
-                  </button>
+                  <img
+                    src={user.photo ? `/uploads/${user.photo}` : "/default-avatar.png"}
+                    alt="Profile"
+                    className="w-10 h-10 rounded-full object-cover cursor-pointer border-2 border-gray-300"
+                  />
+                  {showDropdown && renderDropdown()}
                 </>
               ) : (
                 <>
@@ -107,7 +217,6 @@ const Header = ({ onSearch }) => {
                   >
                     Sign Up
                   </button>
-
                   <button
                     data-open-login
                     onClick={() => setShowLoginModal(true)}
@@ -123,8 +232,12 @@ const Header = ({ onSearch }) => {
       </nav>
 
       {/* Modals */}
-      {showSignupModal && <SignupModal onClose={() => setShowSignupModal(false)} />}
-      {showLoginModal && <LoginModal onClose={() => setShowLoginModal(false)} />}
+      {showSignupModal && (
+        <SignupModal onClose={() => setShowSignupModal(false)} />
+      )}
+      {showLoginModal && (
+        <LoginModal onClose={() => setShowLoginModal(false)} />
+      )}
     </>
   );
 };
