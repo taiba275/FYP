@@ -97,6 +97,8 @@ export default function SignupModal({ onClose }) {
       if (meData.authenticated) setUser(meData.user);
 
       onClose();
+      router.push("/UserProfile");
+
     } catch (err) {
       setError(err.message || "OTP verification failed");
     }

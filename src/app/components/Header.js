@@ -1,32 +1,37 @@
 "use client";
 
+import React, { useState, useEffect, useRef } from "react";
 import LoginModal from "./LoginModal";
 import SignupModal from "./SignupModel";
-import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { FaSearch } from "react-icons/fa";
 import { useAuth } from "../context/AuthContext";
+import { useUI } from "../context/UIContext";
 
-const Header = ({ onSearch }) => {
-  const [showLoginModal, setShowLoginModal] = useState(false);
-  const [showSignupModal, setShowSignupModal] = useState(false);
-  const [inputValue, setInputValue] = useState("");
+const Header = () => {
+  const {
+    showLoginModal,
+    setShowLoginModal,
+    showSignupModal,
+    setShowSignupModal,
+    searchTerm,
+    setSearchTerm,
+  } = useUI();
+
   const [showDropdown, setShowDropdown] = useState(false);
-  const dropdownTimer = useRef(null);
   const dropdownRef = useRef(null);
-
   const { user, setUser } = useAuth();
   const router = useRouter();
 
-  // Debounced search
+  // Debounced search effect
   useEffect(() => {
     const handler = setTimeout(() => {
-      if (onSearch) onSearch(inputValue);
+      // You can trigger API search here if needed
     }, 300);
     return () => clearTimeout(handler);
-  }, [inputValue, onSearch]);
+  }, [searchTerm]);
 
-  // Fetch user on mount
+  // Fetch user session
   useEffect(() => {
     const fetchUser = async () => {
       try {
@@ -68,7 +73,6 @@ const Header = ({ onSearch }) => {
       });
 
       const data = await res.json();
-
       if (!data.authenticated) {
         setUser(null);
         router.push("/");
@@ -84,7 +88,6 @@ const Header = ({ onSearch }) => {
 
   return (
     <>
-      {/* Header */}
       <nav>
         <div className="w-full px-4 sm:px-6 lg:px-8 py-4 overflow-x-hidden">
           <div className="w-full flex flex-col md:flex-row md:items-center md:justify-between gap-4 flex-wrap">
@@ -109,13 +112,13 @@ const Header = ({ onSearch }) => {
               <input
                 type="text"
                 placeholder="Search by Jobs"
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full py-2 pl-10 pr-4 rounded-md bg-[#ededed] text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
-              {inputValue && (
+              {searchTerm && (
                 <button
-                  onClick={() => setInputValue("")}
+                  onClick={() => setSearchTerm("")}
                   className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 font-bold"
                 >
                   ×
@@ -124,20 +127,18 @@ const Header = ({ onSearch }) => {
             </div>
 
             {/* Right: Auth Buttons or Profile */}
-            <div className="relative">
+            <div className="relative" ref={dropdownRef}>
               {user ? (
                 <div className="relative">
-                  {/* Avatar button */}
                   <div
                     onClick={() => setShowDropdown((prev) => !prev)}
                     className="w-10 h-10 rounded-full bg-gray-800 text-white flex items-center justify-center font-semibold text-lg cursor-pointer border-2 border-gray-300"
                   >
-                    {user?.username?.trim()?.charAt(0)?.toUpperCase()
-                      || user?.email?.charAt(0)?.toUpperCase()
-                      || "U"}
+                    {user?.username?.trim()?.charAt(0)?.toUpperCase() ||
+                      user?.email?.charAt(0)?.toUpperCase() ||
+                      "U"}
                   </div>
-                    
-                  {/* Dropdown */}
+
                   {showDropdown && (
                     <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50">
                       <div className="px-4 py-3 text-sm text-gray-900 font-semibold border-b">
@@ -208,7 +209,6 @@ const Header = ({ onSearch }) => {
                 </div>
               )}
             </div>
-
           </div>
         </div>
       </nav>

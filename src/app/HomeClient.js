@@ -5,15 +5,24 @@ import Hero from "./components/Home/Hero";
 import Posts from "./components/Home/Posts";
 import ScrollToTop from "./components/Home/ScrollToTop";
 import Filter from "./components/Home/Filter";
-import Header from "./components/Header";
 import LoginModal from "./components/LoginModal";
 import SignupModal from "./components/SignupModel";
 import { useAuth } from "./context/AuthContext";
-import './globals.css';
+import { useUI } from "./context/UIContext";
+import "./globals.css";
 
 export default function HomeClient({ initialJobs, initialCategory = "" }) {
   const [viewMode, setViewMode] = useState("grid");
-  const [searchTerm, setSearchTerm] = useState("");
+
+  const {
+    searchTerm,
+    setSearchTerm,
+    showLoginModal,
+    showSignupModal,
+    setShowLoginModal,
+    setShowSignupModal,
+  } = useUI();
+
   const [filters, setFilters] = useState({
     category: initialCategory,
     type: "",
@@ -28,12 +37,9 @@ export default function HomeClient({ initialJobs, initialCategory = "" }) {
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
 
-  const [showLogin, setShowLogin] = useState(false);
-  const [showSignup, setShowSignup] = useState(false);
+  const { user } = useAuth();
 
-  const { user } = useAuth(); // Just to trigger re-renders on login/logout
-
-  const isDefaultFilters = Object.values(filters).every(value => value === "");
+  const isDefaultFilters = Object.values(filters).every((value) => value === "");
   const isSearchEmpty = searchTerm.trim() === "";
   const showHeroTop = isDefaultFilters && isSearchEmpty;
 
@@ -62,7 +68,7 @@ export default function HomeClient({ initialJobs, initialCategory = "" }) {
           setJobs(data.jobs);
         } else {
           const existingIds = new Set(jobs.map((job) => job._id));
-          const newJobs = data.filter((job) => !existingIds.has(job._id));
+          const newJobs = data.jobs.filter((job) => !existingIds.has(job._id));
           setJobs((prev) => [...prev, ...newJobs]);
         }
 
@@ -81,16 +87,14 @@ export default function HomeClient({ initialJobs, initialCategory = "" }) {
 
   return (
     <div>
-      <Header
-        onSearch={setSearchTerm}
-        onLoginClick={() => setShowLogin(true)}
-        onSignupClick={() => setShowSignup(true)}
-      />
-
       <Filter onFilterChange={setFilters} initialCategory={initialCategory} />
-      <Hero setViewMode={setViewMode} showTop={showHeroTop} /> {/* Pass setViewMode to Hero */}
+      <Hero setViewMode={setViewMode} showTop={showHeroTop} />
 
-      <div className={`transition-all duration-500 ease-in-out ${showHeroTop ? 'mt-12' : 'mt-4'}`}>
+      <div
+        className={`transition-all duration-500 ease-in-out ${
+          showHeroTop ? "mt-12" : "mt-4"
+        }`}
+      >
         {loading && page === 1 ? (
           <div className="w-full h-[50vh] flex flex-col justify-center items-center bg-white">
             <div className="custom-loader wrapper scale-[1.4] mb-6">
@@ -98,17 +102,25 @@ export default function HomeClient({ initialJobs, initialCategory = "" }) {
               <div className="circle"></div>
               <div className="circle"></div>
             </div>
-            <p className="text-gray-700 text-xl font-semibold mb-1">Loading Jobs list for You…</p>
-            <p className="text-gray-500 text-base">Please wait while we fetch the perfect matches</p>
+            <p className="text-gray-700 text-xl font-semibold mb-1">
+              Loading Jobs list for You…
+            </p>
+            <p className="text-gray-500 text-base">
+              Please wait while we fetch the perfect matches
+            </p>
           </div>
         ) : jobs.length === 0 ? (
           <div className="w-full h-[50vh] flex flex-col justify-center items-center bg-white">
-            <p className="text-gray-800 text-xl font-semibold mb-2">No matching jobs found</p>
-            <p className="text-gray-500 text-base">Try adjusting your filters or search keywords</p>
+            <p className="text-gray-800 text-xl font-semibold mb-2">
+              No matching jobs found
+            </p>
+            <p className="text-gray-500 text-base">
+              Try adjusting your filters or search keywords
+            </p>
           </div>
         ) : (
-          <Posts jobs={jobs} viewMode={viewMode} setViewMode={setViewMode} /> 
-)}
+          <Posts jobs={jobs} viewMode={viewMode} setViewMode={setViewMode} />
+        )}
 
         {hasMore && !loading && (
           <button
@@ -122,8 +134,8 @@ export default function HomeClient({ initialJobs, initialCategory = "" }) {
 
       <ScrollToTop />
 
-      {showLogin && <LoginModal onClose={() => setShowLogin(false)} />}
-      {showSignup && <SignupModal onClose={() => setShowSignup(false)} />}
+      {showLoginModal && <LoginModal onClose={() => setShowLoginModal(false)} />}
+      {showSignupModal && <SignupModal onClose={() => setShowSignupModal(false)} />}
     </div>
   );
 }
