@@ -17,9 +17,11 @@ export default function SignupModal({ onClose }) {
   const [subscribe, setSubscribe] = useState(false);
   const [error, setError] = useState("");
 
-  const { setUser } = useAuth(); // Get setUser from context
+  const [showOtp, setShowOtp] = useState(false);
+  const [otp, setOtp] = useState("");
 
-  // ESC key to close
+  const { setUser } = useAuth();
+
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === "Escape") onClose();
@@ -28,7 +30,6 @@ export default function SignupModal({ onClose }) {
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [onClose]);
 
-  // Click outside to close
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (modalRef.current && !modalRef.current.contains(e.target)) onClose();
@@ -69,24 +70,35 @@ export default function SignupModal({ onClose }) {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Something went wrong");
 
-      // Auto-login after signup
-      const loginRes = await fetch("/api/auth/login", {
+      // ✅ Show OTP input
+      setShowOtp(true);
+    } catch (err) {
+      setError(err.message || "Failed to sign up");
+    }
+  };
+
+  const handleOtpVerify = async () => {
+    setError("");
+
+    try {
+      const res = await fetch("/api/auth/verify-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, otp }),
       });
 
-      if (!loginRes.ok) throw new Error("Login failed after signup");
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "OTP verification failed");
 
-      // Fetch user info and set in context
+      // ✅ Fetch user and close modal
       const me = await fetch("/api/auth/me");
       const meData = await me.json();
       if (meData.authenticated) setUser(meData.user);
 
       onClose();
     } catch (err) {
-      setError(err.message || "Failed to sign up");
+      setError(err.message || "OTP verification failed");
     }
   };
 
@@ -97,7 +109,7 @@ export default function SignupModal({ onClose }) {
           ref={modalRef}
           className="bg-white w-full max-w-6xl h-[90vh] rounded-xl shadow-xl flex relative overflow-hidden"
         >
-          {/* Left panel */}
+          {/* Left Panel */}
           <div className="w-1/2 bg-[#f5f5f5] flex flex-col justify-between px-10 py-6">
             <div>
               <h1 className="text-3xl font-semibold text-gray-900 mb-8">Welcome!</h1>
@@ -132,96 +144,129 @@ export default function SignupModal({ onClose }) {
             </p>
           </div>
 
-          {/* Right panel */}
+          {/* Right Panel */}
           <div className="w-1/2 flex flex-col justify-center items-center px-10 relative">
             <div className="w-full max-w-sm">
-              <h2 className="text-4xl font-bold text-gray-800 mb-6">Create Account</h2>
-              {error && <p className="text-red-500 text-center mb-4 text-sm">{error}</p>}
+              <h2 className="text-4xl font-bold text-gray-800 mb-6">
+                {showOtp ? "Verify OTP" : "Create Account"}
+              </h2>
 
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <input
-                  type="text"
-                  placeholder="Username"
-                  className="w-full p-3 border-b border-gray-300 focus:outline-none focus:border-black"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  required
-                />
-                <input
-                  type="email"
-                  placeholder="Email"
-                  className="w-full p-3 border-b border-gray-300 focus:outline-none focus:border-black"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-                <div className="grid grid-cols-2 gap-4">
-                  <input
-                    type="password"
-                    placeholder="Password"
-                    className="w-full p-3 border-b border-gray-300 focus:outline-none focus:border-black"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                  />
-                  <input
-                    type="password"
-                    placeholder="Confirm Password"
-                    className="w-full p-3 border-b border-gray-300 focus:outline-none focus:border-black"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    required
-                  />
-                </div>
+              {error && (
+                <p className="text-red-500 text-center mb-4 text-sm">{error}</p>
+              )}
 
-                <div className="text-sm text-gray-600">
-                  <div className="mt-2 flex items-center">
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  showOtp ? handleOtpVerify() : handleSubmit(e);
+                }}
+                className="space-y-4"
+              >
+                {!showOtp && (
+                  <>
                     <input
-                      type="checkbox"
-                      id="subscribe"
-                      className="mr-2"
-                      checked={subscribe}
-                      onChange={() => setSubscribe(!subscribe)}
-                    />
-                    <label htmlFor="subscribe">Please contact me via e-mail</label>
-                  </div>
-                  <div className="mt-2 flex items-center">
-                    <input
-                      type="checkbox"
-                      id="agreeTerms"
-                      className="mr-2"
-                      checked={agreeTerms}
-                      onChange={() => setAgreeTerms(!agreeTerms)}
+                      type="text"
+                      placeholder="Username"
+                      className="w-full p-3 text-black border-b border-gray-300 focus:outline-none focus:border-black"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
                       required
                     />
-                    <label htmlFor="agreeTerms">
-                      I accept the <span className="font-semibold">Terms and Conditions</span>
-                    </label>
-                  </div>
-                </div>
+                    <input
+                      type="email"
+                      placeholder="Email"
+                      className="w-full p-3 text-black border-b border-gray-300 focus:outline-none focus:border-black"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                    />
+                    <div className="grid grid-cols-2 gap-4">
+                      <input
+                        type="password"
+                        placeholder="Password"
+                        className="w-full p-3 text-black border-b border-gray-300 focus:outline-none focus:border-black"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                      />
+                      <input
+                        type="password"
+                        placeholder="Confirm Password"
+                        className="w-full p-3 text-black border-b border-gray-300 focus:outline-none focus:border-black"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        required
+                      />
+                    </div>
+
+                    <div className="text-sm text-gray-600">
+                      <div className="mt-2 flex items-center">
+                        <input
+                          type="checkbox"
+                          id="subscribe"
+                          className="mr-2"
+                          checked={subscribe}
+                          onChange={() => setSubscribe(!subscribe)}
+                        />
+                        <label htmlFor="subscribe">
+                          Please contact me via e-mail
+                        </label>
+                      </div>
+                      <div className="mt-2 flex items-center">
+                        <input
+                          type="checkbox"
+                          id="agreeTerms"
+                          className="mr-2"
+                          checked={agreeTerms}
+                          onChange={() => setAgreeTerms(!agreeTerms)}
+                          required
+                        />
+                        <label htmlFor="agreeTerms">
+                          I accept the{" "}
+                          <span className="font-semibold">
+                            Terms and Conditions
+                          </span>
+                        </label>
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {showOtp && (
+                  <input
+                    type="text"
+                    placeholder="Enter OTP"
+                    className="w-full p-3 text-black border-b border-gray-300 focus:outline-none focus:border-black"
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value)}
+                    required
+                  />
+                )}
 
                 <button
                   type="submit"
                   className="w-full p-3 rounded-lg bg-black text-white font-semibold hover:bg-gray-900 transition-all"
                 >
-                  Sign up
+                  {showOtp ? "Verify OTP & Continue" : "Sign up"}
                 </button>
               </form>
 
-              <div className="mt-6">
-                <p className="text-left text-gray-600 mb-2">Or sign up with</p>
-                <div className="flex space-x-3 justify-center">
-                  <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100">
-                    <FcGoogle className="text-xl" /> Google
-                  </button>
-                  <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100">
-                    <FaFacebookF className="text-blue-600 text-xl" /> Facebook
-                  </button>
-                  <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100">
-                    <FaTwitter className="text-blue-400 text-xl" /> Twitter
-                  </button>
+              {!showOtp && (
+                <div className="mt-6">
+                  <p className="text-left text-gray-600 mb-2">Or sign up with</p>
+                  <div className="flex space-x-3 justify-center">
+                    <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100">
+                      <FcGoogle className="text-xl" /> Google
+                    </button>
+                    <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100">
+                      <FaFacebookF className="text-blue-600 text-xl" /> Facebook
+                    </button>
+                    <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100">
+                      <FaTwitter className="text-blue-400 text-xl" /> Twitter
+                    </button>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
         </div>

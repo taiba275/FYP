@@ -87,11 +87,16 @@ const User = mongoose.models.User || mongoose.model('User',
     //   type: String // optional (profile image filename or URL)
     // },
     otp: {
-      type: String // optional
+      type: String
     },
-    otpExpiry: {
-      type: Date // optional
+    otpExpires: {
+      type: Date
+    },
+    emailVerified: {
+      type: Boolean,
+      default: false
     }
+
   }, { timestamps: true })
 );
 

@@ -74,7 +74,13 @@ export async function GET(req) {
       jobs.sort((a, b) => new Date(a["Posting Date"]) - new Date(b["Posting Date"]));
     }
 
-    return new Response(JSON.stringify(jobs), { status: 200 });
+    const totalJobs = await Job.countDocuments(query);
+
+    return new Response(JSON.stringify({
+      jobs,
+      total: totalJobs
+    }), { status: 200 });
+    
   } catch (error) {
     console.error("❌ Error fetching jobs:", error);
     return new Response(

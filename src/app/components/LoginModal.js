@@ -14,6 +14,8 @@ export default function LoginModal({ onClose }) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
+  const [otp, setOtp] = useState(""); // ✅ new
+  const [stage, setStage] = useState("login"); // login | otp
 
   const { setUser } = useAuth(); // use context
 
@@ -41,6 +43,7 @@ export default function LoginModal({ onClose }) {
     e.preventDefault();
     setError("");
 
+     if (stage === "login") {
     try {
       const response = await fetch("/api/auth/login", {
         method: "POST",
@@ -52,18 +55,40 @@ export default function LoginModal({ onClose }) {
       const data = await response.json();
       if (!response.ok) throw new Error(data.message || "Something went wrong");
 
-      document.cookie = `token=${data.token}; path=/; max-age=604800`;
-
-      // Immediately fetch authenticated user
-      const me = await fetch("/api/auth/me");
-      const meData = await me.json();
-      if (meData.authenticated) setUser(meData.user);
-
-      onClose();
+      setStage("otp"); // ✅ move to OTP input
     } catch (err) {
       setError(err.message || "Failed to login");
     }
-  };
+  } else {
+    // ✅ OTP submission
+    try {
+      const verify = await fetch("/api/auth/verify-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ email, otp }),
+      });
+
+      const data = await verify.json();
+      if (!verify.ok) throw new Error(data.message || "OTP invalid");
+
+      const me = await fetch("/api/auth/me", {
+        credentials: "include",
+        cache: "no-store",
+      });
+      const meData = await me.json();
+
+      if (meData.authenticated) {
+        setUser(meData.user);
+        onClose();
+      } else {
+        throw new Error("Login failed after OTP");
+      }
+    } catch (err) {
+      setError(err.message || "OTP verification failed");
+    }
+  }
+};
 
   return (
     <>
@@ -117,50 +142,76 @@ export default function LoginModal({ onClose }) {
               )}
 
               <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <label className="text-sm text-gray-600">EMAIL OR USERNAME</label>
-                  <input
-                    type="email"
-                    placeholder="Email or Username"
-                    className="w-full p-3 border-b border-gray-300 focus:outline-none focus:border-black"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="text-sm text-gray-600">PASSWORD</label>
-                  <input
-                    type="password"
-                    placeholder="Password"
-                    className="w-full p-3 border-b border-gray-300 focus:outline-none focus:border-black"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                  />
-                </div>
-
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id="rememberMe"
-                    className="mr-2"
-                    checked={rememberMe}
-                    onChange={() => setRememberMe(!rememberMe)}
-                  />
-                  <label htmlFor="rememberMe" className="text-sm text-gray-600">
-                    Keep me logged in
-                  </label>
-                </div>
-
-                <button
-                  type="submit"
-                  className="w-full p-3 rounded-lg bg-black text-white font-semibold hover:bg-gray-900 transition-all"
-                >
-                  Log in now
-                </button>
-              </form>
+              {stage === "login" ? (
+                <>
+                  <div>
+                    <label className="text-sm text-gray-600">EMAIL OR USERNAME</label>
+                    <input
+                      type="email"
+                      placeholder="Email or Username"
+                      className="w-full text-black p-3 border-b border-gray-300 focus:outline-none focus:border-black"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                    />
+                  </div>
+              
+                  <div>
+                    <label className="text-sm text-gray-600">PASSWORD</label>
+                    <input
+                      type="password"
+                      placeholder="Password"
+                      className="w-full p-3 text-black border-b border-gray-300 focus:outline-none focus:border-black"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                    />
+                  </div>
+              
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id="rememberMe"
+                      className="mr-2"
+                      checked={rememberMe}
+                      onChange={() => setRememberMe(!rememberMe)}
+                    />
+                    <label htmlFor="rememberMe" className="text-sm text-gray-600">
+                      Keep me logged in
+                    </label>
+                  </div>
+              
+                  <button
+                    type="submit"
+                    className="w-full p-3 rounded-lg bg-black text-white font-semibold hover:bg-gray-900 transition-all"
+                  >
+                    Log in now
+                  </button>
+                </>
+              ) : (
+                <>
+                  <div>
+                    <label className="text-sm text-gray-600">ENTER OTP</label>
+                    <input
+                      type="text"
+                      placeholder="Enter the 6-digit code"
+                      className="w-full text-black p-3 border-b border-gray-300 focus:outline-none focus:border-black"
+                      value={otp}
+                      onChange={(e) => setOtp(e.target.value)}
+                      required
+                    />
+                  </div>
+              
+                  <button
+                    type="submit"
+                    className="w-full p-3 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-800 transition-all"
+                  >
+                    Verify OTP & Login
+                  </button>
+                </>
+              )}
+            </form>
+            
 
               <p className="text-right text-sm text-gray-600 mt-2">
                 <Link href="/forgot-password" className="hover:underline">

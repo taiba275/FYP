@@ -5,7 +5,6 @@ import SignupModal from "./SignupModel";
 import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { FaSearch } from "react-icons/fa";
-import ReactDOM from "react-dom";
 import { useAuth } from "../context/AuthContext";
 
 const Header = ({ onSearch }) => {
@@ -13,11 +12,11 @@ const Header = ({ onSearch }) => {
   const [showSignupModal, setShowSignupModal] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
-  const dropdownAnchorRef = useRef(null);
-  const router = useRouter();
+  const dropdownTimer = useRef(null);
+  const dropdownRef = useRef(null);
 
   const { user, setUser } = useAuth();
-  const dropdownTimer = useRef(null);
+  const router = useRouter();
 
   // Debounced search
   useEffect(() => {
@@ -45,96 +44,43 @@ const Header = ({ onSearch }) => {
   // Close dropdown on outside click
   useEffect(() => {
     const handleClickOutside = (e) => {
-      if (
-        dropdownAnchorRef.current &&
-        !dropdownAnchorRef.current.contains(e.target)
-      ) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
         setShowDropdown(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-      if (dropdownTimer.current) clearTimeout(dropdownTimer.current);
-    };
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const handleLogout = async () => {
     try {
-      // 1. Logout (expire cookie)
       await fetch("/api/auth/logout", {
         method: "POST",
         credentials: "include",
       });
 
-      // 2. Wait briefly to ensure cookie clears
       await new Promise((resolve) => setTimeout(resolve, 200));
 
-      // 3. Refetch /me with no-cache to confirm logout
       const res = await fetch("/api/auth/me", {
         method: "GET",
         credentials: "include",
-        cache: "no-store", // <--- THIS IS CRITICAL
+        cache: "no-store",
       });
 
       const data = await res.json();
 
       if (!data.authenticated) {
         setUser(null);
-        router.push("/"); // redirect if needed
+        router.push("/");
+        window.location.reload();
       } else {
-        console.warn("Still authenticated. Forcing logout UI.");
-        setUser(null); // fallback
+        setUser(null);
       }
     } catch (err) {
       console.error("Logout error:", err);
-      setUser(null); // fail-safe
+      setUser(null);
     }
   };
-
-  const renderDropdown = () =>
-    ReactDOM.createPortal(
-      <div
-        className="fixed w-48 mt-2 bg-white border border-gray-200 rounded-lg shadow-md z-[9999]"
-        style={{
-          top:
-            dropdownAnchorRef.current?.getBoundingClientRect().bottom + 8 + "px",
-          left:
-            dropdownAnchorRef.current?.getBoundingClientRect().right -
-            192 + "px",
-        }}
-      >
-        <div className="px-4 py-3 text-sm text-gray-900 font-semibold border-b">
-          {user?.username || user?.email}
-        </div>
-        <ul className="text-sm text-gray-700">
-          <li>
-            <a href="/UserProfile" className="block px-4 py-2 hover:bg-gray-100">
-              Profile
-            </a>
-          </li>
-          <li>
-            <a href="/dashboard" className="block px-4 py-2 hover:bg-gray-100">
-              Dashboard
-            </a>
-          </li>
-          <li>
-            <a href="/notifications" className="block px-4 py-2 hover:bg-gray-100">
-              Favorites
-            </a>
-          </li>
-          <li>
-            <button
-              onClick={handleLogout}
-              className="w-full text-left px-4 py-2 hover:bg-gray-100 text-red-600"
-            >
-              Logout
-            </button>
-          </li>
-        </ul>
-      </div>,
-      document.body
-    );
 
   return (
     <>
@@ -148,18 +94,10 @@ const Header = ({ onSearch }) => {
                 JobFinder.
               </a>
               <ul className="flex space-x-4 text-lg text-black font-medium">
-                <li>
-                  <a href="/trends" className="hover:text-blue-600">Trends</a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-blue-600">Directory</a>
-                </li>
-                <li>
-                  <a href="/industry" className="hover:text-blue-600">Industry</a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-blue-600">Chatbot</a>
-                </li>
+                <li><a href="/trends" className="hover:text-blue-600">Trends</a></li>
+                <li><a href="#" className="hover:text-blue-600">Directory</a></li>
+                <li><a href="/industry" className="hover:text-blue-600">Industry</a></li>
+                <li><a href="#" className="hover:text-blue-600">Chatbot</a></li>
               </ul>
             </div>
 
@@ -186,30 +124,73 @@ const Header = ({ onSearch }) => {
             </div>
 
             {/* Right: Auth Buttons or Profile */}
-            <div
-              className="flex items-center space-x-3 relative"
-              ref={dropdownAnchorRef}
-              onMouseEnter={() => {
-                if (dropdownTimer.current) clearTimeout(dropdownTimer.current);
-                setShowDropdown(true);
-              }}
-              onMouseLeave={() => {
-                dropdownTimer.current = setTimeout(() => {
-                  setShowDropdown(false);
-                }, 300);
-              }}
-            >
+            <div className="relative">
               {user ? (
-                <>
-                  <img
-                    src={user.photo ? `/uploads/${user.photo}` : "/default-avatar.png"}
-                    alt="Profile"
-                    className="w-10 h-10 rounded-full object-cover cursor-pointer border-2 border-gray-300"
-                  />
-                  {showDropdown && renderDropdown()}
-                </>
+                <div className="relative">
+                  {/* Avatar button */}
+                  <div
+                    onClick={() => setShowDropdown((prev) => !prev)}
+                    className="w-10 h-10 rounded-full bg-gray-800 text-white flex items-center justify-center font-semibold text-lg cursor-pointer border-2 border-gray-300"
+                  >
+                    {user?.username?.trim()?.charAt(0)?.toUpperCase()
+                      || user?.email?.charAt(0)?.toUpperCase()
+                      || "U"}
+                  </div>
+                    
+                  {/* Dropdown */}
+                  {showDropdown && (
+                    <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50">
+                      <div className="px-4 py-3 text-sm text-gray-900 font-semibold border-b">
+                        {user?.username || user?.email}
+                      </div>
+                      <ul className="text-sm text-gray-700">
+                        <li>
+                          <button
+                            onClick={() => {
+                              setShowDropdown(false);
+                              router.push("/UserProfile");
+                            }}
+                            className="w-full text-left px-4 py-2 hover:bg-gray-100"
+                          >
+                            Profile
+                          </button>
+                        </li>
+                        <li>
+                          <button
+                            onClick={() => {
+                              setShowDropdown(false);
+                              router.push("/dashboard");
+                            }}
+                            className="w-full text-left px-4 py-2 hover:bg-gray-100"
+                          >
+                            Dashboard
+                          </button>
+                        </li>
+                        <li>
+                          <button
+                            onClick={() => {
+                              setShowDropdown(false);
+                              router.push("/notifications");
+                            }}
+                            className="w-full text-left px-4 py-2 hover:bg-gray-100"
+                          >
+                            Favorites
+                          </button>
+                        </li>
+                        <li>
+                          <button
+                            onClick={handleLogout}
+                            className="w-full text-left px-4 py-2 hover:bg-gray-100 text-red-600"
+                          >
+                            Logout
+                          </button>
+                        </li>
+                      </ul>
+                    </div>
+                  )}
+                </div>
               ) : (
-                <>
+                <div className="flex space-x-3">
                   <button
                     data-open-signup
                     onClick={() => setShowSignupModal(true)}
@@ -224,20 +205,17 @@ const Header = ({ onSearch }) => {
                   >
                     Log In
                   </button>
-                </>
+                </div>
               )}
             </div>
+
           </div>
         </div>
       </nav>
 
       {/* Modals */}
-      {showSignupModal && (
-        <SignupModal onClose={() => setShowSignupModal(false)} />
-      )}
-      {showLoginModal && (
-        <LoginModal onClose={() => setShowLoginModal(false)} />
-      )}
+      {showSignupModal && <SignupModal onClose={() => setShowSignupModal(false)} />}
+      {showLoginModal && <LoginModal onClose={() => setShowLoginModal(false)} />}
     </>
   );
 };

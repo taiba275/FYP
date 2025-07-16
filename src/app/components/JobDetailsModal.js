@@ -80,10 +80,22 @@ export default function JobDetailsModal({ job, onClose }) {
                         <strong>💰 Salary:</strong> {job.Salary || "Not mentioned"}
                     </p>
 
-                    <p className="text-gray-800 text-lg leading-relaxed whitespace-pre-line">
-                       <strong className="text-2xl">Job Description</strong><br /> {capitalizeSentences(job.Description)}
+                   <p className="text-gray-800 text-lg leading-relaxed whitespace-pre-line">
+                      <strong className="text-2xl">Job Description</strong><br /> 
+                      {capitalizeSentences(job.Description)}
                     </p>
 
+                    {job.Skills && (
+                      <div className="mt-6">
+                        <strong className="text-lg text-gray-800">Required Skills:</strong>
+                        <ul className="list-disc list-inside mt-2 text-gray-700">
+                          {job.Skills.split(",").map((skill, index) => (
+                            <li key={index}>{skill.trim()}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    
                     <div className="mt-6 flex flex-wrap gap-3 justify-end items-center">
                         {/* Share Job */}
                         <button
@@ -115,13 +127,14 @@ export default function JobDetailsModal({ job, onClose }) {
 
                         {/* Apply Now */}
                         <a
-                            href={job["Job Location"] || "#"}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="bg-gray-900 text-white px-6 py-2 rounded-md text-lg font-medium hover:bg-gray-800 transition"
+                          href={job["Job URL"] || "#"}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="bg-gray-900 text-white px-6 py-2 rounded-md text-lg font-medium hover:bg-gray-800 transition"
                         >
-                            Apply
+                          Apply Now
                         </a>
+                                                
                     </div>
                 </div>
             </div>

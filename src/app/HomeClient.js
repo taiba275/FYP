@@ -59,14 +59,14 @@ export default function HomeClient({ initialJobs, initialCategory = "" }) {
         const data = await res.json();
 
         if (page === 1) {
-          setJobs(data);
+          setJobs(data.jobs);
         } else {
           const existingIds = new Set(jobs.map((job) => job._id));
           const newJobs = data.filter((job) => !existingIds.has(job._id));
           setJobs((prev) => [...prev, ...newJobs]);
         }
 
-        setHasMore(data.length === 20);
+        setHasMore(data.jobs.length > 0 && jobs.length + data.jobs.length < data.total);
       } catch (error) {
         console.error(error);
         if (page === 1) setJobs([]);

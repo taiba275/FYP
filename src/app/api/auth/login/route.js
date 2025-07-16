@@ -2,18 +2,15 @@ import { connectDB } from '../../../../library/mongodb';
 import User from '../../../models/User';
 import bcrypt from 'bcryptjs';
 import { NextResponse } from 'next/server';
-import jwt from 'jsonwebtoken';
-
-const SECRET = process.env.JWT_SECRET || 'your-secret';
+import nodemailer from 'nodemailer';
 
 export async function POST(request) {
   try {
     // Connect to the DB
     await connectDB();
-    
+
     const { email, password } = await request.json();
 
-    // Trim spaces from email and password to avoid issues
     const trimmedEmail = email.trim().toLowerCase();
     const trimmedPassword = password.trim();
 
@@ -26,7 +23,7 @@ export async function POST(request) {
       );
     }
 
-    // Check if the password matches
+    // Match password
     const isMatch = await bcrypt.compare(trimmedPassword, user.password);
     if (!isMatch) {
       return NextResponse.json(
@@ -35,25 +32,43 @@ export async function POST(request) {
       );
     }
 
-    // Create JWT token with userId and email
-    const token = jwt.sign({ userId: user._id, email: user.email }, SECRET, { expiresIn: '7d' });
+    // Check email verified
+    if (!user.emailVerified) {
+      return NextResponse.json(
+        { success: false, message: 'Please verify your email before logging in.' },
+        { status: 403 }
+      );
+    }
 
-    // Create response and set the token in a cookie
-    const response = NextResponse.json(
-      { success: true, message: 'Login successful' },
+    // Generate new OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 min expiry
+
+    user.otp = otp;
+    user.otpExpires = otpExpires;
+    await user.save();
+
+    // Send OTP email
+    const transporter = nodemailer.createTransport({
+      service: 'Gmail',
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+
+    await transporter.sendMail({
+      from: '"Job Portal" <no-reply@yourdomain.com>',
+      to: trimmedEmail,
+      subject: 'Your Login OTP',
+      html: `<h2>Your OTP is: ${otp}</h2><p>This OTP expires in 10 minutes.</p>`,
+    });
+
+    return NextResponse.json(
+      { success: true, message: 'OTP sent to your email. Please verify to complete login.' },
       { status: 200 }
     );
 
-    // Setting the token in the cookie with HTTPOnly, Secure, SameSite, and expiration time
-    response.cookies.set("token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',  // Set to true in production for HTTPS
-      sameSite: 'lax',  // Can be changed depending on cross-origin requirements
-      path: "/",
-      maxAge: 60 * 60 * 24 * 7 // Cookie expires in 7 days
-    });
-
-    return response;
   } catch (error) {
     console.error('Login error:', error);
     return NextResponse.json(

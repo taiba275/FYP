@@ -3,6 +3,7 @@ import User from '../../../models/User';
 import bcrypt from 'bcryptjs';
 import { NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
+import nodemailer from 'nodemailer';
 
 const SECRET = process.env.JWT_SECRET || 'your-secret';
 
@@ -11,55 +12,48 @@ export async function POST(request) {
     await connectDB();
     const { email, password, username } = await request.json();
 
-    // Check if the user already exists
     const existingUser = await User.findOne({ email: email.toLowerCase() });
     if (existingUser) {
-      return NextResponse.json(
-        { success: false, message: 'Email already in use.' },
-        { status: 409 }
-      );
+      return NextResponse.json({ success: false, message: 'Email already in use.' }, { status: 409 });
     }
 
-    // Hash password before saving
     const hashedPassword = await bcrypt.hash(password, 10);
-    
-    // Create the new user
+
+    // ✅ Generate OTP and expiry
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 min from now
+
+    // ✅ Save user with OTP
     const user = new User({
       username,
       email: email.toLowerCase(),
       password: hashedPassword,
+      otp,
+      otpExpires,
+      emailVerified: false
     });
 
     await user.save();
 
-    // Create JWT token with username and email
-    const token = jwt.sign(
-      { userId: user._id, email: user.email }, 
-      SECRET, 
-      { expiresIn: '7d' }
-    );
-
-    // Return success response and set the cookie
-    const response = NextResponse.json(
-      { success: true, message: 'User created successfully' },
-      { status: 201 }
-    );
-
-    response.cookies.set("token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',  // Set to true in production for HTTPS
-      sameSite: 'lax',  // Adjust this as needed
-      path: "/",
-      maxAge: 60 * 60 * 24 * 7  // Cookie expires in 7 days
+    // ✅ Send OTP email
+    const transporter = nodemailer.createTransport({
+      service: 'Gmail',
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
     });
 
-    return response;
+    await transporter.sendMail({
+      from: '"Job Portal" <no-reply@yourdomain.com>',
+      to: email,
+      subject: 'Your OTP Code',
+      html: `<h2>Your OTP is: ${otp}</h2><p>This code expires in 10 minutes.</p>`,
+    });
 
+    return NextResponse.json({ success: true, message: 'OTP sent to email' }, { status: 201 });
   } catch (error) {
     console.error('Signup error:', error);
-    return NextResponse.json(
-      { success: false, message: 'Server error', error: error.message },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, message: 'Server error', error: error.message }, { status: 500 });
   }
 }
