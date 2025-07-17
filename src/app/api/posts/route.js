@@ -21,9 +21,9 @@ export async function GET(req) {
     const category = searchParams.get("category") || "";
     const type = searchParams.get("type") || "";
     const city = searchParams.get("city") || "";
-    const salaryOrder = searchParams.get("salaryOrder") || "";
+    const salaryOrder = searchParams.get("salaryOrder")?.toLowerCase() || "";
+    const sortOrder = searchParams.get("sortOrder")?.toLowerCase() || "";
     const experience = searchParams.get("experience") || "";
-    const sortOrder = searchParams.get("sortOrder") || ""; // NEW
     const limit = parseInt(searchParams.get("limit")) || 20;
     const page = parseInt(searchParams.get("page")) || 1;
     
@@ -53,26 +53,55 @@ export async function GET(req) {
     let jobs = await Job.find(query).skip(skip).limit(limit).lean();
 
     // 🔽 Sort by Salary
+    function extractLowerSalary(salaryString) {
+      if (!salaryString) return 0;
+      const match = salaryString.match(/(\d[\d,]*)\s*-\s*(\d[\d,]*)/);
+      if (match) {
+        const lower = match[1].replace(/,/g, "");
+        return parseInt(lower);
+      }
+      return 0;
+    }
+
     if (salaryOrder === "ascending") {
-      jobs.sort(
-        (a, b) =>
-          parseInt(a.Salary.replace(/\D/g, "")) -
-          parseInt(b.Salary.replace(/\D/g, ""))
-      );
+      jobs = jobs
+        .filter(job => extractLowerSalary(job.Salary) > 0)
+        .sort((a, b) => extractLowerSalary(a.Salary) - extractLowerSalary(b.Salary));
     } else if (salaryOrder === "descending") {
-      jobs.sort(
-        (a, b) =>
-          parseInt(b.Salary.replace(/\D/g, "")) -
-          parseInt(a.Salary.replace(/\D/g, ""))
-      );
+      jobs = jobs
+        .filter(job => extractLowerSalary(job.Salary) > 0)
+        .sort((a, b) => extractLowerSalary(b.Salary) - extractLowerSalary(a.Salary));
     }
 
     // 🔽 Sort by Posting Date (NEW)
-    if (sortOrder === "newest") {
-      jobs.sort((a, b) => new Date(b["Posting Date"]) - new Date(a["Posting Date"]));
-    } else if (sortOrder === "oldest") {
-      jobs.sort((a, b) => new Date(a["Posting Date"]) - new Date(b["Posting Date"]));
+    // 🔽 Date parsing helper
+    function parsePostingDate(dateStr) {
+      if (!dateStr) return new Date(0); // Fallback
+      const [day, monStr, year] = dateStr.toLowerCase().split("-");
+      const months = {
+        jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5,
+        jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11
+      };
+      const month = months[monStr];
+      const fullYear = parseInt(year) + 2000; // Assuming all dates are 20xx
+      return new Date(fullYear, month, parseInt(day));
     }
+
+    function isValidDate(d) {
+      return d instanceof Date && !isNaN(d);
+    }
+
+    if (sortOrder === "newest") {
+      jobs = jobs
+        .filter(job => isValidDate(parsePostingDate(job["Posting Date"])))
+        .sort((a, b) => parsePostingDate(b["Posting Date"]) - parsePostingDate(a["Posting Date"]));
+    } else if (sortOrder === "oldest") {
+      jobs = jobs
+        .filter(job => isValidDate(parsePostingDate(job["Posting Date"])))
+        .sort((a, b) => parsePostingDate(a["Posting Date"]) - parsePostingDate(b["Posting Date"]));
+    }
+
+
 
     const totalJobs = await Job.countDocuments(query);
 
