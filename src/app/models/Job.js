@@ -17,13 +17,17 @@ const JobSchema = new mongoose.Schema({
   "Degree Title": String,
   "Career Level": String,
   "Apply Before": String,
-  "Posting Date": Date,
+  "Posting Date": String, // originally was Date but your data uses string format like "12-jun-25"
   Experience: String,
   "Experience Range": String,
   "Job URL": String,
   City: String,
+  Currency: String,
+  "Salary Lower": Number,
+  "Salary Upper": Number,
+  "Formatted Posting Date": String, // format: "12/06/2025"
 }, {
-  collection: 'Combined_Dataset'
+  collection: 'PreprocessedCombinedData'
 });
 
 export default mongoose.models.Job || mongoose.model('Job', JobSchema);

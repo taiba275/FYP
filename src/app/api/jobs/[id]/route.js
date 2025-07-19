@@ -4,8 +4,8 @@ import { NextResponse } from 'next/server';
 
 export async function GET(req, context) {
   try {
-    const { params } = context;
-    const { id } = params;
+    const { params } = await context; // <-- await this
+    const { id } = await params;
 
     if (!id) {
       return NextResponse.json({ message: "Invalid Job ID" }, { status: 400 });

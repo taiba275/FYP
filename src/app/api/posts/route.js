@@ -11,6 +11,11 @@ const experienceMapping = {
   "Not mentioned": []
 };
 
+function parseFormattedDate(ddmmyyyy) {
+  const [day, month, year] = ddmmyyyy.split("/").map(Number);
+  return new Date(year, month - 1, day);
+}
+
 export async function GET(req) {
   try {
     await connectDB();
@@ -52,59 +57,30 @@ export async function GET(req) {
 
     let allJobs = await Job.find(query).lean();
 
-    // Helper functions
-    function extractLowerSalary(salaryString) {
-      if (!salaryString) return 0;
-      const match = salaryString.match(/(\d[\d,]*)\s*-\s*(\d[\d,]*)/);
-      if (match) {
-        const lower = match[1].replace(/,/g, "");
-        return parseInt(lower);
-      }
-      return 0;
-    }
-
-    function parsePostingDate(dateStr) {
-      if (!dateStr) return new Date(0);
-      const [day, monStr, year] = dateStr.toLowerCase().split("-");
-      const months = {
-        jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5,
-        jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11
-      };
-      const month = months[monStr];
-      const fullYear = parseInt(year) + 2000;
-      return new Date(fullYear, month, parseInt(day));
-    }
-
-    function isValidDate(d) {
-      return d instanceof Date && !isNaN(d);
-    }
-
-    let filteredJobs = allJobs;
-
-    // Sort by Salary
+    // Filter out jobs missing Salary Lower when sorting by salary
     if (salaryOrder === "ascending") {
-      filteredJobs = filteredJobs
-        .filter(job => extractLowerSalary(job.Salary) > 0)
-        .sort((a, b) => extractLowerSalary(a.Salary) - extractLowerSalary(b.Salary));
+      allJobs = allJobs
+        .filter(job => typeof job["Salary Lower"] === "number")
+        .sort((a, b) => a["Salary Lower"] - b["Salary Lower"]);
     } else if (salaryOrder === "descending") {
-      filteredJobs = filteredJobs
-        .filter(job => extractLowerSalary(job.Salary) > 0)
-        .sort((a, b) => extractLowerSalary(b.Salary) - extractLowerSalary(a.Salary));
+      allJobs = allJobs
+        .filter(job => typeof job["Salary Lower"] === "number")
+        .sort((a, b) => b["Salary Lower"] - a["Salary Lower"]);
     }
 
-    // Sort by Posting Date
+    // Sort by Formatted Posting Date (dd/mm/yyyy)
     if (sortOrder === "newest") {
-      filteredJobs = filteredJobs
-        .filter(job => isValidDate(parsePostingDate(job["Posting Date"])))
-        .sort((a, b) => parsePostingDate(b["Posting Date"]) - parsePostingDate(a["Posting Date"]));
+      allJobs = allJobs
+        .filter(job => job["Formatted Posting Date"])
+        .sort((a, b) => parseFormattedDate(b["Formatted Posting Date"]) - parseFormattedDate(a["Formatted Posting Date"]));
     } else if (sortOrder === "oldest") {
-      filteredJobs = filteredJobs
-        .filter(job => isValidDate(parsePostingDate(job["Posting Date"])))
-        .sort((a, b) => parsePostingDate(a["Posting Date"]) - parsePostingDate(b["Posting Date"]));
+      allJobs = allJobs
+        .filter(job => job["Formatted Posting Date"])
+        .sort((a, b) => parseFormattedDate(a["Formatted Posting Date"]) - parseFormattedDate(b["Formatted Posting Date"]));
     }
 
-    const totalJobs = filteredJobs.length;
-    const paginatedJobs = filteredJobs.slice(skip, skip + limit);
+    const totalJobs = allJobs.length;
+    const paginatedJobs = allJobs.slice(skip, skip + limit);
 
     return new Response(JSON.stringify({
       jobs: paginatedJobs,

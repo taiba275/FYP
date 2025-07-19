@@ -70,8 +70,8 @@ export default function JobDetailsModal({ job, onClose }) {
                         <strong>🕒 Job Type:</strong> {job["Job Type"]}
                     </p>
                     <p className="text-gray-700 text-lg mb-2">
-                        <strong>📅 Posting Date:</strong>{" "}
-                        {new Date(job["Posting Date"]).toLocaleDateString()}
+                        <strong>📅 Posting Date:</strong>
+                        {job["Formatted Posting Date"]}
                     </p>
                     <p className="text-gray-700 text-lg mb-2">
                         <strong>⏳ Apply Before:</strong> {job["Apply Before"]}
