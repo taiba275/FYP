@@ -11,11 +11,6 @@ const experienceMapping = {
   "Not mentioned": []
 };
 
-function parseFormattedDate(ddmmyyyy) {
-  const [day, month, year] = ddmmyyyy.split("/").map(Number);
-  return new Date(year, month - 1, day);
-}
-
 export async function GET(req) {
   try {
     await connectDB();
@@ -32,6 +27,9 @@ export async function GET(req) {
     const limit = parseInt(searchParams.get("limit")) || 20;
     const page = parseInt(searchParams.get("page")) || 1;
 
+    const skip = (page - 1) * limit;
+
+    // Construct query object
     let query = {};
 
     if (search) {
@@ -53,37 +51,65 @@ export async function GET(req) {
       }
     }
 
-    const skip = (page - 1) * limit;
+    // Aggregation pipeline
+    const pipeline = [
+      { $match: query }
+    ];
 
-    let allJobs = await Job.find(query).lean();
-
-    // Filter out jobs missing Salary Lower when sorting by salary
+    // Salary sort
     if (salaryOrder === "ascending") {
-      allJobs = allJobs
-        .filter(job => typeof job["Salary Lower"] === "number")
-        .sort((a, b) => a["Salary Lower"] - b["Salary Lower"]);
+      pipeline.push({ $match: { salary_lower: { $type: "number" } } });
+      pipeline.push({ $sort: { salary_lower: 1 } });
     } else if (salaryOrder === "descending") {
-      allJobs = allJobs
-        .filter(job => typeof job["Salary Lower"] === "number")
-        .sort((a, b) => b["Salary Lower"] - a["Salary Lower"]);
+      pipeline.push({ $match: { salary_lower: { $type: "number" } } });
+      pipeline.push({ $sort: { salary_lower: -1 } });
     }
 
-    // Sort by Formatted Posting Date (dd/mm/yyyy)
-    if (sortOrder === "newest") {
-      allJobs = allJobs
-        .filter(job => job["Formatted Posting Date"])
-        .sort((a, b) => parseFormattedDate(b["Formatted Posting Date"]) - parseFormattedDate(a["Formatted Posting Date"]));
-    } else if (sortOrder === "oldest") {
-      allJobs = allJobs
-        .filter(job => job["Formatted Posting Date"])
-        .sort((a, b) => parseFormattedDate(a["Formatted Posting Date"]) - parseFormattedDate(b["Formatted Posting Date"]));
-    }
+    // Date sort
+    if (sortOrder === "newest" || sortOrder === "oldest") {
+    pipeline.push({
+      $match: {
+        "Posting Date": { $regex: "^\\d{1,2}/\\d{1,2}/\\d{4}$" }
+      }
+    });
+  
+    pipeline.push({
+      $addFields: {
+        parsedDate: {
+          $dateFromString: {
+            dateString: "$Posting Date",
+            format: "%d/%m/%Y"
+          }
+        }
+      }
+    });
+  
+    pipeline.push({
+      $match: {
+        parsedDate: { $ne: null }
+      }
+    });
+  
+    pipeline.push({
+      $sort: { parsedDate: sortOrder === "newest" ? -1 : 1 }
+    });
+  }
+  
 
-    const totalJobs = allJobs.length;
-    const paginatedJobs = allJobs.slice(skip, skip + limit);
+    // Pagination
+    pipeline.push({ $skip: skip });
+    pipeline.push({ $limit: limit });
+
+    // Get jobs
+    const jobs = await Job.aggregate(pipeline);
+
+    // Get total count
+    const countPipeline = [{ $match: query }, { $count: "count" }];
+    const totalResult = await Job.aggregate(countPipeline);
+    const totalJobs = totalResult[0]?.count || 0;
 
     return new Response(JSON.stringify({
-      jobs: paginatedJobs,
+      jobs,
       total: totalJobs
     }), { status: 200 });
 

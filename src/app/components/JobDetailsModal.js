@@ -71,7 +71,7 @@ export default function JobDetailsModal({ job, onClose }) {
                     </p>
                     <p className="text-gray-700 text-lg mb-2">
                         <strong>📅 Posting Date:</strong>
-                        {job["Formatted Posting Date"]}
+                        {job["Posting Date"]}
                     </p>
                     <p className="text-gray-700 text-lg mb-2">
                         <strong>⏳ Apply Before:</strong> {job["Apply Before"]}

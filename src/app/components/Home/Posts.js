@@ -12,7 +12,9 @@ function capitalizeWords(str = "") {
     .join(" ");
 }
 
-function capitalizeSentences(text = "") {
+function capitalizeSentences(text) {
+  if (!text || typeof text !== "string") return "";
+
   return text
     .split(/([.?!]\s*)/g)
     .map((part, i) =>
@@ -22,6 +24,7 @@ function capitalizeSentences(text = "") {
     )
     .join("");
 }
+
 
 export default function Posts({ jobs = [], viewMode = "grid", setViewMode }) {
   const [selectedJob, setSelectedJob] = useState(null);
