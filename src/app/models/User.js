@@ -92,6 +92,12 @@ const User = mongoose.models.User || mongoose.model('User',
     otpExpires: {
       type: Date
     },
+    resetToken: {
+      type: String,
+    },
+    resetExpires: {
+      type: Date,
+    },
     emailVerified: {
       type: Boolean,
       default: false
