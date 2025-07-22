@@ -18,6 +18,7 @@
     "formidable": "^3.5.4",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.9.5",
+    "natural": "^8.1.0",
     "next": "15.1.5",
     "nodemailer": "^7.0.5",
     "react": "^19.0.0",

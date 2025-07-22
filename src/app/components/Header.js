@@ -100,7 +100,7 @@ const Header = () => {
               </a>
               <ul className="flex space-x-4 text-lg text-black font-medium">
                 <li><a href="/trends" className="hover:text-blue-600">Trends</a></li>
-                <li><a href="#" className="hover:text-blue-600">Directory</a></li>
+                <li><a href="/recommendation" className="hover:text-blue-600">Recommendation</a></li>
                 <li><a href="/industry" className="hover:text-blue-600">Industry</a></li>
                 {/* 🔥 Remove broken /ChatBox link */}
                 <li>
