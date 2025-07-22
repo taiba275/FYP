@@ -22,20 +22,13 @@ export default function SignupModal({ onClose }) {
 
   const { setUser } = useAuth();
 
+  // ESC to close
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === "Escape") onClose();
     };
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [onClose]);
-
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (modalRef.current && !modalRef.current.contains(e.target)) onClose();
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [onClose]);
 
   const handleSubmit = async (e) => {
@@ -70,7 +63,6 @@ export default function SignupModal({ onClose }) {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Something went wrong");
 
-      // ✅ Show OTP input
       setShowOtp(true);
     } catch (err) {
       setError(err.message || "Failed to sign up");
@@ -85,20 +77,18 @@ export default function SignupModal({ onClose }) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ email, otp }),
+        body: JSON.stringify({ email, otp, rememberMe}),
       });
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "OTP verification failed");
 
-      // ✅ Fetch user and close modal
       const me = await fetch("/api/auth/me");
       const meData = await me.json();
       if (meData.authenticated) setUser(meData.user);
 
       onClose();
       router.push("/UserProfile");
-
     } catch (err) {
       setError(err.message || "OTP verification failed");
     }
@@ -106,9 +96,15 @@ export default function SignupModal({ onClose }) {
 
   return (
     <>
-      <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
+      <div
+        className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center"
+        onClick={(e) => {
+          if (e.target === e.currentTarget) onClose();
+        }}
+      >
         <div
           ref={modalRef}
+          onClick={(e) => e.stopPropagation()}
           className="bg-white w-full max-w-6xl h-[90vh] rounded-xl shadow-xl flex relative overflow-hidden"
         >
           {/* Left Panel */}
@@ -273,40 +269,6 @@ export default function SignupModal({ onClose }) {
           </div>
         </div>
       </div>
-
-      {/* Bottom-right close button */}
-      <button
-        style={{
-          position: "fixed",
-          bottom: "30px",
-          right: "30px",
-          cursor: "pointer",
-          background: "#111",
-          color: "#fff",
-          width: "60px",
-          height: "60px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          borderRadius: "12px",
-          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.25)",
-          zIndex: 9999,
-          transition: "opacity 0.3s ease-in-out",
-        }}
-        onClick={onClose}
-        aria-label="Close modal"
-      >
-        <svg
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="white"
-          strokeWidth={2.5}
-          width="26"
-          height="26"
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-        </svg>
-      </button>
     </>
   );
 }

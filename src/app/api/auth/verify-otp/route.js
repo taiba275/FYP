@@ -8,7 +8,7 @@ const SECRET = process.env.JWT_SECRET || 'your-secret';
 export async function POST(req) {
   try {
     await connectDB();
-    const { email, otp } = await req.json();
+    const { email, otp, rememberMe } = await req.json();
 
     const user = await User.findOne({ email: email.toLowerCase() });
 
@@ -16,16 +16,20 @@ export async function POST(req) {
       return NextResponse.json({ success: false, message: 'Invalid or expired OTP' }, { status: 400 });
     }
 
-    // ✅ Mark email verified and clear OTP
+    // Mark email verified
     user.emailVerified = true;
     user.otp = null;
     user.otpExpires = null;
     await user.save();
 
-    // ✅ Create JWT token
-    const token = jwt.sign({ userId: user._id, email: user.email }, SECRET, { expiresIn: '7d' });
+    // Create JWT token
+    const token = jwt.sign(
+      { userId: user._id, email: user.email },
+      SECRET,
+      { expiresIn: rememberMe ? '30d' : '1h' }
+    );
 
-    // ✅ Set cookie with token
+    // Set cookie
     const response = NextResponse.json({ success: true, message: 'Email verified successfully' });
 
     response.cookies.set('token', token, {
@@ -33,7 +37,7 @@ export async function POST(req) {
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       path: '/',
-      maxAge: 60 * 60 * 24 * 7, // 7 days
+      maxAge: rememberMe ? 60 * 60 * 24 * 30 : 60 * 60,
     });
 
     return response;

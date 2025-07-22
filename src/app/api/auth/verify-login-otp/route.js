@@ -9,7 +9,7 @@ export async function POST(req) {
   try {
     await connectDB();
 
-    const { email, otp } = await req.json();
+    const { email, otp, rememberMe } = await req.json();
     const trimmedEmail = email.trim().toLowerCase();
 
     const user = await User.findOne({ email: trimmedEmail });
@@ -31,14 +31,14 @@ export async function POST(req) {
     user.otpExpires = null;
     await user.save();
 
-    // ✅ Create JWT token
+    // Create JWT token
     const token = jwt.sign(
       { userId: user._id, email: user.email },
       SECRET,
-      { expiresIn: '7d' }
+      { expiresIn: rememberMe ? '30d' : '1h' }
     );
 
-    // ✅ Set token cookie
+    // Set cookie
     const response = NextResponse.json(
       { success: true, message: 'Login successful' },
       { status: 200 }
@@ -49,7 +49,7 @@ export async function POST(req) {
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       path: '/',
-      maxAge: 60 * 60 * 24 * 7, // 7 days
+      maxAge: rememberMe ? 60 * 60 * 24 * 30 : 60 * 60, // 30d vs 1h
     });
 
     return response;
