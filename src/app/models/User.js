@@ -32,9 +32,11 @@ const User = mongoose.models.User || mongoose.model('User',
       }
     },
     password: {
-      type: String,
-      required: [true, 'Password is required'],
-      minlength: [6, 'Password must be at least 6 characters long']
+     type: String,
+     required: function () {
+       return this.provider === "local";
+     },
+     minlength: [6, 'Password must be at least 6 characters long']
     },
     fullname: {
       type: String,
@@ -51,6 +53,15 @@ const User = mongoose.models.User || mongoose.model('User',
     phone: {
       type: String,
       required: [false, 'Phone number is required']  // Make phone optional at signup
+    },
+    photo: {
+      type: String,
+      required: false
+    },
+    provider: {
+      type: String,
+      enum: ["local", "google", "facebook"],
+      default: "local"
     },
     education: {
       type: [educationSchema],

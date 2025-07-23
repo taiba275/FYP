@@ -5,6 +5,8 @@ import { FcGoogle } from "react-icons/fc";
 import { FaFacebookF, FaTwitter } from "react-icons/fa";
 import Image from "next/image";
 import { useAuth } from "../context/AuthContext";
+import { signInWithPopup } from "firebase/auth";
+import { auth, googleProvider, facebookProvider } from "../../library/firebase"; // Adjust the import path as necessary
 
 export default function SignupModal({ onClose }) {
   const router = useRouter();
@@ -21,6 +23,83 @@ export default function SignupModal({ onClose }) {
   const [otp, setOtp] = useState("");
 
   const { setUser } = useAuth();
+
+  const handleGoogleLogin = async () => {
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      const user = result.user;
+      const token = await user.getIdToken(); // ✅ now user is defined
+
+      const res = await fetch("/api/auth/google", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include", // allow setting cookie from backend
+        body: JSON.stringify({ token }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setUser(data.user); // Save user to context
+        if (data.isNewUser) {
+          router.push("/UserProfile");
+        } else {
+          router.push("/");
+        }
+        onClose();
+      } else {
+        const data = await res.json();
+        setError(data.message || "Google login failed");
+      }
+    } catch (err) {
+      console.error("Google login error:", err);
+      if (err.code === "auth/popup-closed-by-user") {
+        setError("Google sign-in popup was closed before completing login.");
+      } else {
+        setError("Google sign-in failed");
+      }
+    }
+  };
+
+  const handleFacebookLogin = async () => {
+    try {
+      const result = await signInWithPopup(auth, facebookProvider);
+      const user = result.user;
+      const token = await user.getIdToken();
+
+      const res = await fetch("/api/auth/facebook", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({ token }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        setError(data.message || "Facebook login failed");
+        return;
+      }
+
+      const data = await res.json();
+      setUser(data.user);
+      if (data.isNewUser) {
+        router.push("/UserProfile");
+      } else {
+        router.push("/");
+      }
+      onClose();
+    } catch (err) {
+      console.error("Facebook login error:", err);
+      if (err.code === "auth/popup-closed-by-user") {
+        setError("Facebook sign-in popup was closed before completing login.");
+      } else {
+        setError("Facebook sign-in failed");
+      }
+    }
+  };
 
   // ESC to close
   useEffect(() => {
@@ -77,7 +156,7 @@ export default function SignupModal({ onClose }) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ email, otp, rememberMe}),
+        body: JSON.stringify({ email, otp, rememberMe }),
       });
 
       const data = await res.json();
@@ -110,11 +189,15 @@ export default function SignupModal({ onClose }) {
           {/* Left Panel */}
           <div className="w-1/2 bg-[#f5f5f5] flex flex-col justify-between px-10 py-6">
             <div>
-              <h1 className="text-3xl font-semibold text-gray-900 mb-8">Welcome!</h1>
+              <h1 className="text-3xl font-semibold text-gray-900 mb-8">
+                Welcome!
+              </h1>
             </div>
             <div className="flex justify-center items-center flex-grow">
               <div className="flex items-center space-x-6">
-                <div className="text-[200px] font-bold text-gray-900 min-w-max">J.</div>
+                <div className="text-[200px] font-bold text-gray-900 min-w-max">
+                  J.
+                </div>
                 <div className="w-64 h-64 mb-30 flex items-center justify-center">
                   <Image
                     src="/Images/smile.svg"
@@ -132,7 +215,8 @@ export default function SignupModal({ onClose }) {
                 onClick={() => {
                   onClose();
                   setTimeout(() => {
-                    const loginBtn = document.querySelector("[data-open-login]");
+                    const loginBtn =
+                      document.querySelector("[data-open-login]");
                     loginBtn?.click();
                   }, 300);
                 }}
@@ -251,17 +335,25 @@ export default function SignupModal({ onClose }) {
 
               {!showOtp && (
                 <div className="mt-6">
-                  <p className="text-left text-gray-600 mb-2">Or sign up with</p>
+                  <p className="text-left text-gray-600 mb-2">
+                    Or sign up with
+                  </p>
                   <div className="flex space-x-3 justify-center">
-                    <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100">
+                    <button
+                      onClick={handleGoogleLogin}
+                      className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100"
+                    >
                       <FcGoogle className="text-xl" /> Google
                     </button>
-                    <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100">
+                    <button
+                      onClick={handleFacebookLogin}
+                      className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100"
+                    >
                       <FaFacebookF className="text-blue-600 text-xl" /> Facebook
                     </button>
-                    <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100">
+                    {/* <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100">
                       <FaTwitter className="text-blue-400 text-xl" /> Twitter
-                    </button>
+                    </button>  */}
                   </div>
                 </div>
               )}
