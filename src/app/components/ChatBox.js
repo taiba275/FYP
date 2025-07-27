@@ -42,14 +42,14 @@ export default function ChatBox() {
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault(); // prevent new line
+      e.preventDefault();
       sendMessage();
     }
   };
 
   return (
-    <div className="flex flex-col h-full text-black-200">
-      <div className="text-black flex-1 overflow-y-auto p-3 border rounded bg-gray-50 text-sm whitespace-pre-wrap">
+    <div className="flex flex-col h-full w-full overflow-x-hidden text-black">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden p-3 border rounded bg-gray-50 text-sm whitespace-pre-wrap">
         {messages.slice(1).map((msg, i) => (
           <div
             key={i}
@@ -57,7 +57,7 @@ export default function ChatBox() {
               msg.role === 'user' ? 'text-right text-blue-600' : 'text-left text-gray-800'
             }`}
           >
-            <p className="whitespace-pre-wrap">
+            <p className="break-words">
               <strong>{msg.role === 'user' ? 'You' : 'Bot'}:</strong> {msg.content}
             </p>
           </div>
@@ -66,15 +66,15 @@ export default function ChatBox() {
       </div>
 
       {lastMatchedJob && (
-        <div className="mt-2 text-sm text-gray-600 bg-yellow-100 px-3 py-1 rounded">
+        <div className="mt-2 text-sm text-gray-600 bg-yellow-100 px-3 py-1 rounded break-words">
           🎯 Talking about: <strong>{lastMatchedJob.title}</strong> at {lastMatchedJob.company}
         </div>
       )}
 
-      <div className="flex mt-2 text-black">
+      <div className="flex mt-2 w-full">
         <textarea
           rows={2}
-          className="text-black flex-1 border rounded-l px-3 py-2 text-sm focus:outline-none resize-none"
+          className="flex-1 border rounded-l px-3 py-2 text-sm focus:outline-none resize-none break-words"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
