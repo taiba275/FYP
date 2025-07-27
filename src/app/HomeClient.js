@@ -47,43 +47,44 @@ export default function HomeClient({ initialJobs, initialCategory = "" }) {
     setPage(1);
   }, [searchTerm, filters]);
 
-  useEffect(() => {
-    async function fetchJobs() {
-      setLoading(true);
-      const query = new URLSearchParams();
+ useEffect(() => {
+  async function fetchJobs() {
+    setLoading(true);
+    const query = new URLSearchParams();
 
-      if (searchTerm) query.append("search", searchTerm);
-      Object.entries(filters).forEach(([key, value]) => {
-        if (value) query.append(key, value);
-      });
-      query.append("limit", 20);
-      query.append("page", page);
+    if (searchTerm) query.append("search", searchTerm);
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value) query.append(key, value);
+    });
+    query.append("limit", 20);
+    query.append("page", page);
 
-      try {
-        const res = await fetch(`/api/posts?${query.toString()}`);
-        if (!res.ok) throw new Error("Failed to fetch jobs");
-        const data = await res.json();
+    try {
+      const res = await fetch(`/api/posts?${query.toString()}`);
+      if (!res.ok) throw new Error("Failed to fetch jobs");
+      const data = await res.json();
 
-        if (page === 1) {
-          setJobs(data.jobs);
-        } else {
-          const existingIds = new Set(jobs.map((job) => job._id));
-          const newJobs = data.jobs.filter((job) => !existingIds.has(job._id));
-          setJobs((prev) => [...prev, ...newJobs]);
-        }
-
-        setHasMore(data.jobs.length > 0 && jobs.length + data.jobs.length < data.total);
-      } catch (error) {
-        console.error(error);
-        if (page === 1) setJobs([]);
-        setHasMore(false);
+      if (page === 1) {
+        setJobs(data.jobs);
+        setHasMore(data.jobs.length < data.total);
+      } else {
+        const existingIds = new Set(jobs.map((job) => job._id));
+        const newJobs = data.jobs.filter((job) => !existingIds.has(job._id));
+        const updatedJobs = [...jobs, ...newJobs];
+        setJobs(updatedJobs);
+        setHasMore(updatedJobs.length < data.total);
       }
-
-      setLoading(false);
+    } catch (error) {
+      console.error(error);
+      if (page === 1) setJobs([]);
+      setHasMore(false);
     }
 
-    fetchJobs();
-  }, [searchTerm, filters, page]);
+    setLoading(false);
+  }
+
+  fetchJobs();
+}, [searchTerm, filters, page]);
 
   return (
     <div>
