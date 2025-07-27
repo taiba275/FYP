@@ -52,7 +52,7 @@ export async function POST(req) {
       jobContext = `1. ${lastMatchedJob.title}\n${lastMatchedJob.description}\nApply here: ${lastMatchedJob.url}`;
     } else {
       // 🔍 Search FAISS server
-      const faissRes = await fetch('https://chatbot-server-etwp.onrender.com', {
+      const faissRes = await fetch('http://35.227.145.87:5010/retrieve-jobs', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: userMessage }),
