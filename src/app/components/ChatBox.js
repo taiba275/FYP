@@ -8,7 +8,7 @@ export default function ChatBox() {
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
-  const [lastMatchedJob, setLastMatchedJob] = useState(null);
+  const [matchedJobs, setMatchedJobs] = useState([]); // updated from lastMatchedJob
 
   const sendMessage = async () => {
     if (!input.trim()) return;
@@ -19,25 +19,34 @@ export default function ChatBox() {
     setInput('');
     setLoading(true);
 
-    const res = await fetch('/api/chat', {
-      method: 'POST',
-      body: JSON.stringify({ messages: updatedMessages }),
-    });
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        body: JSON.stringify({ messages: updatedMessages }),
+      });
 
-    const data = await res.json();
+      const data = await res.json();
 
-    if (!data.choices || !data.choices[0]?.message) {
-      throw new Error('Invalid response from assistant.');
+      if (!data.choices || !data.choices[0]?.message) {
+        throw new Error('Invalid response from assistant.');
+      }
+
+      const assistantMessage = data.choices[0].message;
+      setMessages([...updatedMessages, assistantMessage]);
+
+      if (Array.isArray(data.matchedJob)) {
+        setMatchedJobs(data.matchedJob);
+      } else if (data.matchedJob) {
+        setMatchedJobs([data.matchedJob]); // fallback for single job
+      } else {
+        setMatchedJobs([]);
+      }
+
+    } catch (err) {
+      console.error('Error fetching assistant response:', err);
+    } finally {
+      setLoading(false);
     }
-
-    const assistantMessage = data.choices[0].message;
-    setMessages([...updatedMessages, assistantMessage]);
-
-    if (data.matchedJob) {
-      setLastMatchedJob(data.matchedJob);
-    }
-
-    setLoading(false);
   };
 
   const handleKeyDown = (e) => {
@@ -57,17 +66,38 @@ export default function ChatBox() {
               msg.role === 'user' ? 'text-right text-blue-600' : 'text-left text-gray-800'
             }`}
           >
-            <p className="break-words">
-              <strong>{msg.role === 'user' ? 'You' : 'Bot'}:</strong> {msg.content}
+            <p className="break-words whitespace-pre-wrap">
+              <strong>{msg.role === 'user' ? 'You' : 'Bot'}:</strong>{' '}
+              <span
+                dangerouslySetInnerHTML={{
+                  __html: msg.content
+                    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" class="text-blue-600 underline">$1</a>'),
+                }}
+              />
             </p>
           </div>
         ))}
         {loading && <p className="text-gray-500">Assistant is typing...</p>}
       </div>
 
-      {lastMatchedJob && (
-        <div className="mt-2 text-sm text-gray-600 bg-yellow-100 px-3 py-1 rounded break-words">
-          🎯 Talking about: <strong>{lastMatchedJob.title}</strong> at {lastMatchedJob.company}
+      {matchedJobs.length > 0 && (
+        <div className="mt-2 text-sm text-gray-700 bg-yellow-100 px-3 py-2 rounded break-words">
+          <strong>🎯 Jobs Referenced:</strong>
+          <ul className="list-disc ml-5 mt-1">
+            {matchedJobs.slice(0, 3).map((job, i) => (
+              <li key={i}>
+                <strong>{job.title}</strong>{job.company ? ` at ${job.company}` : ''} —{' '}
+                <a
+                  href={job.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 underline"
+                >
+                  Apply
+                </a>
+              </li>
+            ))}
+          </ul>
         </div>
       )}
 
