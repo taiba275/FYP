@@ -29,89 +29,69 @@ export async function GET(req) {
 
     const skip = (page - 1) * limit;
 
-    // Construct query object
-    let query = {};
+    // Construct match query
+    let match = {};
 
     if (search) {
-      query.Title = { $regex: `^${search}`, $options: "i" };
+      match.Title = { $regex: `^${search}`, $options: "i" };
     }
     if (category) {
-      query.Industry = { $regex: `\\b${category}\\b`, $options: "i" };
+      match.Industry = { $regex: `\\b${category}\\b`, $options: "i" };
     }
     if (type) {
-      query["Job Type"] = { $regex: `^${type}$`, $options: "i" };
+      match["Job Type"] = { $regex: `^${type}$`, $options: "i" };
     }
     if (city) {
-      query.City = { $regex: `^${city}$`, $options: "i" };
+      match.City = { $regex: `^${city}$`, $options: "i" };
     }
     if (experience) {
       const mappedRanges = experienceMapping[experience];
       if (mappedRanges && mappedRanges.length > 0) {
-        query["Experience Range"] = { $in: mappedRanges };
+        match["Experience Range"] = { $in: mappedRanges };
       }
     }
 
-    // Aggregation pipeline
-    const pipeline = [
-      { $match: query }
-    ];
+    // Start building full aggregation pipeline
+    const pipeline = [{ $match: match }];
 
-    // Salary sort
-    if (salaryOrder === "ascending") {
+    // Salary sort (numeric only)
+    if (salaryOrder === "ascending" || salaryOrder === "descending") {
       pipeline.push({ $match: { salary_lower: { $type: "number" } } });
-      pipeline.push({ $sort: { salary_lower: 1 } });
-    } else if (salaryOrder === "descending") {
-      pipeline.push({ $match: { salary_lower: { $type: "number" } } });
-      pipeline.push({ $sort: { salary_lower: -1 } });
+      pipeline.push({ $sort: { salary_lower: salaryOrder === "ascending" ? 1 : -1 } });
     }
 
-    // Date sort
+    // Date sort (convert string to date)
     if (sortOrder === "newest" || sortOrder === "oldest") {
-    pipeline.push({
-      $match: {
-        "Posting Date": { $regex: "^\\d{1,2}/\\d{1,2}/\\d{4}$" }
-      }
-    });
-  
-    pipeline.push({
-      $addFields: {
-        parsedDate: {
-          $dateFromString: {
-            dateString: "$Posting Date",
-            format: "%d/%m/%Y"
+      pipeline.push({
+        $match: { "Posting Date": { $regex: "^\\d{1,2}/\\d{1,2}/\\d{4}$" } }
+      });
+      pipeline.push({
+        $addFields: {
+          parsedDate: {
+            $dateFromString: {
+              dateString: "$Posting Date",
+              format: "%d/%m/%Y"
+            }
           }
         }
-      }
-    });
-  
-    pipeline.push({
-      $match: {
-        parsedDate: { $ne: null }
-      }
-    });
-  
-    pipeline.push({
-      $sort: { parsedDate: sortOrder === "newest" ? -1 : 1 }
-    });
-  }
-  
+      });
+      pipeline.push({ $match: { parsedDate: { $ne: null } } });
+      pipeline.push({ $sort: { parsedDate: sortOrder === "newest" ? -1 : 1 } });
+    }
 
     // Pagination
     pipeline.push({ $skip: skip });
     pipeline.push({ $limit: limit });
 
-    // Get jobs
+    // Execute paginated query
     const jobs = await Job.aggregate(pipeline);
 
-    // Get total count
-    const countPipeline = [{ $match: query }, { $count: "count" }];
-    const totalResult = await Job.aggregate(countPipeline);
-    const totalJobs = totalResult[0]?.count || 0;
+    // Accurate total count (only match stage, no sort/limit)
+    const totalPipeline = [{ $match: match }, { $count: "count" }];
+    const totalResult = await Job.aggregate(totalPipeline);
+    const total = totalResult[0]?.count || 0;
 
-    return new Response(JSON.stringify({
-      jobs,
-      total: totalJobs
-    }), { status: 200 });
+    return new Response(JSON.stringify({ jobs, total }), { status: 200 });
 
   } catch (error) {
     console.error("❌ Error fetching jobs:", error);
