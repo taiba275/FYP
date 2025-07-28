@@ -51,7 +51,7 @@ export async function POST(req) {
 - **Salary:** ${job.salary || "Not specified"}
 - **Apply URL:** ${job.url}`;
     } else {
-      const faissRes = await fetch("http://35.227.145.87:5010/retrieve-jobs", {
+      const faissRes = await fetch("http://localhost:5010/retrieve-jobs", {    //http://35.227.145.87:5010/retrieve-jobs
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: userMessage }),

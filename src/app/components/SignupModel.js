@@ -341,13 +341,13 @@ export default function SignupModal({ onClose }) {
                   <div className="flex space-x-3 justify-center">
                     <button
                       onClick={handleGoogleLogin}
-                      className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100"
+                      className="text-black flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100"
                     >
                       <FcGoogle className="text-xl" /> Google
                     </button>
                     <button
                       onClick={handleFacebookLogin}
-                      className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100"
+                      className="text-black flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100"
                     >
                       <FaFacebookF className="text-blue-600 text-xl" /> Facebook
                     </button>

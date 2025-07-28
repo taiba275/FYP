@@ -228,30 +228,8 @@ const Header = () => {
       {showLoginModal && <LoginModal onClose={() => setShowLoginModal(false)} />}
 
       {/* ✅ Chatbot Modal */}
-      {showChatbot && (
-        <div
-          className="fixed inset-0 z-50 bg-black bg-opacity-40 flex justify-center items-end sm:items-center"
-          onClick={() => setShowChatbot(false)}
-        >
-          <div
-            className="bg-white w-full sm:w-[500px] max-h-[80vh] rounded-t-lg sm:rounded-lg overflow-hidden shadow-lg"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex justify-between items-center p-4 border-b">
-              <h2 className="text-lg font-semibold text-black">JobFinder Assistant</h2>
-              <button
-                onClick={() => setShowChatbot(false)}
-                className="text-gray-600 hover:text-red-600 text-xl font-bold"
-              >
-                ×
-              </button>
-            </div>
-            <div className="p-4 h-[60vh] overflow-y-auto">
-              <ChatBox />
-            </div>
-          </div>
-        </div>
-      )}
+      {showChatbot && <ChatBox onClose={() => setShowChatbot(false)} />}
+
     </>
   );
 };
