@@ -43,7 +43,9 @@ const industries = [
 ];
 
 export default function TrendsPage() {
-  const [selectedIndustry, setSelectedIndustry] = useState("All Industries");
+  const [selectedIndustry, setSelectedIndustry] = useState("Computer Science");
+  const [showDropdown, setShowDropdown] = useState(false);
+  // const [selectedIndustry, setSelectedIndustry] = useState("All Industries");
   const [roleData, setRoleData] = useState([]);
   const [error, setError] = useState(null);
 
@@ -116,23 +118,52 @@ export default function TrendsPage() {
   })();
 
   return (
-    <div className="container p-4">
-      <h2 className="text-center mb-4">📈 Job Trends by Industry</h2>
-
+    <div>
       {/* Industry Dropdown */}
-      <div className="text-center mb-4">
-        <label className="form-label me-2"><strong>Select Industry:</strong></label>
-        <select
-          className="form-select d-inline w-auto"
-          value={selectedIndustry}
-          onChange={(e) => setSelectedIndustry(e.target.value)}
+      <div className="flex text-black flex-wrap p-2 mx-8 bg-[#ededed] rounded-lg gap-4 z-10 items-center">
+        <div>
+          <h1 className="text-center font-bold text-lg ml-5">Job Trends by Industry</h1>
+        </div>
+        <div
+          className="relative bg-white w-[500px] rounded-lg px-2 py-2"
+          onMouseEnter={() => {
+            clearTimeout(window.hideTimeout);
+            setShowDropdown(true);
+          }}
+          onMouseLeave={() => {
+            window.hideTimeout = setTimeout(() => setShowDropdown(false), 300);
+          }}
         >
-          {industries.map((ind) => (
-            <option key={ind} value={ind}>
-              {ind}
-            </option>
-          ))}
-        </select>
+          <div className="flex justify-between items-center cursor-pointer">
+            <span>{selectedIndustry}</span>
+            <svg
+              className={`w-5 h-5 transition-transform duration-300 ${showDropdown ? 'rotate-180' : ''}`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+
+          {showDropdown && (
+            <div className="absolute z-50 left-0 bg-white border rounded shadow w-[500px] mt-3 max-h-60 overflow-y-auto custom-scrollbar">
+              {industries.map((industry, index) => (
+                <div
+                  key={index}
+                  onClick={() => {
+                    setSelectedIndustry(industry);
+                    setShowDropdown(false);
+                  }}
+                  className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm"
+                >
+                  {industry}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
       </div>
 
       {/* Error or No Data */}
@@ -143,29 +174,32 @@ export default function TrendsPage() {
 
       {/* Line Chart: Job Role Count */}
       {roleData.length > 0 && (
-        <div
-          className="mb-5"
-          style={{
-            height: selectedIndustry === "All Industries" ? "500px" : "320px",
-          }}
-        >
-          <Line
-            data={buildChartData("Number of Job Postings", "count", "#4B9CD3")}
-            options={chartOptions("📊 Current Job Role Demand")}
-          />
-        </div>
-      )}
+        <div className="flex justify-center m-10">
+          {/* Job Postings Chart */}
+          <div
+            className="flex-1 text-center"
+            style={{
+              height: "320px",
+            }}
+          >
+            <Line
+              data={buildChartData("Number of Job Postings", "count", "#4B9CD3")}
+            />
+          </div>
 
-      {/* Line Chart: Forecasted Trend */}
-      {roleData.length > 0 && selectedIndustry !== "All Industries" ? (
-        <div style={{ height: "320px" }}>
-          <Line
-            data={buildChartData(forecastLabel, "forecast", "#72C472")}
-            options={chartOptions(`📉 ${forecastLabel}`)}
-          />
+          {/* Forecast Chart */}
+          {selectedIndustry !== "All Industries" ? (
+            <div className="flex-1 text-center" style={{ height: "320px" }}>
+              <Line
+                data={buildChartData(forecastLabel, "forecast", "#72C472")}
+              />
+            </div>
+          ) : (
+            <div className="flex-1 text-center flex items-center justify-center text-muted">
+              {/* <p>Forecast not available for All Industries.</p> */}
+            </div>
+          )}
         </div>
-      ) : selectedIndustry === "All Industries" && roleData.length > 0 && (
-        <p className="text-center text-muted">Forecast not available for All Industries.</p>
       )}
     </div>
   );
