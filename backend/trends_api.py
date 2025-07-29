@@ -1,140 +1,128 @@
 import pandas as pd
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from statsmodels.tsa.arima.model import ARIMA
 from statsmodels.tsa.stattools import adfuller
-from pymongo import MongoClient
 import os
-from dotenv import load_dotenv
-
-# Load environment variables from .env file (optional)
-load_dotenv()
 
 app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Use specific origins in production
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# MongoDB connection string (replace or use .env)
-MONGODB_URI = os.getenv("MONGODB_URI", "mongodb+srv://UMT:Saranghae_275@cluster0.um52i.mongodb.net/test?retryWrites=true&w=majority")
-client = MongoClient(MONGODB_URI)
-db = client["test"]  # Replace with your DB name if different
-collection = db["PreprocessedCombinedData"]  # Replace with your collection name
+# Load Excel
+DATA_PATH = os.path.join(os.path.dirname(__file__), "cleaned_dataset_with_roles.xlsx")
+df = pd.read_excel(DATA_PATH)
 
-@app.get("/predict-trends")
-def predict_trends():
-    # Fetch job postings from MongoDB
-    cursor = collection.find({}, {"Posting Date": 1})
-    dates = [doc.get("Posting Date") for doc in cursor if doc.get("Posting Date")]
+# Industry-role mapping
+industry_map = {
+    "Computer Science": [
+        "Software Engineer", "Data Scientist", "AI Engineer", "DevOps Engineer", "Web Developer",
+        "Mobile Developer", "IT Support Specialist", "Network Engineer", "Cybersecurity Analyst"
+    ],
+    "Business & Product": [
+        "Product Manager", "Project Manager", "Business Analyst", "Operations Manager", "Scrum Master"
+    ],
+    "Sales & Marketing": [
+        "Sales Executive", "Marketing Manager", "Digital Marketing Specialist",
+        "SEO Specialist", "Content Writer"
+    ],
+    "Design": [
+        "Graphic Designer", "UI/UX Designer", "Animator", "Video Editor"
+    ],
+    "Finance & Accounting": [
+        "Accountant", "Financial Analyst", "Bookkeeper", "Auditor", "Tax Consultant"
+    ],
+    "Healthcare": [
+        "Doctor", "Nurse", "Pharmacist", "Medical Technologist",
+        "Lab Technician", "Radiologist", "Healthcare Assistant"
+    ],
+    "HR & Admin": [
+        "HR Manager", "Recruiter", "Talent Acquisition Specialist", "Administrative Assistant"
+    ],
+    "Legal": [
+        "Lawyer", "Legal Advisor", "Compliance Officer", "Paralegal"
+    ],
+    "Education": [
+        "Teacher", "Lecturer", "Professor", "Academic Coordinator", "School Counselor"
+    ],
+    "Construction & Engineering": [
+        "Civil Engineer", "Mechanical Engineer", "Electrical Engineer", "Construction Manager", "Architect"
+    ],
+    "Logistics": [
+        "Supply Chain Manager", "Warehouse Supervisor", "Logistics Coordinator", "Inventory Analyst"
+    ],
+    "Hospitality": [
+        "Barista", "Chef", "Waiter", "Hotel Manager", "Housekeeping Staff"
+    ],
+    "Customer Service": [
+        "Customer Support Representative", "Call Center Agent", "Client Success Manager"
+    ],
+    "Other": [
+        "General Manager", "Data Entry Operator", "Quality Assurance Officer", "Environmental Specialist"
+    ]
+}
 
-    if not dates:
-        return {"error": "No valid 'Posting Date' found in MongoDB."}
+@app.get("/trends/{industry}")
+def get_trends_by_industry(industry: str):
+    if "ExtractedRole" not in df.columns or "Posting Date" not in df.columns:
+        raise HTTPException(status_code=500, detail="Required columns missing in dataset")
 
-    df = pd.DataFrame({"Date": pd.to_datetime(dates, errors='coerce')})
-    df.dropna(subset=["Date"], inplace=True)
+    df["Posting Date"] = pd.to_datetime(df["Posting Date"], errors="coerce")
+    df.dropna(subset=["Posting Date"], inplace=True)
 
-    df['Year'] = df['Date'].dt.year
-    df['Month'] = df['Date'].dt.month
+    if industry == "All Industries":
+        role_counts = df["ExtractedRole"].value_counts().to_dict()
+        top_roles = list(role_counts.keys())[:15]
+        return {"roles": [
+            {"title": role, "count": role_counts[role], "forecast": None}
+            for role in top_roles
+        ]}
 
-    monthly_counts = df.groupby(['Year', 'Month']).size().reset_index(name='Job Count')
+    if industry not in industry_map:
+        raise HTTPException(status_code=400, detail="Invalid industry")
 
-    if len(monthly_counts) < 8:
-        return {"error": "Not enough data for ARIMA. Need at least 8 months."}
+    roles = industry_map[industry]
+    filtered = df[df["ExtractedRole"].isin(roles)].copy()
+    role_counts = filtered["ExtractedRole"].value_counts().to_dict()
+    top_roles = list(role_counts.keys())[:10]
 
-    train_data = monthly_counts['Job Count'][:8]
-    train_data_diff = train_data.diff().dropna()
+    result = []
+    for role in top_roles:
+        role_df = filtered[filtered["ExtractedRole"] == role]
+        ts = role_df.groupby(role_df["Posting Date"].dt.to_period("M")).size().sort_index()
+        ts.index = ts.index.to_timestamp()
 
-    adf = adfuller(train_data_diff)
-    if adf[1] >= 0.05:
-        train_data_diff = train_data_diff.diff().dropna()
-
-    model = ARIMA(train_data_diff.values, order=(1, 1, 1))
-    model_fit = model.fit()
-    forecast = model_fit.forecast(steps=3)
-
-    # Static return data (you can improve this later)
-    job_roles = ['Software Engineer', 'Data Scientist', 'Product Manager', 'AI Specialist']
-    job_growth = [15, 25, 10, 35]
-    skills = ['Python', 'Machine Learning', 'Cloud Computing', 'Data Analysis']
-    skills_growth = [30, 40, 25, 20]
-
-    return {
-        "roles": [{"title": t, "growth": g} for t, g in zip(job_roles, job_growth)],
-        "skills": [{"skill": s, "growth": g} for s, g in zip(skills, skills_growth)],
-        "forecast_raw": forecast.tolist()
-    }
-
-
-
-# from fastapi import FastAPI, HTTPException
-# from fastapi.middleware.cors import CORSMiddleware
-# from typing import Dict
-
-# app = FastAPI()
-
-# # Allow requests from your frontend origin
-# app.add_middleware(
-#     CORSMiddleware,
-#     allow_origins=["http://localhost:3000"],  # Adjust for production
-#     allow_credentials=True,
-#     allow_methods=["*"],
-#     allow_headers=["*"],
-# )
-
-# # Mock domain-wise skill trends data
-# MOCK_TREND_DATA: Dict[str, Dict[str, int]] = {
-#     "computers": {
-#         "Machine Learning": 95,
-#         "Artificial Intelligence": 92,
-#         "Cloud Computing": 85,
-#         "Data Analytics": 80,
-#         "Python": 78,
-#         "Cybersecurity": 75,
-#         "DevOps": 72,
-#         "Blockchain": 65,
-#         "Web Development": 62,
-#         "UI/UX Design": 55
-#     },
-#     "medical": {
-#         "Telemedicine": 90,
-#         "Healthcare Data Analysis": 82,
-#         "Clinical Research": 79,
-#         "Genetics": 77,
-#         "Medical Imaging": 75,
-#         "AI in Healthcare": 72,
-#         "Robotic Surgery": 68,
-#         "Pharmacology": 66,
-#         "Public Health": 60,
-#         "Nursing Informatics": 55
-#     },
-#     "finance": {
-#         "Fintech": 94,
-#         "Blockchain": 90,
-#         "Quantitative Analysis": 85,
-#         "Risk Management": 82,
-#         "Financial Modeling": 80,
-#         "Investment Strategy": 78,
-#         "Data Analysis": 75,
-#         "Excel + Power BI": 72,
-#         "RegTech": 70,
-#         "Accounting Tech": 65
-#     }
-# }
-
-# @app.get("/api/trends/{domain}")
-# async def get_trends(domain: str):
-#     domain_lower = domain.lower()
-#     if domain_lower in MOCK_TREND_DATA:
-#         return {
-#             "domain": domain_lower,
-#             "skills": MOCK_TREND_DATA[domain_lower]
-#         }
-#     else:
-#         raise HTTPException(status_code=404, detail="Domain not found")
+        growth = None
+        if len(ts) >= 0:
+            try:
+                train_data = ts.copy()
+                adf = adfuller(train_data)
+                model = ARIMA(train_data.values, order=(1, 1, 1))
+                model_fit = model.fit()
+                forecast = model_fit.forecast(steps=1)[0]
+                latest = train_data.iloc[-1]
+                growth = 0.0 if latest == 0 else round(((forecast - latest) / latest) * 100, 2)
+                growth = round(((forecast - latest) / latest) * 100, 2)
+                print(f"🔮 {role}: Forecast={forecast:.2f}, Latest={latest}, Growth={growth}%")
+            except Exception as e:
+                print(f"⚠️ ARIMA failed for {role}: {e}")
+                growth = 0.0
+        else:
+            print(f"⚠️ Not enough data for {role} (months={len(ts)})")
+            growth = 0.0
 
 
+        result.append({
+            "title": role,
+            "count": role_counts[role],
+            "forecast": growth
+        })
+
+    print(f"✅ Returning {len(result)} roles for {industry}")
+    return {"roles": result}

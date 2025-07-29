@@ -4,197 +4,169 @@ import {
   Chart as ChartJS,
   CategoryScale,
   LinearScale,
+  PointElement,
+  LineElement,
   BarElement,
   Title,
   Tooltip,
   Legend,
 } from "chart.js";
+import { Line } from "react-chartjs-2";
 
-import { Bar } from "react-chartjs-2";
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
+const industries = [
+  "All Industries",
+  "Computer Science",
+  "Business & Product",
+  "Sales & Marketing",
+  "Design",
+  "Finance & Accounting",
+  "Healthcare",
+  "HR & Admin",
+  "Legal",
+  "Education",
+  "Construction & Engineering",
+  "Logistics",
+  "Hospitality",
+  "Customer Service",
+  "Other",
+];
 
 export default function TrendsPage() {
-  const [data, setData] = useState(null);
+  const [selectedIndustry, setSelectedIndustry] = useState("All Industries");
+  const [roleData, setRoleData] = useState([]);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetch("http://localhost:8000/predict-trends")
-      .then((res) => res.json())
-      .then((json) => {
-        console.log("Received trend data:", json);
+    const fetchTrends = async () => {
+      try {
+        const res = await fetch(`http://localhost:8000/trends/${selectedIndustry}`);
+        const json = await res.json();
 
-        // Check for server-side error message
-        if (json.error) {
-          setError(json.error);
-        } else {
-          setData(json);
+        if (!res.ok) {
+          throw new Error(json.detail || "Unknown error");
         }
-      })
-      .catch((err) => {
-        console.error("Failed to load trend data:", err);
-        setError("Failed to connect to trend prediction server.");
-      });
-  }, []);
 
-  // Show loading
-  if (!data && !error) {
-    return <p className="text-center mt-4">Loading trends...</p>;
-  }
+        setRoleData(json.roles || []);
+        setError(null);
+      } catch (err) {
+        console.error("Failed to load trends:", err);
+        setError(err.message || "Failed to fetch trends.");
+        setRoleData([]);
+      }
+    };
 
-  // Show error message
-  if (error) {
-    return <p className="text-danger text-center mt-4">⚠️ {error}</p>;
-  }
+    fetchTrends();
+  }, [selectedIndustry]);
 
-  // Validate data structure
-  if (!Array.isArray(data.roles) || !Array.isArray(data.skills)) {
-    return <p className="text-danger text-center mt-4">⚠️ Invalid trend data format received.</p>;
-  }
-
-  // Job Role Chart Data
-  const jobRoleChart = {
-    labels: data.roles.map((r) => r.title),
+  const buildChartData = (label, field, color) => ({
+    labels: roleData.map((r) => r.title),
     datasets: [
       {
-        label: "Growth Forecast (%)",
-        data: data.roles.map((r) => parseInt(r.growth)),
-        backgroundColor: "#4B9CD3",
+        label,
+        data: roleData.map((r) => r[field] !== null ? r[field] : null),
+        backgroundColor: color,
+        borderColor: color,
+        tension: 0.3,
+        fill: false,
+        pointRadius: 4,
+        pointHoverRadius: 6,
       },
     ],
-  };
+  });
 
-  // Skill Chart Data
-  const skillChart = {
-    labels: data.skills.map((s) => s.skill),
-    datasets: [
-      {
-        label: "Demand Increase (%)",
-        data: data.skills.map((s) => parseInt(s.growth)),
-        backgroundColor: "#72C472",
-      },
-    ],
-  };
-
-  const barOptionsHorizontal = {
-    indexAxis: "y",
+  const chartOptions = (title) => ({
     responsive: true,
-    maintainAspectRatio: false,
     plugins: {
-      legend: { display: false },
-      title: { display: true, text: "📊 Job Role Forecast", font: { size: 16 } },
-    },
-    scales: {
-      x: {
-        beginAtZero: true,
-        ticks: { stepSize: 5 },
+      legend: { display: true },
+      title: {
+        display: true,
+        text: title,
+        font: { size: 18 },
       },
-    },
-  };
-
-  const barOptionsVertical = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: { display: false },
-      title: { display: true, text: "💡 Skill Demand Insights", font: { size: 16 } },
     },
     scales: {
       y: {
-        beginAtZero: true,
-        ticks: { stepSize: 5 },
+        beginAtZero: false,
+        ticks: {
+          callback: (value) => `${value}`,
+        },
       },
     },
-  };
+  });
+
+  // 🔁 Dynamic forecast label logic
+  const forecastLabel = (() => {
+    const forecasts = roleData.map((r) => r.forecast).filter((v) => v !== null);
+    const allNegative = forecasts.length > 0 && forecasts.every((v) => v < 0);
+    const allPositive = forecasts.length > 0 && forecasts.every((v) => v >= 0);
+    if (allNegative) return "Forecasted Decline (%)";
+    if (allPositive) return "Forecasted Growth (%)";
+    return "Forecasted Change (%)";
+  })();
 
   return (
     <div className="container p-4">
-      {/* Job Role Forecast Chart */}
-      <div className="mb-5" style={{ maxWidth: "100%", height: "300px" }}>
-        <Bar data={jobRoleChart} options={barOptionsHorizontal} />
+      <h2 className="text-center mb-4">📈 Job Trends by Industry</h2>
+
+      {/* Industry Dropdown */}
+      <div className="text-center mb-4">
+        <label className="form-label me-2"><strong>Select Industry:</strong></label>
+        <select
+          className="form-select d-inline w-auto"
+          value={selectedIndustry}
+          onChange={(e) => setSelectedIndustry(e.target.value)}
+        >
+          {industries.map((ind) => (
+            <option key={ind} value={ind}>
+              {ind}
+            </option>
+          ))}
+        </select>
       </div>
 
-      {/* Skill Demand Insights Chart */}
-      <div style={{ maxWidth: "100%", height: "300px" }}>
-        <Bar data={skillChart} options={barOptionsVertical} />
-      </div>
+      {/* Error or No Data */}
+      {error && <p className="text-danger text-center">⚠️ {error}</p>}
+      {!error && roleData.length === 0 && (
+        <p className="text-muted text-center">No trend data found for this industry.</p>
+      )}
+
+      {/* Line Chart: Job Role Count */}
+      {roleData.length > 0 && (
+        <div
+          className="mb-5"
+          style={{
+            height: selectedIndustry === "All Industries" ? "500px" : "320px",
+          }}
+        >
+          <Line
+            data={buildChartData("Number of Job Postings", "count", "#4B9CD3")}
+            options={chartOptions("📊 Current Job Role Demand")}
+          />
+        </div>
+      )}
+
+      {/* Line Chart: Forecasted Trend */}
+      {roleData.length > 0 && selectedIndustry !== "All Industries" ? (
+        <div style={{ height: "320px" }}>
+          <Line
+            data={buildChartData(forecastLabel, "forecast", "#72C472")}
+            options={chartOptions(`📉 ${forecastLabel}`)}
+          />
+        </div>
+      ) : selectedIndustry === "All Industries" && roleData.length > 0 && (
+        <p className="text-center text-muted">Forecast not available for All Industries.</p>
+      )}
     </div>
   );
 }
-
-
-
-
-// 'use client';
-
-// import React, { useEffect, useState } from 'react';
-// import { useParams } from 'next/navigation';
-// import {
-//   BarChart,
-//   Bar,
-//   XAxis,
-//   YAxis,
-//   CartesianGrid,
-//   Tooltip,
-//   ResponsiveContainer,
-// } from 'recharts';
-
-// export default function DomainTrendsPage() {
-//   const { domain } = useParams();
-//   const [skillData, setSkillData] = useState([]);
-//   const [loading, setLoading] = useState(true);
-//   const [error, setError] = useState(false);
-
-//   useEffect(() => {
-//     if (!domain) return;
-
-//     setLoading(true);
-//     setError(false);
-
-//     fetch(`http://localhost:8000/api/trends/${domain}`)
-//       .then(res => {
-//         if (!res.ok) throw new Error('Domain not found');
-//         return res.json();
-//       })
-//       .then(data => {
-//         const skillsArray = Object.entries(data.skills).map(([skill, count]) => ({
-//           skill,
-//           count,
-//         }));
-//         setSkillData(skillsArray);
-//         setLoading(false);
-//       })
-//       .catch(err => {
-//         console.error('Error fetching skill trends:', err);
-//         setError(true);
-//         setSkillData([]);
-//         setLoading(false);
-//       });
-//   }, [domain]);
-
-//   if (loading) return <p style={{ textAlign: 'center', marginTop: '2rem' }}>Loading...</p>;
-//   if (error) return <p style={{ textAlign: 'center', color: 'red' }}>Error loading data for domain: {domain}</p>;
-
-//   return (
-//     <div style={{ padding: '2rem' }}>
-//       <h2 style={{ textAlign: 'center', marginBottom: '2rem' }}>
-//         Top Skills in {domain.charAt(0).toUpperCase() + domain.slice(1)}
-//       </h2>
-
-//       <ResponsiveContainer width="100%" height={400}>
-//         <BarChart
-//           data={skillData}
-//           margin={{ top: 20, right: 30, left: 0, bottom: 50 }}
-//         >
-//           <CartesianGrid strokeDasharray="3 3" />
-//           <XAxis dataKey="skill" angle={-30} textAnchor="end" interval={0} />
-//           <YAxis />
-//           <Tooltip />
-//           <Bar dataKey="count" fill="#0070f3" />
-//         </BarChart>
-//       </ResponsiveContainer>
-//     </div>
-//   );
-// }
-
-
