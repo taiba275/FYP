@@ -7,6 +7,7 @@ export function UIProvider({ children }) {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showSignupModal, setShowSignupModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [showPostaJobModel, setShowPostaJobModel] = useState(false);
 
   return (
     <UIContext.Provider
@@ -17,6 +18,8 @@ export function UIProvider({ children }) {
         setShowSignupModal,
         searchTerm,
         setSearchTerm,
+        showPostaJobModel,
+        setShowPostaJobModel,
       }}
     >
       {children}

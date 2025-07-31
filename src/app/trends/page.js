@@ -43,9 +43,9 @@ const industries = [
 ];
 
 export default function TrendsPage() {
-  const [selectedIndustry, setSelectedIndustry] = useState("Computer Science");
+  // const [selectedIndustry, setSelectedIndustry] = useState("Computer Science");
   const [showDropdown, setShowDropdown] = useState(false);
-  // const [selectedIndustry, setSelectedIndustry] = useState("All Industries");
+  const [selectedIndustry, setSelectedIndustry] = useState("All Industries");
   const [roleData, setRoleData] = useState([]);
   const [error, setError] = useState(null);
 

@@ -181,7 +181,7 @@ export default function LoginModal({ onClose }) {
           {/* Left Panel */}
           <div className="w-1/2 bg-[#f5f5f5] flex flex-col justify-between px-10 py-6">
             <div>
-              <h1 className="text-3xl font-semibold text-gray-900 mb-8">
+              <h1 className="text-3xl font-bold text-gray-900 mb-8">
                 Welcome!
               </h1>
             </div>

@@ -3,7 +3,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import LoginModal from "./LoginModal";
 import SignupModal from "./SignupModel";
-import ChatBox from "./ChatBox"; // ✅ Import ChatBox
+import ChatBox from "./ChatBox";
+import PostaJobModel from "./PostaJobModel";
 import { useRouter } from "next/navigation";
 import { FaSearch } from "react-icons/fa";
 import { useAuth } from "../context/AuthContext";
@@ -17,10 +18,12 @@ const Header = () => {
     setShowSignupModal,
     searchTerm,
     setSearchTerm,
+    showPostaJobModel,
+    setShowPostaJobModel,
   } = useUI();
 
   const [showDropdown, setShowDropdown] = useState(false);
-  const [showChatbot, setShowChatbot] = useState(false); // ✅ Chatbot toggle
+  const [showChatbot, setShowChatbot] = useState(false);
   const dropdownRef = useRef(null);
   const { user, setUser } = useAuth();
   const router = useRouter();
@@ -102,20 +105,12 @@ const Header = () => {
                 <li><a href="/trends" className="hover:text-blue-600">Trends</a></li>
                 <li><a href="/recommendation" className="hover:text-blue-600">Recommendation</a></li>
                 <li><a href="/industry" className="hover:text-blue-600">Industry</a></li>
-                {/* 🔥 Remove broken /ChatBox link */}
-                <li>
-                  <button
-                    onClick={() => setShowChatbot(true)}
-                    className="hover:text-blue-600 text-black"
-                  >
-                    Chatbot
-                  </button>
-                </li>
+                <li><button onClick={() => setShowChatbot(true)} className="hover:text-blue-600 text-black">Chatbot</button></li>
               </ul>
             </div>
 
             {/* Center: Search */}
-            <div className="relative w-full max-w-[620px]">
+            <div className="relative w-full max-w-[590px]">
               <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm">
                 <FaSearch />
               </span>
@@ -150,7 +145,7 @@ const Header = () => {
                   </div>
 
                   {showDropdown && (
-                    <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50">
+                    <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-80">
                       <div className="px-4 py-3 text-sm text-gray-900 font-semibold border-b">
                         {user?.username || user?.email}
                       </div>
@@ -204,6 +199,13 @@ const Header = () => {
                 <div className="flex space-x-3">
                   <button
                     data-open-signup
+                    onClick={() => setShowPostaJobModel(true)}
+                    className=" text-black font-bold py-2 px-4 rounded hover:bg-gray-200"
+                  >
+                    Post a Job
+                  </button>
+                  <button
+                    data-open-signup
                     onClick={() => setShowSignupModal(true)}
                     className="bg-black text-white font-bold py-2 px-4 rounded hover:bg-gray-800"
                   >
@@ -226,6 +228,7 @@ const Header = () => {
       {/* Modals */}
       {showSignupModal && <SignupModal onClose={() => setShowSignupModal(false)} />}
       {showLoginModal && <LoginModal onClose={() => setShowLoginModal(false)} />}
+      {showPostaJobModel && <PostaJobModel onClose={() => setShowPostaJobModel(false)} />}
 
       {/* ✅ Chatbot Modal */}
       {showChatbot && <ChatBox onClose={() => setShowChatbot(false)} />}
