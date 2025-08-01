@@ -18,6 +18,7 @@ export default function SignupModal({ onClose }) {
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [subscribe, setSubscribe] = useState(false);
   const [error, setError] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
 
   const [showOtp, setShowOtp] = useState(false);
   const [otp, setOtp] = useState("");
@@ -315,14 +316,26 @@ export default function SignupModal({ onClose }) {
                 )}
 
                 {showOtp && (
-                  <input
-                    type="text"
-                    placeholder="Enter OTP"
-                    className="w-full p-3 text-black border-b border-gray-300 focus:outline-none focus:border-black"
-                    value={otp}
-                    onChange={(e) => setOtp(e.target.value)}
-                    required
-                  />
+                  <>
+                    <input
+                      type="text"
+                      placeholder="Enter OTP"
+                      className="w-full p-3 text-black border-b border-gray-300 focus:outline-none focus:border-black"
+                      value={otp}
+                      onChange={(e) => setOtp(e.target.value)}
+                      required
+                    />
+                     <div className="mt-2 flex items-center text-sm text-gray-600">
+                    <input
+                      type="checkbox"
+                      id="rememberMe"
+                      className="mr-2"
+                      checked={rememberMe}
+                      onChange={() => setRememberMe(!rememberMe)}
+                    />
+                    <label htmlFor="rememberMe">Remember me for 30 days</label>
+                </div>
+                </>
                 )}
 
                 <button
