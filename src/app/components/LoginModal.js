@@ -249,9 +249,6 @@ export default function LoginModal({ onClose }) {
                     {stage === "login" && (
                       <>
                         <div>
-                          <label className="text-sm text-gray-600">
-                            EMAIL OR USERNAME
-                          </label>
                           <input
                             type="email"
                             className="w-full p-3 border-b border-gray-300 focus:outline-none text-black"
@@ -262,9 +259,6 @@ export default function LoginModal({ onClose }) {
                           />
                         </div>
                         <div>
-                          <label className="text-sm text-gray-600">
-                            PASSWORD
-                          </label>
                           <input
                             type="password"
                             className="w-full p-3 border-b border-gray-300 focus:outline-none text-black"
@@ -291,7 +285,7 @@ export default function LoginModal({ onClose }) {
                         </div>
                         <button
                           type="submit"
-                          className="w-full p-3 bg-black text-white font-semibold rounded-lg hover:bg-gray-900 transition"
+                          className="w-full p-3 bg-black text-white font-semibold rounded-lg hover:bg-gray-800 transition"
                         >
                           Log in now
                         </button>
@@ -341,9 +335,9 @@ export default function LoginModal({ onClose }) {
                           <FaFacebookF className="text-blue-600 text-xl" />{" "}
                           Facebook
                         </button>
-                        {/* <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100">
+                        <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100">
                           <FaTwitter className="text-blue-400 text-xl" /> Twitter
-                        </button> */}
+                        </button>
                       </div>
                     </div>
                   )}

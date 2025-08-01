@@ -2,23 +2,27 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 
-
 export default function PostaJobModel({ onClose }) {
     const modalRef = useRef(null);
     const [formData, setFormData] = useState({
         title: "",
         company: "",
+        email: "",
         location: "",
         experience: "",
         type: "",
+        applyBefore: "",
         salary: "",
         description: "",
         skills: "",
+        gender: "",
+        industry: "",
+        functionalArea: "",
+        positions: ""
     });
 
+
     const [loading, setLoading] = useState(false);
-    const postingDate = "14/06/2025";
-    const applyBefore = "15/07/2025";
 
     useEffect(() => {
         const handleEsc = (e) => {
@@ -39,15 +43,20 @@ export default function PostaJobModel({ onClose }) {
         const payload = {
             Title: formData.title,
             Company: formData.company,
+            Email: formData.email,
             City: formData.location,
             Experience: formData.experience,
             Type: formData.type,
-            PostingDate: postingDate,
-            ApplyBefore: applyBefore,
+            ApplyBefore: formData.applyBefore,
             Salary: formData.salary,
             Description: formData.description,
             Skills: formData.skills.split(",").map((s) => s.trim()),
+            Gender: formData.gender,
+            Industry: formData.industry,
+            FunctionalArea: formData.functionalArea,
+            TotalPositions: formData.positions
         };
+
 
         try {
             const res = await fetch("/api/jobs/post", {
@@ -100,48 +109,108 @@ export default function PostaJobModel({ onClose }) {
                 {/* Right panel (form) */}
                 <div className="w-1/2 p-8 overflow-y-auto custom-scrollbar relative">
                     <form onSubmit={handleSubmit} className="space-y-4 text-sm text-black">
+                        {/* Job Title */}
                         <div>
                             <label className="font-medium">Job Title *</label>
                             <input type="text" name="title" value={formData.title} onChange={handleChange} required className="w-full p-2 mt-1 border border-gray-300 rounded bg-gray-100" />
                         </div>
+
+                        {/* Company */}
                         <div>
                             <label className="font-medium">Company *</label>
                             <input type="text" name="company" value={formData.company} onChange={handleChange} required className="w-full p-2 mt-1 border border-gray-300 rounded bg-gray-100" />
                         </div>
+
+                        {/* Company Email */}
+                        <div>
+                            <label className="font-medium">Company Email *</label>
+                            <input type="email" name="email" value={formData.email} onChange={handleChange} required className="w-full p-2 mt-1 border border-gray-300 rounded bg-gray-100" />
+                        </div>
+
+                        {/* Location */}
                         <div>
                             <label className="font-medium">Location (City) *</label>
                             <input type="text" name="location" value={formData.location} onChange={handleChange} required className="w-full p-2 mt-1 border border-gray-300 rounded bg-gray-100" />
                         </div>
+
+                        {/* Experience */}
                         <div>
                             <label className="font-medium">Experience (in years) *</label>
                             <input type="number" name="experience" value={formData.experience} onChange={handleChange} min="0" required className="w-full p-2 mt-1 border border-gray-300 rounded bg-gray-100" />
                         </div>
+
+                        {/* Apply Before */}
                         <div>
-                            <label className="font-medium">Job Type *</label>
-                            <input type="text" name="type" value={formData.type} onChange={handleChange} placeholder="e.g., Full-time / Remote" required className="w-full p-2 mt-1 border border-gray-300 rounded bg-gray-100" />
+                            <label className="font-medium">Apply Before *</label>
+                            <input type="date" name="applyBefore" value={formData.applyBefore} onChange={handleChange} required className="w-full p-2 mt-1 border border-gray-300 rounded bg-gray-100" />
                         </div>
-                        <div className="flex gap-4">
-                            <div className="w-1/2">
-                                <label className="font-medium">Posting Date</label>
-                                <input type="text" value={postingDate} disabled className="w-full p-2 mt-1 border border-gray-300 rounded bg-gray-100 text-gray-600" />
-                            </div>
-                            <div className="w-1/2">
-                                <label className="font-medium">Apply Before</label>
-                                <input type="text" value={applyBefore} disabled className="w-full p-2 mt-1 border border-gray-300 rounded bg-gray-100 text-gray-600" />
-                            </div>
-                        </div>
+
+                        {/* Salary */}
                         <div>
                             <label className="font-medium">Salary (PKR)</label>
-                            <input type="text" name="salary" value={formData.salary} onChange={handleChange} className="w-full p-2 mt-1 border border-gray-300 rounded bg-gray-100" />
+                            <input type="number" name="salary" value={formData.salary} onChange={handleChange} min="0" required className="w-full p-2 mt-1 border border-gray-300 rounded bg-gray-100" />
                         </div>
+
+                        {/* Job Type Dropdown with hover + timeout simulation */}
+                        <div className="relative group">
+                            <label className="font-medium">Job Type *</label>
+                            <select
+                                name="type"
+                                value={formData.type}
+                                onChange={handleChange}
+                                required
+                                className="w-full p-2 mt-1 border border-gray-300 rounded bg-gray-100 group-hover:block transition duration-200"
+                            >
+                                <option value="">Select Job Type</option>
+                                <option value="Permanent">Permanent</option>
+                                <option value="Contract">Contract</option>
+                                <option value="Internship">Internship</option>
+                                <option value="Part-time">Part-time</option>
+                            </select>
+                        </div>
+
+                        {/* Gender Preference */}
+                        <div>
+                            <label className="font-medium">Gender Preference *</label>
+                            <select name="gender" value={formData.gender} onChange={handleChange} required className="w-full p-2 mt-1 border border-gray-300 rounded bg-gray-100">
+                                <option value="">Select Gender</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Both">Both</option>
+                            </select>
+                        </div>
+
+                        {/* Industry */}
+                        <div>
+                            <label className="font-medium">Industry *</label>
+                            <input type="text" name="industry" value={formData.industry} onChange={handleChange} required className="w-full p-2 mt-1 border border-gray-300 rounded bg-gray-100" />
+                        </div>
+
+                        {/* Functional Area */}
+                        <div>
+                            <label className="font-medium">Functional Area *</label>
+                            <input type="text" name="functionalArea" value={formData.functionalArea} onChange={handleChange} required className="w-full p-2 mt-1 border border-gray-300 rounded bg-gray-100" />
+                        </div>
+
+                        {/* Total Positions */}
+                        <div>
+                            <label className="font-medium">Total Positions *</label>
+                            <input type="number" name="positions" value={formData.positions} onChange={handleChange} min="0" required className="w-full p-2 mt-1 border border-gray-300 rounded bg-gray-100" />
+                        </div>
+
+                        {/* Job Description */}
                         <div>
                             <label className="font-medium">Job Description *</label>
                             <textarea name="description" rows={3} value={formData.description} onChange={handleChange} required className="w-full p-2 mt-1 border border-gray-300 rounded bg-gray-100" />
                         </div>
+
+                        {/* Required Skills */}
                         <div>
                             <label className="font-medium">Required Skills (comma-separated) *</label>
                             <input type="text" name="skills" value={formData.skills} onChange={handleChange} required placeholder="e.g., Python, React, Excel" className="w-full p-2 mt-1 border border-gray-300 rounded bg-gray-100" />
                         </div>
+
+                        {/* Submit */}
                         <button type="submit" disabled={loading} className="w-full py-3 mt-4 bg-blue-600 text-white rounded hover:bg-blue-700 font-semibold">
                             {loading ? "Posting..." : "Post Job"}
                         </button>

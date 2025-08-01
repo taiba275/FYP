@@ -327,7 +327,7 @@ export default function SignupModal({ onClose }) {
 
                 <button
                   type="submit"
-                  className="w-full p-3 rounded-lg bg-black text-white font-semibold hover:bg-gray-900 transition-all"
+                  className="w-full p-3 rounded-lg bg-black text-white font-semibold hover:bg-gray-800 transition-all"
                 >
                   {showOtp ? "Verify OTP & Continue" : "Sign up"}
                 </button>
@@ -351,9 +351,9 @@ export default function SignupModal({ onClose }) {
                     >
                       <FaFacebookF className="text-blue-600 text-xl" /> Facebook
                     </button>
-                    {/* <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100">
+                    <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100">
                       <FaTwitter className="text-blue-400 text-xl" /> Twitter
-                    </button>  */}
+                    </button> 
                   </div>
                 </div>
               )}
