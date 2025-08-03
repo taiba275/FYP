@@ -6,6 +6,7 @@ from statsmodels.tsa.arima.model import ARIMA
 from statsmodels.tsa.stattools import adfuller
 from pymongo import MongoClient
 from dotenv import load_dotenv
+from fastapi import Query
 
 # Load environment variables
 load_dotenv()
@@ -26,6 +27,28 @@ app.add_middleware(
 client = MongoClient(MONGO_URI)
 db = client["test"]
 jobs_collection = db["PreprocessedCombinedData"]
+
+@app.get("/jobs-by-role")
+def get_jobs_by_role(role: str = Query(...)):
+    jobs = list(jobs_collection.find(
+        {"ExtractedRole": role},
+        {
+            "_id": 1,
+            "Title": 1,
+            "Company": 1,
+            "City": 1,
+            "Area": 1,
+            "Description": 1,
+            "Salary": 1,
+            "Remote": 1
+        }
+    ))
+
+    # Convert ObjectId to string
+    for job in jobs:
+        job["_id"] = str(job["_id"])
+
+    return {"jobs": jobs}
 
 # Industry-role mapping
 industry_map = {
@@ -76,6 +99,7 @@ industry_map = {
     ]
 }
 
+
 @app.get("/trends/{industry}")
 def get_trends_by_industry(industry: str):
     raw_jobs = list(jobs_collection.find({}, {"ExtractedRole": 1, "Posting Date": 1, "_id": 0}))
@@ -85,15 +109,43 @@ def get_trends_by_industry(industry: str):
         raise HTTPException(status_code=500, detail="Required columns missing in dataset")
 
     df["Posting Date"] = pd.to_datetime(df["Posting Date"], errors="coerce")
-    df.dropna(subset=["Posting Date"], inplace=True)
+    # df.dropna(subset=["Posting Date"], inplace=True)
 
     if industry == "All Industries":
         role_counts = df["ExtractedRole"].value_counts().to_dict()
-        top_roles = list(role_counts.keys())[:15]
-        return {"roles": [
-            {"title": role, "count": role_counts[role], "forecast": None}
-            for role in top_roles
-        ]}
+        top_roles = list(role_counts.keys())[:30]
+        result = []
+
+        for role in top_roles:
+            role_df = df[df["ExtractedRole"] == role]
+            ts = role_df.groupby(role_df["Posting Date"].dt.to_period("M")).size().sort_index()
+            ts.index = ts.index.to_timestamp()
+
+            growth = None
+            if len(ts) >= 0:
+                try:
+                    train_data = ts.copy()
+                    adf = adfuller(train_data)
+                    model = ARIMA(train_data.values, order=(1, 1, 1))
+                    model_fit = model.fit()
+                    forecast = model_fit.forecast(steps=1)[0]
+                    latest = train_data.iloc[-1]
+                    growth = 0.0 if latest == 0 else round(((forecast - latest) / latest) * 100, 2)
+                    print(f"🔮 {role} (All Industries): Forecast={forecast:.2f}, Latest={latest}, Growth={growth}%")
+                except Exception as e:
+                    print(f"⚠️ ARIMA failed for {role} (All Industries): {e}")
+                    growth = 0.0
+            else:
+                print(f"⚠️ Not enough data for {role} (All Industries)")
+                growth = 0.0
+
+            result.append({
+                "title": role,
+                "count": role_counts[role],
+                "forecast": growth
+            })
+
+        return {"roles": result}
 
     if industry not in industry_map:
         raise HTTPException(status_code=400, detail="Invalid industry")
@@ -135,6 +187,7 @@ def get_trends_by_industry(industry: str):
 
     print(f"✅ Returning {len(result)} roles for {industry}")
     return {"roles": result}
+
 
 
 

@@ -43,13 +43,22 @@ const industries = [
 ];
 
 export default function TrendsPage() {
-  // const [selectedIndustry, setSelectedIndustry] = useState("Computer Science");
   const [showDropdown, setShowDropdown] = useState(false);
   const [selectedIndustry, setSelectedIndustry] = useState("All Industries");
   const [roleData, setRoleData] = useState([]);
   const [error, setError] = useState(null);
+  const [hasTimedOut, setHasTimedOut] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    setHasTimedOut(false);
+    setLoading(true);
+
+    const timeout = setTimeout(() => {
+      setHasTimedOut(true);
+      setLoading(false);
+    }, 40000); // 40 seconds
+
     const fetchTrends = async () => {
       try {
         const res = await fetch(`http://localhost:8000/trends/${selectedIndustry}`);
@@ -65,10 +74,15 @@ export default function TrendsPage() {
         console.error("Failed to load trends:", err);
         setError(err.message || "Failed to fetch trends.");
         setRoleData([]);
+      } finally {
+        clearTimeout(timeout);
+        setLoading(false);
       }
     };
 
     fetchTrends();
+
+    return () => clearTimeout(timeout);
   }, [selectedIndustry]);
 
   const buildChartData = (label, field, color) => ({
@@ -107,7 +121,6 @@ export default function TrendsPage() {
     },
   });
 
-  // 🔁 Dynamic forecast label logic
   const forecastLabel = (() => {
     const forecasts = roleData.map((r) => r.forecast).filter((v) => v !== null);
     const allNegative = forecasts.length > 0 && forecasts.every((v) => v < 0);
@@ -163,44 +176,66 @@ export default function TrendsPage() {
             </div>
           )}
         </div>
-
       </div>
 
+      {/* Loading Animation */}
+      {loading && (
+        <div className="w-full h-[50vh] flex flex-col justify-center items-center bg-white">
+            <div className="custom-loader wrapper scale-[1.4] mb-6">
+              <div className="circle"></div>
+              <div className="circle"></div>
+              <div className="circle"></div>
+            </div>
+            <p className="text-gray-700 text-xl font-semibold mb-1">
+              Loading Job Trends for You…
+            </p>
+            <p className="text-gray-500 text-base">
+              Please wait while we fetch the current & forecasted trends
+            </p>
+          </div>
+      )}
+
       {/* Error or No Data */}
-      {error && <p className="text-danger text-center">⚠️ {error}</p>}
-      {!error && roleData.length === 0 && (
+      {!loading && error && <p className="text-danger text-center">⚠️ {error}</p>}
+      {!loading && !error && hasTimedOut && roleData.length === 0 && (
         <p className="text-muted text-center">No trend data found for this industry.</p>
       )}
 
-      {/* Line Chart: Job Role Count */}
-      {roleData.length > 0 && (
+      {/* Charts */}
+      {!loading && roleData.length > 0 && (
         <div className="flex justify-center m-10">
           {/* Job Postings Chart */}
-          <div
-            className="flex-1 text-center"
-            style={{
-              height: "320px",
-            }}
-          >
+          <div className="flex-1 text-center" style={{ height: "320px" }}>
             <Line
               data={buildChartData("Number of Job Postings", "count", "#4B9CD3")}
+              options={{
+                ...chartOptions("Number of Job Postings"),
+                onClick: (event, elements) => {
+                  if (elements.length > 0) {
+                    const index = elements[0].index;
+                    const roleTitle = roleData[index].title;
+                    const encoded = encodeURIComponent(roleTitle);
+                    window.location.href = `/jobs/${encoded}`;
+                  }
+                },
+              }}
             />
           </div>
 
           {/* Forecast Chart */}
-          {selectedIndustry !== "All Industries" ? (
+          {roleData.some((r) => r.forecast !== null) ? (
             <div className="flex-1 text-center" style={{ height: "320px" }}>
-              <Line
-                data={buildChartData(forecastLabel, "forecast", "#72C472")}
-              />
+              <Line data={buildChartData(forecastLabel, "forecast", "#72C472")} />
             </div>
-          ) : (
+          ) : hasTimedOut ? (
             <div className="flex-1 text-center flex items-center justify-center text-muted">
-              {/* <p>Forecast not available for All Industries.</p> */}
+              <p>Forecast data not available.</p>
             </div>
-          )}
+          ) : null}
         </div>
       )}
     </div>
   );
 }
+
+
