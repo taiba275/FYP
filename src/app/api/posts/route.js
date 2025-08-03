@@ -33,8 +33,16 @@ export async function GET(req) {
     let match = {};
 
     if (search) {
-      match.Title = { $regex: `^${search}`, $options: "i" };
+      const regex = new RegExp(search.split(" ").join(".*"), "i");
+      match.$or = [
+        { Title: { $regex: regex } },
+        { Company: { $regex: regex } },
+        { Skills: { $regex: regex } },
+        { FunctionalArea: { $regex: regex } },
+        { ExtractedRole: { $regex: regex } },
+      ];
     }
+
     if (category) {
       match.Industry = { $regex: `\\b${category}\\b`, $options: "i" };
     }

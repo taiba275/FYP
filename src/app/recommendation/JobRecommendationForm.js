@@ -42,7 +42,7 @@ export default function JobRecommendationForm({ setJobs, setLoading, loading }) 
         location: data.location,
       };
 
-      const res = await fetch("http://localhost:8000/recommend", {
+      const res = await fetch("http://localhost:8001/recommend", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
