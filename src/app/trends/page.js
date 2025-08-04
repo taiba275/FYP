@@ -103,6 +103,8 @@ export default function TrendsPage() {
 
   const chartOptions = (title) => ({
     responsive: true,
+    maintainAspectRatio: false,
+
     plugins: {
       legend: { display: true },
       title: {
@@ -205,7 +207,7 @@ export default function TrendsPage() {
       {!loading && roleData.length > 0 && (
         <div className="flex justify-center m-10">
           {/* Job Postings Chart */}
-          <div className="flex-1 text-center" style={{ height: "320px" }}>
+          <div className="flex-1 text-center" style={{ height: "600px" }}>
             <Line
               data={buildChartData("Number of Job Postings", "count", "#4B9CD3")}
               options={{
@@ -224,8 +226,12 @@ export default function TrendsPage() {
 
           {/* Forecast Chart */}
           {roleData.some((r) => r.forecast !== null) ? (
-            <div className="flex-1 text-center" style={{ height: "320px" }}>
-              <Line data={buildChartData(forecastLabel, "forecast", "#72C472")} />
+<div className="flex-1 text-center" style={{ height: "600px" }}>
+
+              <Line
+                data={buildChartData(forecastLabel, "forecast", "#72C472")}
+                options={chartOptions(forecastLabel)}
+              />
             </div>
           ) : hasTimedOut ? (
             <div className="flex-1 text-center flex items-center justify-center text-muted">
