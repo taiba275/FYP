@@ -10,12 +10,15 @@ import ForgotPasswordModal from "./ForgotPasswordModal";
 import ResetPasswordModal from "./ResetPasswordModal";
 import { signInWithPopup } from "firebase/auth";
 import { auth, googleProvider, facebookProvider } from "../../library/firebase";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
+
 
 export default function LoginModal({ onClose }) {
   const router = useRouter();
   const params = useSearchParams();
   const modalRef = useRef(null);
   const [stage, setStage] = useState("login");
+  const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [otp, setOtp] = useState("");
@@ -258,16 +261,24 @@ export default function LoginModal({ onClose }) {
                             required
                           />
                         </div>
-                        <div>
+                          <div className="relative">
                           <input
-                            type="password"
-                            className="w-full p-3 border-b border-gray-300 focus:outline-none text-black"
+                            type={showPassword ? "text" : "password"}
+                            className="w-full p-3 border-b border-gray-300 focus:outline-none text-black pr-10"
                             placeholder="Password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             required
                           />
-                        </div>
+                          <span
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer text-gray-500"
+                            title={showPassword ? "Hide password" : "Show password"}
+                          >
+                            {showPassword ? <FaEyeSlash /> : <FaEye />}
+                          </span>
+                            </div>
+
                         <div className="flex items-center">
                           <input
                             type="checkbox"

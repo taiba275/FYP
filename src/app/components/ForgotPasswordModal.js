@@ -1,4 +1,3 @@
-// components/ForgotPasswordModal.js
 "use client";
 import { useState } from "react";
 import ResetPasswordModal from "./ResetPasswordModal";

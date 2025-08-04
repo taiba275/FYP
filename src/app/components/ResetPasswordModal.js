@@ -1,12 +1,13 @@
-// components/ResetPasswordModal.js
 "use client";
 import { useState } from "react";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 export default function ResetPasswordModal({ email, onClose }) {
   const [otp, setOtp] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [message, setMessage] = useState("");
   const [success, setSuccess] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleReset = async (e) => {
     e.preventDefault();
@@ -56,16 +57,24 @@ export default function ResetPasswordModal({ email, onClose }) {
             required
           />
         </div>
-        <div>
+        <div className="relative">
           <label className="text-sm text-gray-600">NEW PASSWORD</label>
           <input
-            type="password"
+            type={showPassword ? "text" : "password"}
             placeholder="New password"
-            className="w-full p-3 border-b border-gray-300 focus:outline-none text-black"
+            className="w-full p-3 border-b border-gray-300 focus:outline-none text-black pr-10"
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
             required
           />
+          <span
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-3 top-[42px] transform -translate-y-1/2 cursor-pointer text-gray-500 p-1"
+            title={showPassword ? "Hide password" : "Show password"}
+            aria-label={showPassword ? "Hide password" : "Show password"}
+          >
+            {showPassword ? <FaEyeSlash /> : <FaEye />}
+          </span>
         </div>
         <button
           type="submit"
@@ -89,5 +98,3 @@ export default function ResetPasswordModal({ email, onClose }) {
     </div>
   );
 }
-// This component handles the reset password functionality after OTP verification.
-// It allows users to enter their OTP and new password, and provides feedback on success or failure

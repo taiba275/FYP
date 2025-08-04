@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { FcGoogle } from "react-icons/fc";
-import { FaFacebookF, FaTwitter } from "react-icons/fa";
+import { FaFacebookF, FaTwitter, FaEye, FaEyeSlash } from "react-icons/fa";
 import Image from "next/image";
 import { useAuth } from "../context/AuthContext";
 import { signInWithPopup } from "firebase/auth";
@@ -19,9 +19,10 @@ export default function SignupModal({ onClose }) {
   const [subscribe, setSubscribe] = useState(false);
   const [error, setError] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
-
   const [showOtp, setShowOtp] = useState(false);
   const [otp, setOtp] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const { setUser } = useAuth();
 
@@ -29,25 +30,19 @@ export default function SignupModal({ onClose }) {
     try {
       const result = await signInWithPopup(auth, googleProvider);
       const user = result.user;
-      const token = await user.getIdToken(); // ✅ now user is defined
+      const token = await user.getIdToken();
 
       const res = await fetch("/api/auth/google", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include", // allow setting cookie from backend
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ token }),
       });
 
       if (res.ok) {
         const data = await res.json();
-        setUser(data.user); // Save user to context
-        if (data.isNewUser) {
-          router.push("/UserProfile");
-        } else {
-          router.push("/");
-        }
+        setUser(data.user);
+        router.push(data.isNewUser ? "/UserProfile" : "/");
         onClose();
       } else {
         const data = await res.json();
@@ -71,26 +66,16 @@ export default function SignupModal({ onClose }) {
 
       const res = await fetch("/api/auth/facebook", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({ token }),
       });
 
-      if (!res.ok) {
-        const data = await res.json();
-        setError(data.message || "Facebook login failed");
-        return;
-      }
-
       const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Facebook login failed");
+
       setUser(data.user);
-      if (data.isNewUser) {
-        router.push("/UserProfile");
-      } else {
-        router.push("/");
-      }
+      router.push(data.isNewUser ? "/UserProfile" : "/");
       onClose();
     } catch (err) {
       console.error("Facebook login error:", err);
@@ -102,7 +87,6 @@ export default function SignupModal({ onClose }) {
     }
   };
 
-  // ESC to close
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === "Escape") onClose();
@@ -190,22 +174,13 @@ export default function SignupModal({ onClose }) {
           {/* Left Panel */}
           <div className="w-1/2 bg-[#f5f5f5] flex flex-col justify-between px-10 py-6">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-8">
-                Welcome!
-              </h1>
+              <h1 className="text-3xl font-bold text-gray-900 mb-8">Welcome!</h1>
             </div>
             <div className="flex justify-center items-center flex-grow">
               <div className="flex items-center space-x-6">
-                <div className="text-[200px] font-bold text-gray-900 min-w-max">
-                  J.
-                </div>
+                <div className="text-[200px] font-bold text-gray-900 min-w-max">J.</div>
                 <div className="w-64 h-64 mb-30 flex items-center justify-center">
-                  <Image
-                    src="/Images/smile.svg"
-                    alt="Welcome Graphic"
-                    width={280}
-                    height={280}
-                  />
+                  <Image src="/Images/smile.svg" alt="Welcome Graphic" width={280} height={280} />
                 </div>
               </div>
             </div>
@@ -216,8 +191,7 @@ export default function SignupModal({ onClose }) {
                 onClick={() => {
                   onClose();
                   setTimeout(() => {
-                    const loginBtn =
-                      document.querySelector("[data-open-login]");
+                    const loginBtn = document.querySelector("[data-open-login]");
                     loginBtn?.click();
                   }, 300);
                 }}
@@ -234,9 +208,7 @@ export default function SignupModal({ onClose }) {
                 {showOtp ? "Verify OTP" : "Create Account"}
               </h2>
 
-              {error && (
-                <p className="text-red-500 text-center mb-4 text-sm">{error}</p>
-              )}
+              {error && <p className="text-red-500 text-center mb-4 text-sm">{error}</p>}
 
               <form
                 onSubmit={(e) => {
@@ -264,22 +236,43 @@ export default function SignupModal({ onClose }) {
                       required
                     />
                     <div className="grid grid-cols-2 gap-4">
-                      <input
-                        type="password"
-                        placeholder="Password"
-                        className="w-full p-3 text-black border-b border-gray-300 focus:outline-none focus:border-black"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                      />
-                      <input
-                        type="password"
-                        placeholder="Confirm Password"
-                        className="w-full p-3 text-black border-b border-gray-300 focus:outline-none focus:border-black"
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        required
-                      />
+                      <div className="relative">
+                        <input
+                          type={showPassword ? "text" : "password"}
+                          placeholder="Password"
+                          className="w-full p-3 text-black border-b border-gray-300 focus:outline-none focus:border-black pr-10"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          required
+                        />
+                        <span
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer text-gray-500 p-1"
+                          title={showPassword ? "Hide password" : "Show password"}
+                          aria-label={showPassword ? "Hide password" : "Show password"}
+                        >
+                          {showPassword ? <FaEyeSlash /> : <FaEye />}
+                        </span>
+                      </div>
+
+                      <div className="relative">
+                        <input
+                          type={showConfirmPassword ? "text" : "password"}
+                          placeholder="Confirm Password"
+                          className="w-full p-3 text-black border-b border-gray-300 focus:outline-none focus:border-black pr-10"
+                          value={confirmPassword}
+                          onChange={(e) => setConfirmPassword(e.target.value)}
+                          required
+                        />
+                        <span
+                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                          className="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer text-gray-500 p-1"
+                          title={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}
+                          aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}
+                        >
+                          {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+                        </span>
+                      </div>
                     </div>
 
                     <div className="text-sm text-gray-600">
@@ -291,9 +284,7 @@ export default function SignupModal({ onClose }) {
                           checked={subscribe}
                           onChange={() => setSubscribe(!subscribe)}
                         />
-                        <label htmlFor="subscribe">
-                          Please contact me via e-mail
-                        </label>
+                        <label htmlFor="subscribe">Please contact me via e-mail</label>
                       </div>
                       <div className="mt-2 flex items-center">
                         <input
@@ -305,10 +296,7 @@ export default function SignupModal({ onClose }) {
                           required
                         />
                         <label htmlFor="agreeTerms">
-                          I accept the{" "}
-                          <span className="font-semibold">
-                            Terms and Conditions
-                          </span>
+                          I accept the <span className="font-semibold">Terms and Conditions</span>
                         </label>
                       </div>
                     </div>
@@ -325,17 +313,17 @@ export default function SignupModal({ onClose }) {
                       onChange={(e) => setOtp(e.target.value)}
                       required
                     />
-                     <div className="mt-2 flex items-center text-sm text-gray-600">
-                    <input
-                      type="checkbox"
-                      id="rememberMe"
-                      className="mr-2"
-                      checked={rememberMe}
-                      onChange={() => setRememberMe(!rememberMe)}
-                    />
-                    <label htmlFor="rememberMe">Remember me for 30 days</label>
-                </div>
-                </>
+                    <div className="mt-2 flex items-center text-sm text-gray-600">
+                      <input
+                        type="checkbox"
+                        id="rememberMe"
+                        className="mr-2"
+                        checked={rememberMe}
+                        onChange={() => setRememberMe(!rememberMe)}
+                      />
+                      <label htmlFor="rememberMe">Remember me for 30 days</label>
+                    </div>
+                  </>
                 )}
 
                 <button
@@ -348,9 +336,7 @@ export default function SignupModal({ onClose }) {
 
               {!showOtp && (
                 <div className="mt-6">
-                  <p className="text-left text-gray-600 mb-2">
-                    Or sign up with
-                  </p>
+                  <p className="text-left text-gray-600 mb-2">Or sign up with</p>
                   <div className="flex space-x-3 justify-center">
                     <button
                       onClick={handleGoogleLogin}
@@ -366,7 +352,7 @@ export default function SignupModal({ onClose }) {
                     </button>
                     <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100">
                       <FaTwitter className="text-blue-400 text-xl" /> Twitter
-                    </button> 
+                    </button>
                   </div>
                 </div>
               )}
