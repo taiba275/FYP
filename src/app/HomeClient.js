@@ -9,6 +9,7 @@ import LoginModal from "./components/LoginModal";
 import SignupModal from "./components/SignupModel";
 import { useAuth } from "./context/AuthContext";
 import { useUI } from "./context/UIContext";
+import ChatbotWidget from "./components/ChatbotWidget";
 import "./globals.css";
 
 export default function HomeClient({ initialJobs, initialCategory = "" }) {
@@ -137,6 +138,8 @@ export default function HomeClient({ initialJobs, initialCategory = "" }) {
 
       {showLoginModal && <LoginModal onClose={() => setShowLoginModal(false)} />}
       {showSignupModal && <SignupModal onClose={() => setShowSignupModal(false)} />}
+        <ChatbotWidget />
+
     </div>
   );
 }
