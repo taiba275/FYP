@@ -195,7 +195,8 @@ const Header = () => {
                           <button
                             onClick={() => {
                               setShowDropdown(false);
-                              router.push("/notifications");
+                              router.push("/favorites");
+                              
                             }}
                             className="w-full text-left px-4 py-2 hover:bg-gray-100"
                           >

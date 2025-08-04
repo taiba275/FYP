@@ -112,8 +112,11 @@ const User = mongoose.models.User || mongoose.model('User',
     emailVerified: {
       type: Boolean,
       default: false
-    }
-
+    },
+    favoriteJobs: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Job'
+    }]
   }, { timestamps: true })
 );
 
