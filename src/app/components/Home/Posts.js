@@ -34,8 +34,7 @@ export default function Posts({ jobs = [], viewMode = "grid", setViewMode }) {
     try {
       const res = await fetch(`/api/jobs/${id}`);
       const data = await res.json();
-      setSelectedJob(data.job); // ✅ This sets selectedJob = { Title: "...", Company: "...", ... }
-
+      setSelectedJob(data);
     } catch (err) {
       console.error("Failed to fetch job:", err);
     }
@@ -185,5 +184,3 @@ export default function Posts({ jobs = [], viewMode = "grid", setViewMode }) {
     </div>
   );
 }
-
-
