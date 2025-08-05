@@ -116,7 +116,12 @@ const User = mongoose.models.User || mongoose.model('User',
     favoriteJobs: [{
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Job'
-    }]
+    }],
+    jobsPosted: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Job'
+    }],
+
   }, { timestamps: true })
 );
 

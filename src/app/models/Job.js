@@ -25,6 +25,12 @@ const JobSchema = new mongoose.Schema({
   currency: String,
   "salary_lower": Number,
   "salary_upper": Number,
+  CompanyEmail: {
+  type: String,
+  required: true,
+},
+
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
 }, {
   collection: 'PreprocessedCombinedData'
 });
