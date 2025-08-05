@@ -466,7 +466,7 @@ const Header = () => {
                           <button
                             onClick={() => {
                               setShowDropdown(false);
-                              router.push("/jobs/posted");
+                              router.push("/jobsPosted");
                             }}
                             className="w-full text-left px-4 py-2 hover:bg-gray-100"
                           >
