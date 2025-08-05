@@ -184,3 +184,5 @@ export default function Posts({ jobs = [], viewMode = "grid", setViewMode }) {
     </div>
   );
 }
+
+
