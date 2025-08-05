@@ -50,7 +50,7 @@ export default function Posts({ jobs = [], viewMode = "grid", setViewMode }) {
         setFavorites(favIds);
       });
   }, [user]);
-  temp = 6894;
+
   // Toggle favorite for a job
   const toggleFavorite = async (jobId) => {
     if (!user) return alert("Please log in to save jobs.");
@@ -74,8 +74,7 @@ export default function Posts({ jobs = [], viewMode = "grid", setViewMode }) {
       {/* Job count and view toggle */}
       <div className="w-full flex flex-col md:flex-row justify-between items-center mb-6">
         <p className="text-sm md:text-base text-gray-700 mb-2 md:mb-0">
-          {/* <strong className="text-black">{jobs.length}</strong> job opportunities waiting. */}
-          <strong className="text-black">{temp}</strong> job opportunities waiting.
+          <strong className="text-black">{jobs.length}</strong> job opportunities waiting.
         </p>
         <div className="flex items-center space-x-3">
           <button
