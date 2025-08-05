@@ -51,40 +51,44 @@ console.log("🔍 Decoded userId:", userId);
       jobType,
       applyBefore,
       postingDate,
+      description,
     } = body;
 
     const finalIndustry = industry === "Other" ? industryOther : industry;
     const finalFunctionalArea = functionalArea === "Other" ? functionalAreaOther : functionalArea;
 
     const newJob = new Job({
-      Title: jobTitle,
-      Company: companyName,
-      CompanyEmail: companyEmail,
-      "Job Location": jobLocation,
-      City: city,
-      Description: "", // Optional: Can be edited later
-      Salary: `${minSalary} - ${maxSalary} ${currency}`,
-      currency,
-      salary_lower: minSalary || "not mentioned",
-      salary_upper: maxSalary || "not mentioned",
-      Skills: skills,
-      Industry: finalIndustry,
-      "Functional Area": finalFunctionalArea,
-      "Total Positions": totalPositions ? `${totalPositions} post` : "1 post",
-      "Job Shift": jobShift,
-      "Job Type": jobType,
-      Gender: gender,
-      "Minimum Education": education,
-      "Degree Title": degreeTitle,
-      "Career Level": "Not Specified", // optional field
-      "Apply Before": applyBefore,
-      "Posting Date": postingDate,
-      Experience: `${minExperience} years - ${maxExperience} years`,
-      "Experience Range": `(${minExperience}, ${maxExperience})`,
-      ExtractedRole: jobRole,
-      JobURL: "", // Can be added later
-      userId, // Save who created it
-    });
+  Title: jobTitle,
+  jobRole,                                 // ✅ NEW: make sure this is here
+  Company: companyName,
+  CompanyEmail: companyEmail,
+  "Job Location": jobLocation,
+  City: city,
+  Description: description || "",          // ✅ NEW: make sure this is here
+  Salary: `${minSalary} - ${maxSalary} ${currency}`,
+  currency,
+  salary_lower: minSalary || "not mentioned",
+  salary_upper: maxSalary || "not mentioned",
+  Skills: skills,
+  Industry: finalIndustry,
+  "Functional Area": finalFunctionalArea,
+  "Total Positions": totalPositions ? `${totalPositions} post` : "1 post",
+  "Job Shift": jobShift,
+  "Job Type": jobType,
+  Gender: gender,
+  "Minimum Education": education,
+  "Degree Title": degreeTitle,
+  "Career Level": "Not Specified",
+  "Apply Before": applyBefore,
+  "Posting Date": postingDate,
+  Experience: `${minExperience} years - ${maxExperience} years`,
+  "Experience Range": `(${minExperience}, ${maxExperience})`,
+  ExtractedRole: jobRole,                  // Optional: legacy support
+  JobURL: "",
+  userId,
+});
+
+
 
     await newJob.save();
     console.log("✅ Job created with ID:", newJob._id);
