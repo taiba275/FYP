@@ -94,7 +94,7 @@ export default function MiniChatBox({ onClose, initialMessage = '' }) {
   };
 
   return (
-    <div className="fixed bottom-20 right-6 z-50">
+    <div className="fixed bottom-[30px] right-[30px] z-50">
       <div
         ref={modalRef}
         className="w-[400px] h-[500px] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-gray-200"
