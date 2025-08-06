@@ -41,7 +41,7 @@ const cities = [
 export default function UserProfile() {
   const router = useRouter();
 
-  // Manage edit mode
+  const [authChecked, setAuthChecked] = useState(false); // ✅ to ensure protected access
   const [editMode, setEditMode] = useState(false);
   const [loading, setLoading] = useState(true);
   const [savedData, setSavedData] = useState(null);
@@ -77,10 +77,29 @@ export default function UserProfile() {
     name: "education",
   });
 
-  // Watch interest for "Other" input
   const selectedInterest = watch("interest");
 
-  // Fetch user data on load and reset form
+  // ✅ Step 1: Check authentication
+  useEffect(() => {
+    async function checkAuth() {
+      try {
+        const res = await fetch("/api/auth/me", { credentials: "include" });
+        const data = await res.json();
+
+        if (!res.ok || !data.authenticated) {
+          router.push("/"); // Redirect if not authenticated
+        } else {
+          setAuthChecked(true); // Allow rest of the page to load
+        }
+      } catch {
+        router.push("/");
+      }
+    }
+
+    checkAuth();
+  }, []);
+
+  // ✅ Step 2: Fetch profile data if authenticated
   useEffect(() => {
     async function fetchProfile() {
       const res = await fetch("/api/user/profile");
@@ -89,16 +108,34 @@ export default function UserProfile() {
         if (!Array.isArray(data.user.education) || data.user.education.length === 0) {
           data.user.education = [{ level: "", field: "" }];
         }
-        setSavedData(data.user);      // Save here
+        setSavedData(data.user);
         reset(data.user);
       }
       setLoading(false);
     }
-    fetchProfile();
-  }, [reset]);
 
+    if (authChecked) {
+      fetchProfile();
+    }
+  }, [authChecked, reset]);
 
-  // Submit handler for saving edits
+  // ✅ Step 3: Redirect if logged out while on this page
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch("/api/auth/me", { credentials: "include" });
+        const data = await res.json();
+        if (!data.authenticated) {
+          router.push("/");
+        }
+      } catch {
+        router.push("/");
+      }
+    }, 10000); // Check every 10 seconds
+
+    return () => clearInterval(interval);
+  }, []);
+
   const onSubmit = async (data) => {
     try {
       const payload = {
@@ -117,7 +154,6 @@ export default function UserProfile() {
       if (res.ok) {
         setEditMode(false);
         router.push("/");
-        // Optionally refetch or reset here to update form data from server
       } else {
         alert("Failed to update profile");
       }
@@ -126,7 +162,9 @@ export default function UserProfile() {
     }
   };
 
-  if (loading) return <div>Loading...</div>;
+  // ✅ Don't render anything until auth and profile are loaded
+  if (!authChecked || loading) return <div className="p-6 text-center">Loading...</div>;
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-gray-200 to-gray-100 p-6">

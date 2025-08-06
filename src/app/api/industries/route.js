@@ -12,12 +12,30 @@ export async function GET() {
       .map((job) => job.Industry)
       .filter(Boolean);
 
-    // Flatten and clean industries
+    const excluded = new Set([
+      'not mentioned',
+      'n/a',
+      'unknown',
+      'none',
+      'null',
+      'unspecified',
+      'other',
+    ]);
+
+    // Flatten, clean, filter, and capitalize
     const splitIndustries = rawIndustries.flatMap((entry) =>
       entry
-        .split(/[,/]/) // split on comma or slash
-        .map((item) => item.trim()) // trim whitespace
-        .filter((item) => item.length > 0)
+        .split(/[,/]/)
+        .map((item) => item.trim())
+        .filter(
+          (item) =>
+            item.length > 0 &&
+            !excluded.has(item.toLowerCase())
+        )
+        .map(
+          (item) =>
+            item.charAt(0).toUpperCase() + item.slice(1).toLowerCase()
+        )
     );
 
     // Deduplicate and sort

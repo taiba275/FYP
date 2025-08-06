@@ -1,14 +1,28 @@
-"use client";
-
 import { useForm } from "react-hook-form";
-
-const cities = [
-  "Karachi", "Lahore", "Islamabad", "Rawalpindi", "Faisalabad", "Multan",
-  "Peshawar", "Quetta", "Sialkot", "Gujranwala", "Hyderabad", "Sukkur",
-];
+import { useRef } from "react";
 
 const qualifications = [
-  "Matric", "Intermediate", "Bachelors", "Masters", "PhD", "Other",
+  "Matric",
+  "Intermediate",
+  "Bachelor",
+  "Master",
+  "PhD",
+  "Other",
+];
+
+const cities = [
+  "Karachi",
+  "Lahore",
+  "Islamabad",
+  "Rawalpindi",
+  "Faisalabad",
+  "Multan",
+  "Peshawar",
+  "Quetta",
+  "Sialkot",
+  "Gujranwala",
+  "Hyderabad",
+  "Sukkur",
 ];
 
 export default function JobRecommendationForm({ setJobs, setLoading, loading }) {
@@ -16,6 +30,7 @@ export default function JobRecommendationForm({ setJobs, setLoading, loading }) 
     register,
     handleSubmit,
     watch,
+    reset,
     formState: { errors },
   } = useForm({
     defaultValues: {
@@ -28,6 +43,7 @@ export default function JobRecommendationForm({ setJobs, setLoading, loading }) 
   });
 
   const selectedQualification = watch("qualification");
+  const fileInputRef = useRef();
 
   const onSubmit = async (data) => {
     setLoading(true);
@@ -53,6 +69,39 @@ export default function JobRecommendationForm({ setJobs, setLoading, loading }) 
     } catch (err) {
       alert("Error fetching recommendations.");
     }
+    setLoading(false);
+  };
+
+  const handleFileUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setLoading(true);
+
+    const formData = new FormData();
+    formData.append("resume", file);
+
+    try {
+      const res = await fetch("http://localhost:8001/extract-resume", {
+        method: "POST",
+        body: formData,
+      });
+
+      const extracted = await res.json();
+      reset({
+        skills: extracted.skills || "",
+        experience: extracted.experience || "",
+        qualification: extracted.qualification || "",
+        customQualification: extracted.qualification === "Other" ? extracted.customQualification : "",
+        location: extracted.location || "",
+      });
+
+      // Auto-trigger submit with new values
+      handleSubmit(onSubmit)();
+    } catch (err) {
+      alert("Failed to extract resume details.");
+    }
+
     setLoading(false);
   };
 
