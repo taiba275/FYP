@@ -35,15 +35,22 @@ export async function GET(req) {
         },
       }
     );
-  } catch (error) {
-    return NextResponse.json(
-      { authenticated: false, message: "Invalid or expired token" },
-      {
-        status: 401,
-        headers: {
-          "Cache-Control": "no-store",
-        },
+  }  catch (error) {
+      let message = "Invalid or expired token";
+      if (error.name === "TokenExpiredError") {
+        message = "Token has expired";
+      } else if (error.name === "JsonWebTokenError") {
+        message = "Malformed token";
       }
-    );
-  }
+    
+      return NextResponse.json(
+        { authenticated: false, message },
+        {
+          status: 401,
+          headers: {
+            "Cache-Control": "no-store",
+          },
+        }
+      );
+    }
 }

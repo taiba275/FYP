@@ -14,7 +14,10 @@ from bson import ObjectId
 from fastapi import Request
 from fastapi import HTTPException
 from fastapi import Body
-
+from fastapi import UploadFile, File
+import fitz  # PyMuPDF
+import docx
+import re
 
 
 # Load env
@@ -302,7 +305,54 @@ async def delete_from_faiss(payload: dict = Body(...)):
     except Exception as e:
         print(f"❌ Error while deleting from FAISS: {e}")
         raise HTTPException(status_code=500, detail="Internal error deleting job")
+    
+@app.post("/extract-resume")
+async def extract_resume(resume: UploadFile = File(...)):
+    try:
+        content = ""
+        if resume.filename.endswith(".pdf"):
+            doc = fitz.open(stream=await resume.read(), filetype="pdf")
+            content = "\n".join([page.get_text() for page in doc])
+        elif resume.filename.endswith(".docx"):
+            file_bytes = await resume.read()
+            with open("temp.docx", "wb") as f:
+                f.write(file_bytes)
+            doc = docx.Document("temp.docx")
+            content = "\n".join([p.text for p in doc.paragraphs])
+        else:
+            raise HTTPException(status_code=400, detail="Unsupported file format")
 
+        content = content.lower()
+
+        # Extract example skills (you can customize these)
+        skills = re.findall(r"\b(?:python|react|node|html|css|django|ml|ai|seo)\b", content)
+
+        # Qualification extraction
+        qualification = "Other"
+        qual_levels = ["phd", "master", "bachelor", "intermediate", "matric"]
+        for q in qual_levels:
+            if q in content:
+                qualification = q.capitalize()
+                break
+
+
+        # Experience extraction
+        match_exp = re.search(r"(\d+)\s*(?:years|yrs|year)", content)
+        experience = match_exp.group(1) if match_exp else "0"
+
+        # City extraction
+        cities = ["karachi", "lahore", "islamabad", "rawalpindi", "multan", "peshawar", "quetta"]
+        location = next((c.capitalize() for c in cities if c in content), "")
+
+        return {
+            "skills": ", ".join(set(skills)).title(),
+            "qualification": qualification,
+            "experience": experience,
+            "location": location
+        }
+    except Exception as e:
+        print("❌ Error parsing resume:", e)
+        raise HTTPException(status_code=500, detail="Failed to parse resume")
 
 
 

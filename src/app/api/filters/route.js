@@ -7,49 +7,65 @@ export async function GET() {
     await connectDB();
 
     const jobs = await Job.find({}, {
-      Industry: 1,
+      ExtractedRole: 1,
       JobType: 1,
       City: 1,
       _id: 0,
     });
 
-    const industrySet = new Set();
+    const roleSet = new Set();
     const jobTypes = new Set();
-    const cities = new Set();
+    const citiesSet = new Set();
 
     jobs.forEach((job) => {
-      // ✅ SPLIT multi-industry strings like "Advertising, Design"
-      if (job.Industry) {
-        job.Industry.split(',').forEach((raw) => {
-          const cleaned = raw.trim().toLowerCase();
-          if (cleaned) industrySet.add(cleaned);
-        });
+      // ✅ ExtractedRole
+      if (job.ExtractedRole) {
+        const role = job.ExtractedRole.trim().toLowerCase();
+        if (role) roleSet.add(role);
       }
 
+      // ✅ Collect job types
       if (job.JobType) {
         jobTypes.add(job.JobType.trim());
       }
 
+      // ✅ Collect cities (handling comma-separated values)
       if (job.City) {
-        job.City.split(',').forEach((c) => cities.add(c.trim()));
+        job.City.split(',').forEach((c) => {
+          const cleaned = c.trim().toLowerCase();
+          if (cleaned) citiesSet.add(cleaned);
+        });
       }
     });
 
-    // ✅ Capitalize first letter of each word in industries
-    const industries = [...industrySet]
-      .map((industry) =>
-        industry
+    // ✅ Normalize and sort categories
+    const extractedRoles = [...roleSet]
+      .map(role =>
+        role
           .split(' ')
-          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
           .join(' ')
       )
       .sort();
 
+    // ✅ Normalize, deduplicate, and sort cities
+    const cities = [...citiesSet]
+      .map(city =>
+        city
+          .split(' ')
+          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(' ')
+          .trim()
+      );
+
+    const uniqueCities = [...new Set(cities)].sort();
+
     return NextResponse.json({
-      industries,
+      extractedRoles,
       jobTypes: [...jobTypes].sort(),
-      cities: [...cities].sort(),
+      cities: uniqueCities,
     });
+
   } catch (error) {
     console.error('Error loading filters:', error);
     return NextResponse.json({ error: 'Failed to fetch filter data' }, { status: 500 });

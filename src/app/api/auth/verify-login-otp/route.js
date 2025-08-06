@@ -35,7 +35,7 @@ export async function POST(req) {
     const token = jwt.sign(
       { userId: user._id, email: user.email },
       SECRET,
-      { expiresIn: rememberMe ? '30d' : '1h' }
+      { expiresIn: rememberMe ? '30d' : '1d' }
     );
 
     // Set cookie
@@ -49,7 +49,7 @@ export async function POST(req) {
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       path: '/',
-      maxAge: rememberMe ? 60 * 60 * 24 * 30 : 60 * 60, // 30d vs 1h
+      maxAge: rememberMe ? 60 * 60 * 24 * 30 : 60 * 60 * 24, // 30d vs 1d
     });
 
     return response;

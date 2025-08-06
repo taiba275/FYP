@@ -148,7 +148,7 @@ useEffect(() => {
   };
 
 return (
-  <div className="max-w-[1400px] mx-auto px-4 py-8">
+  <div className="max-w-[1400px] mx-auto px-4 text-black py-8">
     {/* <h2 className="text-2xl font-semibold text-center mb-8">Post a Job</h2> */}
     <h2 className="text-2xl font-bold text-center mb-6">{editMode ? "Edit Job" : "Post a Job"}</h2>
 

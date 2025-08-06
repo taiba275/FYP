@@ -44,8 +44,9 @@ export async function GET(req) {
     }
 
     if (category) {
-      match.Industry = { $regex: `\\b${category}\\b`, $options: "i" };
+      match.ExtractedRole = { $regex: `\\b${category}\\b`, $options: "i" };
     }
+    
     if (type) {
       match["Job Type"] = { $regex: `^${type}$`, $options: "i" };
     }
