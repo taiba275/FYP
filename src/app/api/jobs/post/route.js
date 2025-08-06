@@ -51,6 +51,8 @@ console.log("🔍 Decoded userId:", userId);
       jobType,
       applyBefore,
       postingDate,
+      jobDescription,
+      
     } = body;
 
     const finalIndustry = industry === "Other" ? industryOther : industry;
@@ -62,7 +64,7 @@ console.log("🔍 Decoded userId:", userId);
       CompanyEmail: companyEmail,
       "Job Location": jobLocation,
       City: city,
-      Description: "", // Optional: Can be edited later
+      Description: jobDescription || "",
       Salary: `${minSalary} - ${maxSalary} ${currency}`,
       currency,
       salary_lower: minSalary || "not mentioned",
@@ -84,21 +86,53 @@ console.log("🔍 Decoded userId:", userId);
       ExtractedRole: jobRole,
       JobURL: "", // Can be added later
       userId, // Save who created it
+      
     });
 
     await newJob.save();
-    console.log("✅ Job created with ID:", newJob._id);
-console.log("👉 Trying to update user with ID:", userId);
 
-
-    // Add job to user's jobsPosted
     await User.findByIdAndUpdate(userId, {
-      $addToSet: { jobsPosted: newJob._id }
-    });
+  $push: { jobsPosted: newJob._id }
+});
 
-    return NextResponse.json({ success: true, message: "Job posted successfully" });
-  } catch (err) {
-    console.error("Job post error:", err);
-    return NextResponse.json({ success: false, message: "Failed to post job." }, { status: 500 });
+
+
+
+
+
+
+    // NEWLY ADDED CODE FOR AUTOMATIC UPDATE IN RECOMMENDATION JOBS
+    console.log("✅ Job created with ID:", newJob._id);
+
+    // 🔁 Call FastAPI to update FAISS index
+    try {
+      const fastapiURL = "http://localhost:8001/update-faiss"; // Change to deployed URL if needed
+      await fetch(fastapiURL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          jobId: newJob._id,
+          title: jobTitle,
+          skills: skills,
+          description: jobDescription || "",
+        }),
+      });
+      console.log("📡 FAISS index updated for job:", newJob._id);
+    } catch (err) {
+      console.error("❌ Failed to update FAISS index:", err.message);
+    }
+
+    return NextResponse.json({ success: true, jobId: newJob._id });
+
+  } catch (error) {
+    console.error("❌ Error in POST job:", error);
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
+
+// delete Job faiss call
+// await fetch("http://localhost:8001/refresh-faiss", {
+//   method: "POST",
+// });
+
+

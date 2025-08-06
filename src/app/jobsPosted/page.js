@@ -20,21 +20,20 @@ export default function JobsPostedPage() {
     router.push(`/edit-job/${jobId}`); // You should have an edit page already or create one
   };
 
-  const handleDelete = async (jobId) => {
-    if (!confirm("Are you sure you want to delete this job?")) return;
+    const handleDelete = async (jobId) => {
+    const res = await fetch(`/api/jobs/delete-with-faiss?jobId=${jobId}`, {
+      method: "DELETE",
+      credentials: "include",
+    });
 
-    try {
-      const res = await fetch(`/api/jobs/${jobId}`, {
-        method: "DELETE",
-        credentials: "include",
-      });
-      if (res.ok) {
-        setJobsPosted(prev => prev.filter(job => job._id !== jobId));
-      }
-    } catch (err) {
-      console.error("Failed to delete job:", err);
+    if (res.ok) {
+      setJobsPosted(prev => prev.filter(job => job._id !== jobId)); // 👈 This removes the job from UI
+    } else {
+      console.error("❌ Failed to delete job from server.");
+      alert("Failed to delete job. Please try again.");
     }
   };
+
 
   return (
     <div className="p-6 max-w-5xl mx-auto">

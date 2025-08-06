@@ -29,7 +29,7 @@ const JobSchema = new mongoose.Schema({
   type: String,
   required: true,
 },
-
+  ExtractedRole: String,
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
 }, {
   collection: 'PreprocessedCombinedData'
