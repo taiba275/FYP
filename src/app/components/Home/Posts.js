@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { FaThLarge, FaList } from "react-icons/fa";
-import { FaHeart, FaRegHeart } from "react-icons/fa"; 
+import { FaHeart, FaRegHeart } from "react-icons/fa";
 import JobDetailsModal from "../JobDetailsModal";
-import { useAuth } from "../../context/AuthContext"; // auth context
+import { useAuth } from "../../context/AuthContext";
 import Link from "next/link";
 
 function capitalizeWords(str = "") {
@@ -46,7 +46,6 @@ function formatSalary(post) {
 
   return "Not mentioned";
 }
-
 
 export default function Posts({ jobs = [], viewMode = "grid", setViewMode }) {
   const [selectedJob, setSelectedJob] = useState(null);
@@ -94,15 +93,14 @@ export default function Posts({ jobs = [], viewMode = "grid", setViewMode }) {
   };
   const [rightClickedJobId, setRightClickedJobId] = useState(null);
 
-useEffect(() => {
-  const handleClickOutside = () => {
-    if (rightClickedJobId) setRightClickedJobId(null);
-  };
+  useEffect(() => {
+    const handleClickOutside = () => {
+      if (rightClickedJobId) setRightClickedJobId(null);
+    };
 
-  document.addEventListener("click", handleClickOutside);
-  return () => document.removeEventListener("click", handleClickOutside);
-}, [rightClickedJobId]);
-
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, [rightClickedJobId]);
 
   return (
     <div className="flex flex-col items-center justify-center w-full px-4 md:px-8">
@@ -131,110 +129,127 @@ useEffect(() => {
 
       {/* Job cards */}
       <div
-        className={`w-full ${
-          viewMode === "list"
-            ? "flex flex-col gap-4"
-            : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-        }`}
+        className={`w-full ${viewMode === "list"
+          ? "flex flex-col gap-4"
+          : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          }`}
       >
         {jobs.map((post) => (
-  <Link
-    key={post._id}
-    href={`/jobs/${post._id}`}
-    target="_blank"
-    rel="noopener noreferrer"
-    className="block"
-  >
-    <div
-      onContextMenu={(e) => {
-        e.stopPropagation();
-        setRightClickedJobId(post._id);
-      }}
-      className={`cursor-pointer bg-white rounded-lg shadow-md p-5 
-        ${rightClickedJobId === post._id ? "border-black" : "border-gray-200"}
-        border hover:shadow-xl transition-transform hover:-translate-y-1 
-        flex flex-col h-auto overflow-hidden relative ${viewMode === "list" ? "w-full" : ""}`}
-    >
+          <Link
+            key={post._id}
+            href={`/jobs/${post._id}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block"
+          >
+            <div
+              onContextMenu={(e) => {
+                e.stopPropagation();
+                setRightClickedJobId(post._id);
+              }}
+              className={`cursor-pointer bg-white rounded-lg shadow-md p-5 
+              ${rightClickedJobId === post._id ? "border-black" : "border-gray-200"}
+              border hover:shadow-xl transition-transform hover:-translate-y-1 
+              flex flex-col h-auto overflow-hidden relative ${viewMode === "list" ? "w-full" : ""}`}
+            >
+              {/* LinkedIn icon */}
+              <div className="absolute top-3 right-3 z-10">
+                <a href={post.LinkedInURL || "#"} target="_blank" rel="noopener noreferrer">
+                  <img
+                    src="Images/LinkedIn.png"
+                    alt="LinkedIn"
+                    className="w-5 h-5"
+                    title="View on LinkedIn"
+                  />
+                  {/* <img
+                      src="https://s.rozee.pk/v6/i/fl/azadee-rozee.svg"
+                      alt="Azadee Rozee"
+                      className="w-5 h-5"
+                      title="View on Rozee"
+                    /> */}
+                  {/* <img
+                    src="Images/j..png"
+                    alt="LinkedIn"
+                    className="w-5 h-5"
+                    title="View on LinkedIn"
+                  /> */}
+                </a>
+              </div>
+              {/* Heart icon */}
+              <div
+                onClick={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault(); // Prevent navigation
+                  if (user) toggleFavorite(post._id);
+                }}
+                className={`absolute top-3 right-10 text-xl z-10 ${user ? "cursor-pointer" : "cursor-not-allowed opacity-50"
+                  }`}
+                title={
+                  !user
+                    ? "Login to save jobs"
+                    : favorites.includes(post._id)
+                      ? "Remove from favorites"
+                      : "Add to favorites"
+                }
+              >
+                {favorites.includes(post._id) ? (
+                  <FaHeart className="text-red-500" />
+                ) : (
+                  <FaRegHeart className="text-gray-400 hover:text-red-500" />
+                )}
+              </div>
 
-      {/* Heart icon */}
-      <div
-        onClick={(e) => {
-          e.stopPropagation();
-          e.preventDefault(); // Prevent navigation
-          if (user) toggleFavorite(post._id);
-        }}
-        className={`absolute top-3 right-3 text-xl z-10 ${
-          user ? "cursor-pointer" : "cursor-not-allowed opacity-50"
-        }`}
-        title={
-          !user
-            ? "Login to save jobs"
-            : favorites.includes(post._id)
-            ? "Remove from favorites"
-            : "Add to favorites"
-        }
-      >
-        {favorites.includes(post._id) ? (
-          <FaHeart className="text-red-500" />
-        ) : (
-          <FaRegHeart className="text-gray-400 hover:text-red-500" />
-        )}
-      </div>
+              <div className="flex justify-between items-center mb-3">
+                <h5 className="text-lg font-semibold text-gray-900 truncate w-4/5">
+                  {capitalizeWords(post.Company)}
+                </h5>
+                {post.Remote && (
+                  <span className="px-3 py-1 text-xs font-medium text-blue-700 bg-blue-100 rounded-md">
+                    REMOTE
+                  </span>
+                )}
+              </div>
+              <h3 className="text-xl font-bold text-gray-800 mb-2 truncate">
+                {capitalizeWords(post.Title)}
+              </h3>
+              <p className="text-sm text-gray-600 line-clamp-2 mb-3 overflow-hidden">
+                {capitalizeSentences(post.Description)}
+              </p>
+              <div className="flex flex-col text-sm text-gray-500 mb-3">
+                <p className="truncate">
+                  <strong>📍 Area:</strong> {post.Area || "Not mentioned"}
+                </p>
+                <p className="truncate">
+                  <strong>🌆 City:</strong>{" "}
+                  {post.City?.toLowerCase()
+                    .split(" ")
+                    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                    .join(" ")}
+                </p>
+                <p
+                  className={`font-bold ${post.salary_lower && post.salary_upper
+                    ? "text-green-500"
+                    : post.Salary
+                      ? "text-green-500"
+                      : "text-yellow-500"
+                    }`}
+                >
+                  <strong>💰 Salary:</strong> {formatSalary(post)}
+                </p>
+              </div>
 
-      <div className="flex justify-between items-center mb-3">
-        <h5 className="text-lg font-semibold text-gray-900 truncate w-4/5">
-          {capitalizeWords(post.Company)}
-        </h5>
-        {post.Remote && (
-          <span className="px-3 py-1 text-xs font-medium text-blue-700 bg-blue-100 rounded-md">
-            REMOTE
-          </span>
-        )}
-      </div>
-      <h3 className="text-xl font-bold text-gray-800 mb-2 truncate">
-        {capitalizeWords(post.Title)}
-      </h3>
-      <p className="text-sm text-gray-600 line-clamp-2 mb-3 overflow-hidden">
-        {capitalizeSentences(post.Description)}
-      </p>
-      <div className="flex flex-col text-sm text-gray-500 mb-3">
-        <p className="truncate">
-          <strong>📍 Area:</strong> {post.Area || "Not mentioned"}
-        </p>
-        <p className="truncate">
-          <strong>🌆 City:</strong>{" "}
-          {post.City?.toLowerCase()
-            .split(" ")
-            .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-            .join(" ")}
-        </p>
-        <p
-          className={`font-bold ${
-            post.salary_lower && post.salary_upper
-              ? "text-green-500"
-              : post.Salary
-              ? "text-green-500"
-              : "text-yellow-500"
-          }`}
-        >
-          <strong>💰 Salary:</strong> {formatSalary(post)}
-        </p>
-      </div>
-
-      <button
-        onClick={(e) => {
-          e.preventDefault(); // Prevent navigation
-          openJobDetails(post._id);
-        }}
-        className="w-full bg-gray-900 text-white py-2 rounded-md text-sm font-medium hover:bg-gray-800 transition"
-      >
-        View Details
-      </button>
-    </div>
-  </Link>
-))}
-
-
+              <button
+                onClick={(e) => {
+                  e.preventDefault(); // Prevent navigation
+                  openJobDetails(post._id);
+                }}
+                className="w-full bg-gray-900 text-white py-2 rounded-md text-sm font-medium hover:bg-gray-800 transition"
+              >
+                Quick View
+              </button>
+            </div>
+          </Link>
+        ))}
       </div>
 
       {/* Job Details Modal */}
