@@ -305,12 +305,12 @@ export default function LoginModal({ onClose }) {
                     {stage === "otp" && (
                       <>
                         <div>
-                          <label className="text-sm text-gray-600">
+                          {/* <label className="text-sm text-gray-600">
                             ENTER OTP
-                          </label>
+                          </label> */}
                           <input
                             type="text"
-                            placeholder="Enter the 6-digit code"
+                            placeholder="Enter the 6-digit code from Email"
                             className="w-full p-3 border-b border-gray-300 focus:outline-none text-black"
                             value={otp}
                             onChange={(e) => setOtp(e.target.value)}

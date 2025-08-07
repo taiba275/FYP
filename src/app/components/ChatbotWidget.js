@@ -132,7 +132,7 @@ export default function ChatbotWidget() {
                   className="invert brightness-0"
                 />
                 <span className="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] w-6 h-6 flex items-center justify-center rounded-full border-2 border-white">
-                  8
+                  1
                 </span>
               </div>
             </div>

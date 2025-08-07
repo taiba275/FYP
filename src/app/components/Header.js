@@ -375,8 +375,8 @@ const Header = () => {
 
   return (
     <>
-      <nav className="bg-white border-b shadow-sm z-50 relative">
-        <div className="px-4 sm:px-6 lg:px-8 py-4 flex flex-wrap items-center justify-between gap-4">
+      <nav>
+        <div className="w-full px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap items-center justify-between gap-4">
           {/* Left: Logo */}
           <div className="flex items-center space-x-4">
             <a href="/" className="text-2xl font-bold text-gray-900">JobFinder.</a>
@@ -388,7 +388,7 @@ const Header = () => {
           </ul>
 
           {/* Center: Search bar (ALWAYS visible) */}
-          <div className="relative max-w-[300px] w-full flex-1 sm:flex-initial">
+          <div className="relative max-w-[560px] w-full flex-1 sm:flex-initial">
             <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm">
               <FaSearch />
             </span>
@@ -415,7 +415,7 @@ const Header = () => {
               <div className="relative flex items-center gap-3">
                 <button
                   onClick={() => router.push("/jobs/post")}
-                  className="bg-white text-black font-bold py-2 px-4 rounded-xl shadow hover:bg-gray-800 transition"
+                  className="bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-700"
                 >
                   Post a Job
                 </button>
@@ -453,7 +453,7 @@ const Header = () => {
               </div>
             ) : (
               <div className="flex space-x-3">
-                <button onClick={() => router.push("/jobs/post")} className="bg-black text-white font-bold py-2 px-4 rounded-xl shadow hover:bg-gray-800 transition">Post a Job</button>
+                {/* <button onClick={() => router.push("/jobs/post")} className="bg-black text-white font-bold py-2 px-4 rounded-xl shadow hover:bg-gray-800 transition">Post a Job</button> */}
                 <button
                     data-open-signup
                     onClick={() => setShowSignupModal(true)}
