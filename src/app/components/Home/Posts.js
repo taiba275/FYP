@@ -23,6 +23,29 @@ function capitalizeSentences(text) {
     )
     .join("");
 }
+function formatSalary(post) {
+  const lower = post.salary_lower;
+  const upper = post.salary_upper;
+  const currency = post.currency || "PKR";
+
+  const isValidNumber = (val) =>
+    typeof val === "number" && !isNaN(val) && val > 0;
+
+  if (isValidNumber(lower) && isValidNumber(upper)) {
+    const formatWithCommas = (num) =>
+      num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+
+    return `${currency.toLowerCase()}. ${formatWithCommas(lower)} - ${formatWithCommas(upper)}/month`;
+  }
+
+  // Fallback to Salary string (dataset jobs)
+  if (post.Salary && typeof post.Salary === "string") {
+    return post.Salary;
+  }
+
+  return "Not mentioned";
+}
+
 
 export default function Posts({ jobs = [], viewMode = "grid", setViewMode }) {
   const [selectedJob, setSelectedJob] = useState(null);
@@ -159,12 +182,13 @@ export default function Posts({ jobs = [], viewMode = "grid", setViewMode }) {
                 <strong>🌆 City:</strong> {post.City?.toLowerCase().split(" ").map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(" ")}
               </p>
               <p
-                className={`font-bold ${
-                  post.Salary ? "text-green-500" : "text-yellow-500"
-                }`}
-              >
-                <strong>💰 Salary:</strong> {post.Salary || "Not Disclosed"}
-              </p>
+                  className={`font-bold ${
+                    post.salary_lower && post.salary_upper ? "text-green-500" : post.Salary ? "text-green-500" : "text-yellow-500"
+                  }`}
+                >
+                  <strong>💰 Salary:</strong> {formatSalary(post)}
+                </p>
+
             </div>
             <button
               onClick={() => openJobDetails(post._id)}

@@ -130,9 +130,5 @@ console.log("🔍 Decoded userId:", userId);
   }
 }
 
-// delete Job faiss call
-// await fetch("http://localhost:8001/refresh-faiss", {
-//   method: "POST",
-// });
 
 

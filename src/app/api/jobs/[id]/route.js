@@ -253,8 +253,10 @@ export async function PUT(req, { params }) {
       "Total Positions": `${body.totalPositions} post`,
       "Job Shift": body.jobShift,
       "Job Type": body.jobType,
-      "Apply Before": body.applyBefore,
-      "Posting Date": body.postingDate,
+      // "Apply Before": body.applyBefore,
+      // "Posting Date": body.postingDate,
+   "Apply Before": new Date(body.applyBefore),
+   "Posting Date": new Date(body.postingDate),
       Description: body.jobDescription,
       ExtractedRole: body.jobRole,
     };

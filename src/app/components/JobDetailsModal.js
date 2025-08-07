@@ -296,6 +296,57 @@ export default function JobDetailsModal({ job, onClose }) {
       )
       .join("");
   }
+  const formatDate = (dateValue) => {
+  if (!dateValue) return "N/A";
+
+  // If it's already a Date object or ISO string
+  let date = new Date(dateValue);
+
+  // If it's an invalid date (e.g. "30/10/2024"), manually parse it
+  if (isNaN(date)) {
+    // Try to parse "dd/mm/yyyy"
+    const parts = String(dateValue).split("/");
+    if (parts.length === 3) {
+      const [day, month, year] = parts;
+      date = new Date(`${year}-${month}-${day}`);
+    }
+  }
+
+  if (isNaN(date)) return "Invalid date";
+
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = date.getFullYear();
+
+  return `${day}/${month}/${year}`;
+};
+
+function formatSalary(post) {
+  const lower = post.salary_lower;
+  const upper = post.salary_upper;
+  const currency = post.currency || "PKR";
+
+  const isValidNumber = (val) =>
+    typeof val === "number" && !isNaN(val) && val > 0;
+
+  if (isValidNumber(lower) && isValidNumber(upper)) {
+    const formatWithCommas = (num) =>
+      num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+
+    return `${currency.toLowerCase()}. ${formatWithCommas(lower)} - ${formatWithCommas(upper)}/month`;
+  }
+
+  // Fallback to Salary string (dataset jobs)
+  if (post.Salary && typeof post.Salary === "string") {
+    return post.Salary;
+  }
+
+  return "Not mentioned";
+}
+
+
+
+
 
   const handleApplyNow = () => {
     if (job["Job URL"]) {
@@ -357,14 +408,19 @@ export default function JobDetailsModal({ job, onClose }) {
             <strong>🕒 Job Type:</strong> {job["Job Type"]}
           </p>
           <p className="text-gray-700 text-lg mb-2">
-            <strong>📅 Posting Date:</strong> {job["Posting Date"]}
+            <strong>📅 Posting Date:</strong> {formatDate(job["Posting Date"])}
           </p>
           <p className="text-gray-700 text-lg mb-4">
-            <strong>⏳ Apply Before:</strong> {job["Apply Before"]}
+            <strong>⏳ Apply Before:</strong> {formatDate(job["Apply Before"])}
           </p>
+
+          {/* <p >📅 Posting Date: {formatDate(job["Posting Date"])}</p>
+          <p>⏳ Apply Before: {formatDate(job["Apply Before"])}</p> */}
+
           <p className="text-gray-700 text-lg mb-4">
-            <strong>💰 Salary:</strong> {job.Salary || "Not mentioned"}
+            <strong>💰 Salary:</strong> {formatSalary(job)}
           </p>
+
 
           <p className="text-gray-800 text-lg leading-relaxed whitespace-pre-line">
             <strong className="text-2xl">Job Description</strong>
