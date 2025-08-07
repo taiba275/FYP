@@ -155,7 +155,12 @@ if (Object.keys(sortStage).length > 0) {
     const totalResult = await Job.aggregate(totalPipeline);
     const total = totalResult[0]?.count || 0;
 
-    return new Response(JSON.stringify({ jobs, total }), { status: 200 });
+    return new Response(JSON.stringify({
+  jobs,
+  total,
+  totalPages: Math.ceil(total / limit)
+}), { status: 200 });
+
   } catch (error) {
     console.error("❌ Error fetching jobs:", error);
     return new Response(

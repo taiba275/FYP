@@ -37,6 +37,8 @@ export default function HomeClient({ initialJobs, initialCategory = "" }) {
   const [jobs, setJobs] = useState(initialJobs || []);
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
+  const [totalPages, setTotalPages] = useState(1);
+
 
   const { user } = useAuth();
 
@@ -59,28 +61,21 @@ export default function HomeClient({ initialJobs, initialCategory = "" }) {
     });
     query.append("limit", 20);
     query.append("page", page);
-
-    try {
+    try
+     {
       const res = await fetch(`/api/posts?${query.toString()}`);
       if (!res.ok) throw new Error("Failed to fetch jobs");
       const data = await res.json();
 
-      if (page === 1) {
-        setJobs(data.jobs);
-        setHasMore(data.jobs.length < data.total);
-      } else {
-        const existingIds = new Set(jobs.map((job) => job._id));
-        const newJobs = data.jobs.filter((job) => !existingIds.has(job._id));
-        const updatedJobs = [...jobs, ...newJobs];
-        setJobs(updatedJobs);
-        setHasMore(updatedJobs.length < data.total);
-      }
+     setJobs(data.jobs);
+setTotalPages(Math.ceil(data.total / 20));
+setHasMore(data.jobs.length < data.total);
+
     } catch (error) {
       console.error(error);
       if (page === 1) setJobs([]);
       setHasMore(false);
     }
-
     setLoading(false);
   }
 
@@ -124,14 +119,74 @@ export default function HomeClient({ initialJobs, initialCategory = "" }) {
           <Posts jobs={jobs} viewMode={viewMode} setViewMode={setViewMode} />
         )}
 
-        {hasMore && !loading && (
-          <button
-            onClick={() => setPage((p) => p + 1)}
-            className="block mx-auto mt-6 py-2 px-4 bg-blue-500 text-white font-bold text-xl rounded hover:bg-blue-700"
-          >
-            Load More
-          </button>
-        )}
+       {jobs.length > 0 && totalPages > 1 && (
+  <div className="flex justify-center items-center mt-8 gap-2 flex-wrap">
+    {/* Show current, 2 before, 2 after */}
+    {page > 1 && (
+      <button
+        onClick={() => setPage((prev) => prev - 1)}
+        className="px-3 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300"
+      >
+        ← Prev
+      </button>
+    )}
+
+    {/* Always show first page */}
+    <button
+      onClick={() => setPage(1)}
+      className={`px-3 py-2 rounded font-medium ${
+        page === 1 ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-800 hover:bg-gray-300"
+      }`}
+    >
+      1
+    </button>
+
+    {/* Ellipsis after first page */}
+    {page > 3 && <span className="px-2 text-gray-500">...</span>}
+
+    {/* Dynamic middle pages */}
+    {Array.from({ length: 3 }, (_, i) => page - 1 + i)
+      .filter((pg) => pg > 1 && pg < totalPages)
+      .map((pg) => (
+        <button
+          key={pg}
+          onClick={() => setPage(pg)}
+          className={`px-3 py-2 rounded font-medium ${
+            pg === page ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-800 hover:bg-gray-300"
+          }`}
+        >
+          {pg}
+        </button>
+      ))}
+
+    {/* Ellipsis before last page */}
+    {page < totalPages - 2 && <span className="px-2 text-gray-500">...</span>}
+
+    {/* Always show last page (if not already visible) */}
+    {totalPages > 1 && page !== totalPages && (
+      <button
+        onClick={() => setPage(totalPages)}
+        className={`px-3 py-2 rounded font-medium ${
+          page === totalPages ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-800 hover:bg-gray-300"
+        }`}
+      >
+        {totalPages}
+      </button>
+    )}
+
+    {/* Next button */}
+    {page < totalPages && (
+      <button
+        onClick={() => setPage((prev) => prev + 1)}
+        className="px-3 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300"
+      >
+        Next →
+      </button>
+    )}
+  </div>
+)}
+
+
       </div>
 
       <ScrollToTop />
