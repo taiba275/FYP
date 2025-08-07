@@ -127,7 +127,7 @@ export default function JobDetailsModal({ job, onClose }) {
       return post.Salary;
     }
 
-    return "Not mentioned";
+    return "Not disclosed";
   }
 
   const handleApplyNow = () => {
@@ -176,29 +176,29 @@ export default function JobDetailsModal({ job, onClose }) {
             {capitalizeWords(job.Title)}
           </h2>
 
-          <p className="text-gray-700 text-lg mb-2">
+          <p className="text-gray-700 text-lg mb-1">
             <strong>🏢 Company:</strong> {capitalizeWords(job.Company)}
           </p>
-          <p className="text-gray-700 text-lg mb-2">
+          <p className="text-gray-700 text-lg mb-1">
             <strong>📍 Location:</strong> {capitalizeWords(job.City)}
           </p>
-          <p className="text-gray-700 text-lg mb-2">
+          <p className="text-gray-700 text-lg mb-1">
             <strong>🧑‍💼 Experience:</strong> {job.Experience || "Not mentioned"}
           </p>
-          <p className="text-gray-700 text-lg mb-2">
+          <p className="text-gray-700 text-lg mb-1">
             <strong>🕒 Job Type:</strong> {job["Job Type"]}
           </p>
-          <p className="text-gray-700 text-lg mb-2">
+          <p className="text-gray-700 text-lg mb-1">
             <strong>📅 Posting Date:</strong> {formatDate(job["Posting Date"])}
           </p>
-          <p className="text-gray-700 text-lg mb-4">
+          <p className="text-gray-700 text-lg mb-1">
             <strong>⏳ Apply Before:</strong> {formatDate(job["Apply Before"])}
           </p>
 
           {/* <p >📅 Posting Date: {formatDate(job["Posting Date"])}</p>
           <p>⏳ Apply Before: {formatDate(job["Apply Before"])}</p> */}
 
-          <p className="text-gray-700 text-lg mb-4">
+          <p className="text-gray-700 text-lg mb-6">
             <strong>💰 Salary:</strong> {formatSalary(job)}
           </p>
 
@@ -242,11 +242,11 @@ export default function JobDetailsModal({ job, onClose }) {
             <button
               onClick={toggleFavorite}
               className={`px-4 py-2 rounded-md text-lg font-medium transition ${isFavorite
-                  ? "bg-red-500 text-white hover:bg-red-600"
-                  : "bg-gray-200 text-gray-800 hover:bg-gray-300"
+                ? "bg-red-500 text-white hover:bg-red-600"
+                : "bg-gray-200 text-gray-800 hover:bg-gray-300"
                 }`}
             >
-              {isFavorite ? "❤️ Favorited" : "🤍 Add to Favorites"}
+              {isFavorite ? "🤍 Favorited" : "❤️ Add to Favorites"}
             </button>
 
             {/* Apply Now Button */}

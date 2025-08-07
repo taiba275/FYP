@@ -43,8 +43,7 @@ function formatSalary(post) {
   if (post.Salary && typeof post.Salary === "string") {
     return post.Salary;
   }
-
-  return "Not mentioned";
+  return "Not disclosed";
 }
 
 export default function Posts({ jobs = [], viewMode = "grid", setViewMode }) {
@@ -215,28 +214,35 @@ export default function Posts({ jobs = [], viewMode = "grid", setViewMode }) {
               <p className="text-sm text-gray-600 line-clamp-2 mb-3 overflow-hidden">
                 {capitalizeSentences(post.Description)}
               </p>
+
               <div className="flex flex-col text-sm text-gray-500 mb-3">
-                <p className="truncate">
-                  <strong>📍 Area:</strong> {post.Area || "Not mentioned"}
+                <p className="truncate flex items-center gap-2 text-[#B81212]">
+                  <img src="/Images/pin.png" alt="Location" className="w-4 h-4 inline" />
+                  <strong>Area:</strong> {post.Area || "Not mentioned"}
                 </p>
-                <p className="truncate">
-                  <strong>🌆 City:</strong>{" "}
+
+                <p className="truncate flex items-center gap-2 text-black">
+                  <img src="/Images/city.png" alt="City" className="w-4 h-4 inline" />
+                  <strong>City:</strong>{" "}
                   {post.City?.toLowerCase()
                     .split(" ")
                     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
                     .join(" ")}
                 </p>
+
                 <p
-                  className={`font-bold ${post.salary_lower && post.salary_upper
-                    ? "text-green-500"
-                    : post.Salary
+                  className={`font-bold flex items-center gap-2 ${post.salary_lower && post.salary_upper
                       ? "text-green-500"
-                      : "text-yellow-500"
+                      : post.Salary
+                        ? "text-green-500"
+                        : "text-yellow-500"
                     }`}
                 >
-                  <strong>💰 Salary:</strong> {formatSalary(post)}
+                  <img src="/Images/salary.png" alt="Salary" className="w-4 h-4 inline" />
+                  <strong>Salary:</strong> {formatSalary(post)}
                 </p>
               </div>
+
 
               <button
                 onClick={(e) => {

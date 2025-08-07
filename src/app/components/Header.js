@@ -146,7 +146,9 @@ const Header = () => {
               <div className="relative flex items-center gap-3">
                 <button
                   onClick={() => router.push("/jobs/post")}
-                  className="bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-700"
+                  // className="bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-700"
+                  // className="bg-black text-white font-bold py-2 px-4 rounded hover:bg-gray-800"
+                  className="bg-gray-200 text-gray-800 px-4 py-2 rounded font-bold hover:bg-gray-300 transition"
                 >
                   Post a Job
                 </button>

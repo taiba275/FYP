@@ -18,27 +18,27 @@ export default function JobDetailsPage({ params }) {
   }, [id]);
 
   const formatDate = (dateValue) => {
-  if (!dateValue) return "N/A";
+    if (!dateValue) return "N/A";
 
-  let date = new Date(dateValue);
+    let date = new Date(dateValue);
 
-  // Try parsing "dd/mm/yyyy" manually if needed
-  if (isNaN(date)) {
-    const parts = String(dateValue).split("/");
-    if (parts.length === 3) {
-      const [day, month, year] = parts;
-      date = new Date(`${year}-${month}-${day}`);
+    // Try parsing "dd/mm/yyyy" manually if needed
+    if (isNaN(date)) {
+      const parts = String(dateValue).split("/");
+      if (parts.length === 3) {
+        const [day, month, year] = parts;
+        date = new Date(`${year}-${month}-${day}`);
+      }
     }
-  }
 
-  if (isNaN(date)) return "Invalid date";
+    if (isNaN(date)) return "Invalid date";
 
-  const day = String(date.getDate()).padStart(2, "0");
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const year = date.getFullYear();
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = date.getFullYear();
 
-  return `${day}/${month}/${year}`;
-};
+    return `${day}/${month}/${year}`;
+  };
 
 
   const formatSalary = (post) => {
@@ -50,7 +50,7 @@ export default function JobDetailsPage({ params }) {
       const format = (n) => n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
       return `${currency}. ${format(lower)} - ${format(upper)}/month`;
     }
-    return post.Salary || "Not mentioned";
+    return post.Salary || "Not disclosed";
   };
 
   const capitalizeWords = (str = "") =>
@@ -67,7 +67,7 @@ export default function JobDetailsPage({ params }) {
         i % 2 === 0 ? part.charAt(0).toUpperCase() + part.slice(1) : part
       )
       .join("");
-      
+
 
   const toggleFavorite = async () => {
     const res = await fetch("/api/user/favorites", {
@@ -103,35 +103,58 @@ export default function JobDetailsPage({ params }) {
   };
 
   if (!job) {
-    return <div className="text-center text-gray-600 py-20">⏳ Loading job details...</div>;
+    return (
+      <div className="w-full h-[70vh] flex flex-col justify-center items-center bg-white">
+        <div className="custom-loader wrapper scale-[1.4] mb-12">
+          <div className="circle"></div>
+          <div className="circle"></div>
+          <div className="circle"></div>
+        </div>
+        <p className="text-gray-700 text-xl font-semibold mb-1">
+          Loading Jobs list for You…
+        </p>
+        <p className="text-gray-500 text-base">
+          Please wait while we fetch the perfect matches
+        </p>
+      </div>
+    );
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-12">
-      <div className="bg-white p-8 shadow-lg rounded-xl">
+    <div>
+      <div className="mx-12 p-16">
+        {/* LinkedIn icon */}
+        <div className="absolute right-14 mr-8 z-10">
+          <img
+            src="../Images/LinkedIn.png"
+            alt="LinkedIn"
+            className="w-16 h-16"
+            title="View on LinkedIn"
+          />
+        </div>
         <h2 className="text-4xl font-bold text-gray-800 mb-4">
           {capitalizeWords(job.Title)}
         </h2>
 
-        <p className="text-gray-700 text-lg mb-2">
+        <p className="text-gray-700 text-lg mb-1">
           <strong>🏢 Company:</strong> {capitalizeWords(job.Company)}
         </p>
-        <p className="text-gray-700 text-lg mb-2">
+        <p className="text-gray-700 text-lg mb-1">
           <strong>📍 Location:</strong> {capitalizeWords(job.City)}
         </p>
-        <p className="text-gray-700 text-lg mb-2">
+        <p className="text-gray-700 text-lg mb-1">
           <strong>🧑‍💼 Experience:</strong> {job.Experience || "Not mentioned"}
         </p>
-        <p className="text-gray-700 text-lg mb-2">
+        <p className="text-gray-700 text-lg mb-1">
           <strong>🕒 Job Type:</strong> {job["Job Type"]}
         </p>
-        <p className="text-gray-700 text-lg mb-2">
+        <p className="text-gray-700 text-lg mb-1">
           <strong>📅 Posting Date:</strong> {formatDate(job["Posting Date"])}
         </p>
-        <p className="text-gray-700 text-lg mb-4">
+        <p className="text-gray-700 text-lg mb-1">
           <strong>⏳ Apply Before:</strong> {formatDate(job["Apply Before"])}
         </p>
-        <p className="text-gray-700 text-lg mb-4">
+        <p className="text-gray-700 text-lg mb-6">
           <strong>💰 Salary:</strong> {formatSalary(job)}
         </p>
 
@@ -162,13 +185,12 @@ export default function JobDetailsPage({ params }) {
 
           <button
             onClick={toggleFavorite}
-            className={`px-4 py-2 rounded-md text-lg font-medium transition ${
-              isFavorite
-                ? "bg-red-500 text-white hover:bg-red-600"
-                : "bg-gray-200 text-gray-800 hover:bg-gray-300"
-            }`}
+            className={`px-4 py-2 rounded-md text-lg font-medium transition ${isFavorite
+              ? "bg-red-500 text-white hover:bg-red-600"
+              : "bg-gray-200 text-gray-800 hover:bg-gray-300"
+              }`}
           >
-            {isFavorite ? "🤍 Favorited" : "🤍 Add to Favorites"}
+            {isFavorite ? "🤍 Favorited" : "❤️ Add to Favorites"}
           </button>
 
           <button
