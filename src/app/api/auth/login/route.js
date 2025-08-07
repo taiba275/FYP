@@ -58,7 +58,7 @@ export async function POST(request) {
     });
 
     await transporter.sendMail({
-      from: '"Job Portal" <no-reply@yourdomain.com>',
+      from: '"JobFinder." <no-reply@yourdomain.com>',
       to: trimmedEmail,
       subject: 'Your Login OTP',
       html: `

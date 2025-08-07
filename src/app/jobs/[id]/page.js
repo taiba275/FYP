@@ -101,8 +101,6 @@ export default function JobDetailsPage({ params }) {
       alert("No application method available.");
     }
   };
-  
-
 
   if (!job) {
     return <div className="text-center text-gray-600 py-20">⏳ Loading job details...</div>;
@@ -170,7 +168,7 @@ export default function JobDetailsPage({ params }) {
                 : "bg-gray-200 text-gray-800 hover:bg-gray-300"
             }`}
           >
-            {isFavorite ? "❤️ Favorited" : "🤍 Add to Favorites"}
+            {isFavorite ? "🤍 Favorited" : "🤍 Add to Favorites"}
           </button>
 
           <button
