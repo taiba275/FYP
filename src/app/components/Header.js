@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import LoginModal from "./LoginModal";
 import SignupModal from "./SignupModel";
 import ChatBox from "./ChatBox";
+import Resume from "./Resume";
 import PostaJobModel from "./PostaJobModel";
 import { useRouter } from "next/navigation";
 import { FaSearch, FaBars, FaTimes } from "react-icons/fa";
@@ -24,6 +25,7 @@ const Header = () => {
 
   const [showDropdown, setShowDropdown] = useState(false);
   const [showChatbot, setShowChatbot] = useState(false);
+  const [showResume, setShowResume] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const dropdownRef = useRef(null);
   const { user, setUser } = useAuth();
@@ -101,6 +103,7 @@ const Header = () => {
       <li><a href="/recommendation" className="hover:text-blue-600 block py-2">Recommendation</a></li>
       <li><a href="/industry" className="hover:text-blue-600 block py-2">Industry</a></li>
       <li><button onClick={() => setShowChatbot(true)} className="hover:text-blue-600 block py-2">Chatbot</button></li>
+      <li><button onClick={() => setShowResume(true)} className="hover:text-blue-600 block py-2">Resume</button></li>
     </>
   );
 
@@ -128,7 +131,7 @@ const Header = () => {
               placeholder="Search by Jobs"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full py-2 pl-10 pr-4 rounded-md bg-[#ededed] text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full py-2 pl-10 pr-4 rounded bg-[#ededed] text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             {searchTerm && (
               <button
@@ -172,7 +175,7 @@ const Header = () => {
                   {/* Dropdown */}
                   {showDropdown && (
                     <div
-                      className="fixed w-48 bg-white mt-1 border border-gray-200 rounded-md shadow-lg z-[9999]"
+                      className="fixed w-48 bg-white mt-1 border border-gray-200 rounded shadow-lg z-[9999]"
                       style={{ top: dropdownCoords.top, left: dropdownCoords.left }}
                     >
                       <div className="px-4 py-3 text-sm text-gray-900 font-semibold border-b break-words max-w-full truncate">
@@ -281,6 +284,7 @@ const Header = () => {
       {showLoginModal && <LoginModal onClose={() => setShowLoginModal(false)} />}
       {showPostaJobModel && <PostaJobModel onClose={() => setShowPostaJobModel(false)} />}
       {showChatbot && <ChatBox onClose={() => setShowChatbot(false)} />}
+      {showResume && <Resume onClose={() => setShowResume(false)} />}
     </>
   );
 };
