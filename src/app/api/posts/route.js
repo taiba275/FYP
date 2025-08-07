@@ -127,21 +127,21 @@ export async function GET(req) {
     pipeline.push({ $match: matchConditions });
 
     // Apply sorting after filtering
-    if (salaryOrder === "ascending" || salaryOrder === "descending") {
-      pipeline.push({
-        $sort: {
-          salary_lower_numeric: salaryOrder === "ascending" ? 1 : -1
-        }
-      });
-    }
+    // Combine sort keys if both salaryOrder and sortOrder are applied
+const sortStage = {};
 
-    if (sortOrder === "newest" || sortOrder === "oldest") {
-      pipeline.push({
-        $sort: {
-          parsedDate: sortOrder === "newest" ? -1 : 1
-        }
-      });
-    }
+if (salaryOrder === "ascending" || salaryOrder === "descending") {
+  sortStage.salary_lower_numeric = salaryOrder === "ascending" ? 1 : -1;
+}
+
+if (sortOrder === "newest" || sortOrder === "oldest") {
+  sortStage.parsedDate = sortOrder === "newest" ? -1 : 1;
+}
+
+if (Object.keys(sortStage).length > 0) {
+  pipeline.push({ $sort: sortStage });
+}
+
 
     // Pagination
     pipeline.push({ $skip: skip });

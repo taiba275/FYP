@@ -217,7 +217,7 @@ export default function TrendsPage() {
                     const index = elements[0].index;
                     const roleTitle = roleData[index].title;
                     const encoded = encodeURIComponent(roleTitle);
-                    window.location.href = `/jobs/${encoded}`;
+                    window.location.href = `/jobs-by-role/${encoded}`;
                   }
                 },
               }}
