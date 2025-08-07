@@ -156,7 +156,7 @@ export default function Posts({ jobs = [], viewMode = "grid", setViewMode }) {
                 <strong>📍 Area:</strong> {post.Area || "Not mentioned"}
               </p>
               <p className="truncate">
-                <strong>🌆 City:</strong> {post.City}
+                <strong>🌆 City:</strong> {post.City?.toLowerCase().split(" ").map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(" ")}
               </p>
               <p
                 className={`font-bold ${

@@ -44,7 +44,7 @@ export default function ForgotPasswordModal({ onClose, setEmail }) {
       {message && <p className="text-sm text-blue-600 mb-4 text-center">{message}</p>}
       <form onSubmit={handleSendOTP} className="space-y-4">
         <div>
-          <label className="text-sm text-gray-600">EMAIL ADDRESS</label>
+          {/* <label className="text-sm text-gray-600">EMAIL ADDRESS</label> */}
           <input
             type="email"
             className="w-full p-3 border-b border-gray-300 focus:outline-none text-black"
