@@ -7,6 +7,7 @@ import JobDetailsModal from "../JobDetailsModal";
 import { useAuth } from "../../context/AuthContext";
 import Link from "next/link";
 import { FaBriefcase, FaIdBadge, FaUserTie } from "react-icons/fa";
+import JobTotal from "@/app/components/Home/JobTotal";
 
 
 // const sortedJobs = useMemo(() => {
@@ -231,7 +232,7 @@ export default function Posts({ jobs = [], viewMode = "grid", setViewMode, onFav
       {/* Job count and view toggle */}
       <div className="w-full flex flex-col md:flex-row justify-between items-center mb-6">
         <p className="text-sm md:text-base text-gray-700 mb-2 md:mb-0">
-          <strong className="text-black">{jobs.length}</strong> job opportunities waiting.
+          <JobTotal className="w-full md:w-auto mb-2 md:mb-0" />
         </p>
         <div className="flex items-center space-x-3">
           <button

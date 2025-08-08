@@ -115,7 +115,7 @@ export default function JobsPostedPage() {
       {/* subheader: total */}
       <div className="w-full mb-4">
         <p className="text-sm md:text-base text-gray-700">
-          <strong className="text-black">{jobsPosted.length}</strong> job opportunities posted.
+          <strong className="text-black">{jobsPosted.length}</strong> jobs posted.
         </p>
       </div>
 

@@ -124,6 +124,9 @@ export default function JobForm({ initialData = null, editMode = false, jobId = 
       });
 
       if (res.ok) {
+        if (typeof window !== "undefined") {
+         window.dispatchEvent(new Event("job:created"));
+      }
         setShowSuccess(true);
         if (!editMode) {
           setFormData({
