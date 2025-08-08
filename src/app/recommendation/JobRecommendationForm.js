@@ -213,7 +213,7 @@ export default function JobRecommendationForm({ setJobs, setLoading, loading }) 
       </div>
 
       {/* Submit */}
-      <div className="text-right pt-4">
+      <div className="w-full flex justify-center pt-4">
         <button
           type="submit"
           disabled={loading}

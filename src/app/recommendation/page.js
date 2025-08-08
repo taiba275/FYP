@@ -217,12 +217,42 @@
 //   );
 // }
 
-"use client"
-import JobRecommendationPage from "./JobRecommendationPage";
+"use client";
+
+import { useState } from "react";
+import JobRecommendationForm from "./JobRecommendationForm";
+import JobResultsList from "./JobResultsList";
 
 export default function Page() {
-  return <JobRecommendationPage />;
+  const [jobs, setJobs] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  return (
+    <div className="min-h-screen flex items-center justify-center px-4 bg-gradient-to-r from-gray-100 to-gray-200">
+      <div className="w-full max-w-2xl bg-white shadow-lg rounded-lg p-8">
+        <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
+          Get Job Recommendations
+        </h2>
+
+        <JobRecommendationForm
+          setJobs={setJobs}
+          setLoading={setLoading}
+          loading={loading}
+        />
+
+        <p className="mt-4 text-sm text-center text-gray-600">
+          Resume available?{" "}
+          <a href="/resume" className="text-blue-600 underline hover:text-blue-800">
+            Upload resume for recommendations
+          </a>
+        </p>
+
+        <JobResultsList jobs={jobs} />
+      </div>
+    </div>
+  );
 }
+
 
 
 
