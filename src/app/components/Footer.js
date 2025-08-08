@@ -3,7 +3,7 @@ import React from 'react';
 function Footer() {
   return (
     <div>
-      <footer className="bg-white text-gray-800 font-sans text-sm px-10 py-5 mt-4">
+      <footer className="bg-white text-gray-800 font-sans text-sm px-10 py-5">
         <div className="max-w-screen-xl mx-auto flex justify-between items-center">
           <div className="flex items-center space-x-10">
             <div className="text-2xl font-bold text-gray-900 mb-1 md:mb-0">JobFinder.</div>

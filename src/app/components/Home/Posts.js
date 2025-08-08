@@ -46,7 +46,7 @@ function formatSalary(post) {
   return "Not disclosed";
 }
 
-export default function Posts({ jobs = [], viewMode = "grid", setViewMode }) {
+export default function Posts({ jobs = [], viewMode = "grid", setViewMode, onFavoriteToggle }) {
   const [selectedJob, setSelectedJob] = useState(null);
   const [favorites, setFavorites] = useState([]);
   const { user } = useAuth();
@@ -86,6 +86,8 @@ export default function Posts({ jobs = [], viewMode = "grid", setViewMode }) {
       const data = await res.json();
       const favIds = data.favorites?.map((j) => j.toString()) || [];
       setFavorites(favIds);
+
+      if (onFavoriteToggle) onFavoriteToggle();
     } catch (err) {
       console.error("Error updating favorites:", err);
     }

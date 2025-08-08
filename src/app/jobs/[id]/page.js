@@ -104,17 +104,17 @@ export default function JobDetailsPage({ params }) {
 
   if (!job) {
     return (
-      <div className="w-full h-[70vh] flex flex-col justify-center items-center bg-white">
-        <div className="custom-loader wrapper scale-[1.4] mb-12">
+      <div className="w-full h-[50vh] flex flex-col justify-center items-center bg-white">
+        <div className="custom-loader wrapper scale-[1.4] mb-6">
           <div className="circle"></div>
           <div className="circle"></div>
           <div className="circle"></div>
         </div>
         <p className="text-gray-700 text-xl font-semibold mb-1">
-          Loading Jobs list for You…
+          Loading Job Details for You…
         </p>
         <p className="text-gray-500 text-base">
-          Please wait while we fetch the perfect matches
+          Please wait while we fetch the complete information
         </p>
       </div>
     );
@@ -124,7 +124,7 @@ export default function JobDetailsPage({ params }) {
     <div>
       <div className="mx-12 p-16">
         {/* LinkedIn icon */}
-        <div className="absolute right-14 mr-8 z-10">
+        <div className="absolute right-14 mr-14 z-10">
           <img
             src="../Images/LinkedIn.png"
             alt="LinkedIn"
