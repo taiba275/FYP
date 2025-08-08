@@ -207,18 +207,31 @@ export default function JobForm({ initialData = null, editMode = false, jobId = 
     <div className="max-w-[1400px] mx-auto px-4 text-black py-8">
       {error && <div className="bg-red-100 text-red-700 p-3 rounded mb-6">{error}</div>}
       {showSuccess && (
-        <div className="absolute inset-0 bg-white bg-opacity-95 flex flex-col items-center justify-center z-10 p-6 rounded-xl border border-green-500 shadow-lg">
-          <h3 className="text-green-700 text-xl font-semibold mb-4">
-            {editMode ? "Job Updated!" : "Job Posted Successfully!"}
-          </h3>
-          <button
-            onClick={() => setShowSuccess(false)}
-            className="bg-blue-600 text-white px-5 py-2 rounded hover:bg-blue-700"
-          >
-            {editMode ? "Close" : "Post Another Job"}
-          </button>
-        </div>
-      )}
+          <div className="absolute inset-0 bg-white bg-opacity-95 flex flex-col items-center justify-center z-10 p-6 rounded-xl border border-green-500 shadow-lg">
+            <h3 className="text-green-700 text-xl font-semibold mb-4">
+              {editMode ? "Job Updated!" : "Job Posted Successfully!"}
+            </h3>
+
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setShowSuccess(false)}
+                className="bg-blue-600 text-white px-5 py-2 rounded hover:bg-blue-700"
+              >
+                {editMode ? "Close" : "Post Another Job"}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => router.push("/")}
+                className="bg-black text-white px-5 py-2 rounded hover:bg-gray-900"
+              >
+                Go to homepage
+              </button>
+            </div>
+          </div>
+        )}
+
       <form onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* --- Left Column --- */}
