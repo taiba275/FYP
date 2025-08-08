@@ -150,7 +150,7 @@ function formatSalary(post) {
   return "Not disclosed";
 }
 
-export default function Posts({ jobs = [], viewMode = "grid", setViewMode, onFavoriteToggle }) {
+export default function Posts({ jobs = [], viewMode = "grid", setViewMode, onFavoriteToggle, showTotals = true,showViewToggle = true, }) {
   const [selectedJob, setSelectedJob] = useState(null);
   const [favorites, setFavorites] = useState([]);
   const { user } = useAuth();
@@ -251,28 +251,25 @@ const toggleFavorite = async (jobId) => {
 
   return (
     <div className="flex flex-col items-center justify-center w-full px-4 md:px-8">
-      {/* Job count and view toggle */}
-      <div className="w-full flex flex-col md:flex-row justify-between items-center mb-6">
-        <p className="text-sm md:text-base text-gray-700 mb-2 md:mb-0">
-          <JobTotal className="w-full md:w-auto mb-2 md:mb-0" />
-        </p>
-        <div className="flex items-center space-x-3">
-          <button
-            onClick={() => setViewMode("list")}
-            className="bg-gray-200 hover:bg-gray-400 p-1 rounded transition"
-            title="List View"
-          >
-            <FaList className="w-4 h-4 text-gray-700" />
-          </button>
-          <button
-            onClick={() => setViewMode("grid")}
-            className="bg-gray-200 hover:bg-gray-400 p-1 rounded transition"
-            title="Grid View"
-          >
+       {(showTotals || showViewToggle) && (
+        <div className="w-full flex items-center justify-between mb-6">
+        {showTotals && (
+          <p className="text-sm md:text-base text-gray-700">
+            <JobTotal className="w-full md:w-auto" />
+          </p>
+        )}
+        {showViewToggle && (
+          <div className="flex items-center space-x-3">
+            <button onClick={() => setViewMode("list")} className="bg-gray-200 hover:bg-gray-400 p-1 rounded transition" title="List View">
+              <FaList className="w-4 h-4 text-gray-700" />
+            </button>
+            <button onClick={() => setViewMode("grid")} className="bg-gray-200 hover:bg-gray-400 p-1 rounded transition" title="Grid View">
             <FaThLarge className="w-4 h-4 text-gray-700" />
           </button>
-        </div>
+          </div>
+        )}
       </div>
+    )}
 
       {/* Job cards */}
       <div
