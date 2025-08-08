@@ -43,7 +43,7 @@ export default function JobForm({ initialData = null, editMode = false, jobId = 
     jobShift: "",
     jobType: "",
     applyBefore: "",
-    postingDate: "",
+    //postingDate: "",
     jobDescription: "",
   });
   useEffect(() => {
@@ -78,7 +78,7 @@ export default function JobForm({ initialData = null, editMode = false, jobId = 
         jobShift: initialData["Job Shift"] || "",
         jobType: initialData["Job Type"] || "",
         applyBefore: initialData["Apply Before"]?.substring(0, 10) || "",
-        postingDate: initialData["Posting Date"]?.substring(0, 10) || "",
+        //postingDate: initialData["Posting Date"]?.substring(0, 10) || "",
         jobDescription: initialData.Description || "",
       });
     }
@@ -133,7 +133,7 @@ export default function JobForm({ initialData = null, editMode = false, jobId = 
             minExperience: "", maxExperience: "", currency: "PKR", minSalary: "",
             maxSalary: "", skills: "", industry: "", industryOther: "",
             functionalArea: "", functionalAreaOther: "", totalPositions: "",
-            jobShift: "", jobType: "", applyBefore: "", postingDate: "", jobDescription: "",
+            jobShift: "", jobType: "", applyBefore: "", jobDescription: "",
           });
         }
       } else {
@@ -290,16 +290,16 @@ export default function JobForm({ initialData = null, editMode = false, jobId = 
                 ))}
               </select>
             </div>
-            <div className="flex gap-2">
-              <div className="flex-1">
-                <label className="block font-medium mb-1">Apply Before</label>
-                <input type="date" name="applyBefore" value={formData.applyBefore} onChange={handleChange} className="w-full border rounded p-2" />
-              </div>
-              <div className="flex-1">
-                <label className="block font-medium mb-1">Posting Date</label>
-                <input type="date" name="postingDate" value={formData.postingDate} onChange={handleChange} className="w-full border rounded p-2" />
-              </div>
-            </div>
+            <div>
+            <label className="block font-medium mb-1">Apply Before</label>
+            <input
+              type="date"
+              name="applyBefore"
+              value={formData.applyBefore}
+              onChange={handleChange}
+              className="w-full border rounded p-2"
+            />
+          </div>
           </div>
 
           {/* --- Right Column: Job Description Only --- */}

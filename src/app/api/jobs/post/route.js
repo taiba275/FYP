@@ -50,7 +50,7 @@ console.log("🔍 Decoded userId:", userId);
       jobShift,
       jobType,
       applyBefore,
-      postingDate,
+      //postingDate,
       jobDescription,
       
     } = body;
@@ -80,7 +80,7 @@ console.log("🔍 Decoded userId:", userId);
       "Degree Title": degreeTitle,
       "Career Level": "Not Specified", // optional field
       "Apply Before": applyBefore,
-      "Posting Date": postingDate,
+      "Posting Date": new Date(),
       Experience: `${minExperience} years - ${maxExperience} years`,
       "Experience Range": `(${minExperience}, ${maxExperience})`,
       ExtractedRole: jobRole,
