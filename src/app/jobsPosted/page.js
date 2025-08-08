@@ -118,14 +118,11 @@ export default function JobsPostedPage() {
   );
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 md:px-8">
-      {/* Centered heading like Favorites */}
-      <h1 className="text-3xl font-bold text-center text-gray-900 mt-4 mb-4">
-        Your Posted Jobs
-      </h1>
+    <div className="flex flex-col items-center justify-center">
+      <h1 className="text-3xl font-bold text-center text-gray-900 mt-4 mb-4">Your Posted Jobs</h1>
 
       {/* One line: left = count, right = view toggle (match Favorites) */}
-      <div className="w-full flex items-center justify-between mb-6">
+      <div className="w-full flex items-center justify-between mb-6 px-10">
         <div className="text-sm md:text-base text-gray-700">
           {searchTerm?.trim() ? (
             <>
@@ -134,7 +131,7 @@ export default function JobsPostedPage() {
             </>
           ) : (
             <>
-              <strong className="text-black">{jobsPosted.length}</strong> jobs posted.
+              <strong className="text-black">{jobsPosted.length}</strong>  jobs are now posted.
             </>
           )}
         </div>
@@ -159,13 +156,13 @@ export default function JobsPostedPage() {
 
       {/* Grid/list like Favorites */}
       {filteredJobsPosted.length === 0 ? (
-        <p className="text-gray-600 w-full">No matches found.</p>
+        <p className="text-gray-600 text-center m-36 p-12">You haven’t posted a job yet <br />click “Post a Job” to get started.</p>
       ) : (
         <div
           className={`w-full ${
             viewMode === "list"
               ? "flex flex-col gap-4"
-              : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+              : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 px-10"
           }`}
         >
           {filteredJobsPosted.map((post) => (
@@ -216,7 +213,7 @@ export default function JobsPostedPage() {
                     )}
 
                     <button
-                      className="bg-gray-200 text-gray-600 px-4 py-2 rounded font-bold hover:bg-gray-300 transition"
+                      className="bg-gray-200 text-gray-600 px-2 py-1 rounded  hover:bg-gray-300 transition"
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
@@ -227,7 +224,7 @@ export default function JobsPostedPage() {
                     </button>
 
                     <button
-                      className="bg-black text-white font-bold py-2 px-4 rounded hover:bg-gray-600"
+                      className="bg-black text-white  px-2 py-1 rounded hover:bg-gray-600"
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();

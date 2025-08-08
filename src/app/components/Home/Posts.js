@@ -9,7 +9,6 @@ import Link from "next/link";
 import { FaBriefcase, FaIdBadge, FaUserTie } from "react-icons/fa";
 import JobTotal from "@/app/components/Home/JobTotal";
 
-
 // const sortedJobs = useMemo(() => {
 //   const arr = Array.isArray(jobs) ? [...jobs] : [];
 
@@ -150,7 +149,7 @@ function formatSalary(post) {
   return "Not disclosed";
 }
 
-export default function Posts({ jobs = [], viewMode = "grid", setViewMode, onFavoriteToggle, showTotals = true,showViewToggle = true, }) {
+export default function Posts({ jobs = [], viewMode = "grid", setViewMode, onFavoriteToggle, showTotals = true, showViewToggle = true, }) {
   const [selectedJob, setSelectedJob] = useState(null);
   const [favorites, setFavorites] = useState([]);
   const { user } = useAuth();
@@ -173,7 +172,7 @@ export default function Posts({ jobs = [], viewMode = "grid", setViewMode, onFav
       return dB - dA;
     });
   }, [jobs]);
- 
+
 
   // Fetch job details
   async function openJobDetails(id) {
@@ -199,44 +198,44 @@ export default function Posts({ jobs = [], viewMode = "grid", setViewMode, onFav
 
   // Toggle favorite for a job
   // Replace your current toggleFavorite with this:
-const toggleFavorite = async (jobId) => {
-  if (!user) return alert("Please log in to save jobs.");
+  const toggleFavorite = async (jobId) => {
+    if (!user) return alert("Please log in to save jobs.");
 
-  const wasFavorite = favorites.includes(jobId);
-  const prevFavorites = favorites; // snapshot for rollback
-  const optimistic = wasFavorite
-    ? favorites.filter((id) => id !== jobId)
-    : [...favorites, jobId];
+    const wasFavorite = favorites.includes(jobId);
+    const prevFavorites = favorites; // snapshot for rollback
+    const optimistic = wasFavorite
+      ? favorites.filter((id) => id !== jobId)
+      : [...favorites, jobId];
 
-  // 1) Optimistic local update (heart icon updates immediately)
-  setFavorites(optimistic);
+    // 1) Optimistic local update (heart icon updates immediately)
+    setFavorites(optimistic);
 
-  // 2) Tell parent the NEW state so it can drop the card on Favorites page
-  onFavoriteToggle?.(jobId, !wasFavorite);
+    // 2) Tell parent the NEW state so it can drop the card on Favorites page
+    onFavoriteToggle?.(jobId, !wasFavorite);
 
-  try {
-    const res = await fetch("/api/user/favorites", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ jobId }),
-    });
-    if (!res.ok) throw new Error("Failed to toggle favorite");
+    try {
+      const res = await fetch("/api/user/favorites", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ jobId }),
+      });
+      if (!res.ok) throw new Error("Failed to toggle favorite");
 
-    // Optional: stay perfectly in sync with server
-    const data = await res.json();
-    const serverFavIds =
-      (data.favorites || []).map((j) =>
-        typeof j === "string" ? j : (j?._id || j).toString()
-      );
-    setFavorites(serverFavIds);
-  } catch (err) {
-    console.error("Error updating favorites:", err);
-    // Rollback UI + inform parent to undo
-    setFavorites(prevFavorites);
-    onFavoriteToggle?.(jobId, wasFavorite);
-  }
-};
+      // Optional: stay perfectly in sync with server
+      const data = await res.json();
+      const serverFavIds =
+        (data.favorites || []).map((j) =>
+          typeof j === "string" ? j : (j?._id || j).toString()
+        );
+      setFavorites(serverFavIds);
+    } catch (err) {
+      console.error("Error updating favorites:", err);
+      // Rollback UI + inform parent to undo
+      setFavorites(prevFavorites);
+      onFavoriteToggle?.(jobId, wasFavorite);
+    }
+  };
 
   const [rightClickedJobId, setRightClickedJobId] = useState(null);
 
@@ -251,25 +250,25 @@ const toggleFavorite = async (jobId) => {
 
   return (
     <div className="flex flex-col items-center justify-center w-full px-4 md:px-8">
-       {(showTotals || showViewToggle) && (
+      {(showTotals || showViewToggle) && (
         <div className="w-full flex items-center justify-between mb-6">
-        {showTotals && (
-          <p className="text-sm md:text-base text-gray-700">
-            <JobTotal className="w-full md:w-auto" />
-          </p>
-        )}
-        {showViewToggle && (
-          <div className="flex items-center space-x-3">
-            <button onClick={() => setViewMode("list")} className="bg-gray-200 hover:bg-gray-400 p-1 rounded transition" title="List View">
-              <FaList className="w-4 h-4 text-gray-700" />
-            </button>
-            <button onClick={() => setViewMode("grid")} className="bg-gray-200 hover:bg-gray-400 p-1 rounded transition" title="Grid View">
-            <FaThLarge className="w-4 h-4 text-gray-700" />
-          </button>
-          </div>
-        )}
-      </div>
-    )}
+          {showTotals && (
+            <p className="text-sm md:text-base text-gray-700">
+              <JobTotal className="w-full md:w-auto" />
+            </p>
+          )}
+          {showViewToggle && (
+            <div className="flex items-center space-x-3">
+              <button onClick={() => setViewMode("list")} className="bg-gray-200 hover:bg-gray-400 p-1 rounded transition" title="List View">
+                <FaList className="w-4 h-4 text-gray-700" />
+              </button>
+              <button onClick={() => setViewMode("grid")} className="bg-gray-200 hover:bg-gray-400 p-1 rounded transition" title="Grid View">
+                <FaThLarge className="w-4 h-4 text-gray-700" />
+              </button>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Job cards */}
       <div
@@ -352,17 +351,12 @@ const toggleFavorite = async (jobId) => {
               <p className="text-sm text-gray-600 line-clamp-2 mb-3 overflow-hidden">
                 {capitalizeSentences(post.Description)}
               </p>
-              
-              <div className="flex flex-col text-sm text-blue-500 mb-3">
-               <p className="truncate flex items-center gap-2 text-blue">
-              <FaBriefcase className="inline w-4 h-4 text-blue" aria-hidden />
-                <strong>Role:</strong>{" "}
-                {capitalizeWords(post?.ExtractedRole || "Not mentioned")}
-              </p>
 
-                <p className="truncate flex items-center gap-2 text-[#B81212]">
-                  <img src="/Images/pin.png" alt="Location" className="w-4 h-4 inline" />
-                  <strong>Area:</strong> {post.Area || "Not mentioned"}
+              <div className="flex flex-col text-sm text-blue-500 mb-3">
+                <p className="truncate flex items-center gap-2 text-blue">
+                  <FaBriefcase className="inline w-4 h-4 text-blue" aria-hidden />
+                  <strong>Role:</strong>{" "}
+                  {capitalizeWords(post?.ExtractedRole || "Not mentioned")}
                 </p>
 
                 <p className="truncate flex items-center gap-2 text-black">
@@ -374,12 +368,16 @@ const toggleFavorite = async (jobId) => {
                     .join(" ")}
                 </p>
 
+                <p className="truncate flex items-center gap-2 text-[#B81212]">
+                  <img src="/Images/pin.png" alt="Location" className="w-4 h-4 inline" />
+                  <strong>Area:</strong> {post.Area || "Not mentioned"}
+                </p>
                 <p
                   className={`font-bold flex items-center gap-2 ${post.salary_lower && post.salary_upper
+                    ? "text-green-500"
+                    : post.Salary
                       ? "text-green-500"
-                      : post.Salary
-                        ? "text-green-500"
-                        : "text-yellow-500"
+                      : "text-yellow-500"
                     }`}
                 >
                   <img src="/Images/salary.png" alt="Salary" className="w-4 h-4 inline" />

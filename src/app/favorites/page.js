@@ -5,7 +5,7 @@ import { useEffect, useState, useCallback, useRef, useMemo } from "react";
 import JobDetailsModal from "../components/JobDetailsModal";
 import Posts from "../components/Home/Posts";
 import { useUI } from "../context/UIContext";
-import { FaThLarge, FaList,FaRegHeart } from "react-icons/fa";
+import { FaThLarge, FaList, FaRegHeart } from "react-icons/fa";
 
 export default function FavoritesPage() {
   const [favorites, setFavorites] = useState([]);
@@ -120,8 +120,8 @@ export default function FavoritesPage() {
   }, [favorites.length, clearing]);
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 md:px-8">
-      <h2 className="text-3xl font-bold text-center mt-4">Your Saved Jobs</h2>
+    <div className="flex flex-col items-center justify-center">
+      <h1 className="text-3xl font-bold text-center mt-4">Your Saved Jobs</h1>
 
       {loading ? (
         <div className="w-full h-[50vh] flex flex-col justify-center items-center bg-white">
@@ -136,55 +136,55 @@ export default function FavoritesPage() {
       ) : (
         <>
           {/* One line: left = count, right = buttons */}
-          <div className="w-full max-w-7xl mx-auto px-4 md:px-8">
-            <div className="w-full flex items-center justify-between mb-6">
-              <div className="text-sm md:text-base text-gray-700">
-                {searchTerm?.trim() ? (
-                  <>
-                    Showing <strong className="text-black">{filteredFavorites.length}</strong> of{" "}
-                    <strong className="text-black">{favorites.length}</strong> saved jobs for “{searchTerm}”.
-                  </>
-                ) : (
-                  <>
-                    <strong className="text-black">{favorites.length}</strong> saved jobs.
-                  </>
-                )}
-              </div>
+          <div className="w-full flex items-center justify-between mb-6 px-10">
+            <div className="text-sm md:text-base text-gray-700">
+              {searchTerm?.trim() ? (
+                <>
+                  Showing <strong className="text-black">{filteredFavorites.length}</strong> of{" "}
+                  <strong className="text-black">{favorites.length}</strong> saved jobs for “{searchTerm}”.
+                </>
+              ) : (
+                <>
+                  <strong className="text-black">{favorites.length}</strong>  jobs saved to your favorites.
+                </>
+              )}
+            </div>
 
-              <div className="flex items-center space-x-3">
-                {/* NEW: Unfavorite all button — placed to the LEFT of view toggles */}
-                <button
-                  onClick={clearAllFavorites}
-                  disabled={clearing || favorites.length === 0}
-                  className={`bg-gray-200 hover:bg-gray-400 p-1 rounded transition
+            <div className="flex items-center space-x-3">
+              {/* NEW: Unfavorite all button — placed to the LEFT of view toggles */}
+              <button
+                onClick={clearAllFavorites}
+                disabled={clearing || favorites.length === 0}
+                className={`bg-gray-200 hover:bg-gray-400 p-1 rounded transition
                   ${clearing || favorites.length === 0 ? "opacity-50 cursor-not-allowed" : ""} `}
-                  title={clearing ? "Unfavoriting…" : "Unfavorite all"}
-                  aria-label={clearing ? "Unfavoriting…" : "Unfavorite all"}
-                >
-                  <FaRegHeart className="w-4 h-4 text-gray-700" />
-                </button>
+                title={clearing ? "Unfavoriting…" : "Unfavorite all"}
+                aria-label={clearing ? "Unfavoriting…" : "Unfavorite all"}
+              >
+                <FaRegHeart className="w-4 h-4 text-gray-700" />
+              </button>
 
-                <button
-                  onClick={() => setViewMode("list")}
-                  className="bg-gray-200 hover:bg-gray-400 p-1 rounded transition"
-                  title="List View"
-                >
-                  <FaList className="w-4 h-4 text-gray-700" />
-                </button>
-                <button
-                  onClick={() => setViewMode("grid")}
-                  className="bg-gray-200 hover:bg-gray-400 p-1 rounded transition"
-                  title="Grid View"
-                >
-                  <FaThLarge className="w-4 h-4 text-gray-700" />
-                </button>
-              </div>
+              <button
+                onClick={() => setViewMode("list")}
+                className="bg-gray-200 hover:bg-gray-400 p-1 rounded transition"
+                title="List View"
+              >
+                <FaList className="w-4 h-4 text-gray-700" />
+              </button>
+              <button
+                onClick={() => setViewMode("grid")}
+                className="bg-gray-200 hover:bg-gray-400 p-1 rounded transition"
+                title="Grid View"
+              >
+                <FaThLarge className="w-4 h-4 text-gray-700" />
+              </button>
             </div>
           </div>
 
           {filteredFavorites.length === 0 ? (
-            <div className="text-gray-600">No matches found.</div>
-          ) : (
+            <div className="text-gray-600 text-center m-36 p-12">
+              You haven’t saved any jobs yet.<br />
+              Tap the ❤️ icon on any job to add it to your favorites.
+            </div>) : (
             <Posts
               jobs={filteredFavorites}
               viewMode={viewMode}
