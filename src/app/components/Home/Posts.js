@@ -198,24 +198,46 @@ export default function Posts({ jobs = [], viewMode = "grid", setViewMode, onFav
   }, [user]);
 
   // Toggle favorite for a job
-  const toggleFavorite = async (jobId) => {
-    if (!user) return alert("Please log in to save jobs.");
-    try {
-      const res = await fetch("/api/user/favorites", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ jobId }),
-      });
-      const data = await res.json();
-      const favIds = data.favorites?.map((j) => j.toString()) || [];
-      setFavorites(favIds);
+  // Replace your current toggleFavorite with this:
+const toggleFavorite = async (jobId) => {
+  if (!user) return alert("Please log in to save jobs.");
 
-      if (onFavoriteToggle) onFavoriteToggle();
-    } catch (err) {
-      console.error("Error updating favorites:", err);
-    }
-  };
+  const wasFavorite = favorites.includes(jobId);
+  const prevFavorites = favorites; // snapshot for rollback
+  const optimistic = wasFavorite
+    ? favorites.filter((id) => id !== jobId)
+    : [...favorites, jobId];
+
+  // 1) Optimistic local update (heart icon updates immediately)
+  setFavorites(optimistic);
+
+  // 2) Tell parent the NEW state so it can drop the card on Favorites page
+  onFavoriteToggle?.(jobId, !wasFavorite);
+
+  try {
+    const res = await fetch("/api/user/favorites", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ jobId }),
+    });
+    if (!res.ok) throw new Error("Failed to toggle favorite");
+
+    // Optional: stay perfectly in sync with server
+    const data = await res.json();
+    const serverFavIds =
+      (data.favorites || []).map((j) =>
+        typeof j === "string" ? j : (j?._id || j).toString()
+      );
+    setFavorites(serverFavIds);
+  } catch (err) {
+    console.error("Error updating favorites:", err);
+    // Rollback UI + inform parent to undo
+    setFavorites(prevFavorites);
+    onFavoriteToggle?.(jobId, wasFavorite);
+  }
+};
+
   const [rightClickedJobId, setRightClickedJobId] = useState(null);
 
   useEffect(() => {
