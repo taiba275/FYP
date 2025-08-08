@@ -1,3 +1,4 @@
+// C:\Projects\FYP\src\app\api\user\favorites\route.js
 import { NextResponse } from "next/server";
 import { connectDB } from "../../../../library/mongodb";
 import User from "../../../models/User";
@@ -28,7 +29,7 @@ export async function PUT(req) {
   const user = await User.findOne({ email: userInfo.email });
   if (!user) return NextResponse.json({ message: "User not found" }, { status: 404 });
 
-  const index = user.favoriteJobs.findIndex(id => id.toString() === jobId);
+  const index = user.favoriteJobs.findIndex((id) => id.toString() === jobId);
   if (index > -1) {
     user.favoriteJobs.splice(index, 1); // remove
   } else {
@@ -37,4 +38,19 @@ export async function PUT(req) {
 
   await user.save();
   return NextResponse.json({ success: true, favorites: user.favoriteJobs }, { status: 200 });
+}
+
+// DELETE: clear all favorites  <-- NEW
+export async function DELETE(req) {
+  await connectDB();
+  const userInfo = getUserFromRequest(req);
+  if (!userInfo) return NextResponse.json({ message: "Not authenticated" }, { status: 401 });
+
+  const user = await User.findOne({ email: userInfo.email });
+  if (!user) return NextResponse.json({ message: "User not found" }, { status: 404 });
+
+  user.favoriteJobs = [];
+  await user.save();
+
+  return NextResponse.json({ success: true, favorites: [] }, { status: 200 });
 }

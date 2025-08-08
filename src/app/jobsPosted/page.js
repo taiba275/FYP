@@ -51,8 +51,6 @@ function matchesSearch(post, termRaw) {
     post.Company,
     post.City,
     post.Area,
-    post.Skills,
-    post.ExtractedRole,
     post["Functional Area"] ?? post.FunctionalArea,
     post["Job Type"],
     post["Job Location"],
