@@ -1,12 +1,110 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { FaThLarge, FaList } from "react-icons/fa";
 import { FaHeart, FaRegHeart } from "react-icons/fa";
 import JobDetailsModal from "../JobDetailsModal";
 import { useAuth } from "../../context/AuthContext";
 import Link from "next/link";
 import { FaBriefcase, FaIdBadge, FaUserTie } from "react-icons/fa";
+
+
+// const sortedJobs = useMemo(() => {
+//   const arr = Array.isArray(jobs) ? [...jobs] : [];
+
+//   const normRole = (p) =>
+//     ((p?.ExtractedRole ?? p?.["Functional Area"] ?? "") + "")
+//       .trim()
+//       .toLowerCase();
+
+//   const isNotMentioned = (r) => r === "" || r === "not mentioned";
+
+//   return arr.sort((a, b) => {
+//     const rA = normRole(a);
+//     const rB = normRole(b);
+
+//     // Put real roles first, "Not mentioned"/empty last
+//     if (isNotMentioned(rA) !== isNotMentioned(rB)) {
+//       return isNotMentioned(rA) ? 1 : -1;
+//     }
+
+//     // Alphabetical by role (case-insensitive, natural)
+//     const byRole = rA.localeCompare(rB, undefined, { numeric: true, sensitivity: "base" });
+//     if (byRole !== 0) return byRole;
+
+//     // Tie-breakers
+//     const tA = (a?.Title || "").trim();
+//     const tB = (b?.Title || "").trim();
+//     const byTitle = tA.localeCompare(tB, undefined, { numeric: true, sensitivity: "base" });
+//     if (byTitle !== 0) return byTitle;
+
+//     const cA = (a?.Company || "").trim();
+//     const cB = (b?.Company || "").trim();
+//     const byCompany = cA.localeCompare(cB, undefined, { numeric: true, sensitivity: "base" });
+//     if (byCompany !== 0) return byCompany;
+
+//     // Newer first if still tied
+//     const dA = new Date(a?.["Posting Date"] || a?.postingDate || 0).getTime();
+//     const dB = new Date(b?.["Posting Date"] || b?.postingDate || 0).getTime();
+//     return dB - dA;
+//   });
+// }, [jobs]);
+
+
+const ICONS = {
+  linkedin: "/Images/LinkedIn.png",
+  rozee: "/images/rozee.pk.png",
+  local: "/images/j..png",
+};
+
+function getApplyUrl(post) {
+  // Prefer the “Job URL” used by the Apply Now button (different keys just in case)
+  return (
+    post["Job URL"] ??
+    post.JobURL ??
+    post.LinkedInURL ?? // legacy
+    post.jobUrl ??      // safety
+    ""
+  );
+}
+
+function getSourceBadge(post) {
+  // Jobs created on our website
+  if (post.userId) {
+    return {
+      src: ICONS.local,
+      alt: "Posted on our site",
+      href: getApplyUrl(post) || `/jobs/${post._id}`,
+      title: "Job posted on our site",
+    };
+  }
+
+  const raw = getApplyUrl(post);
+  if (!raw) return null;
+
+  let host = "";
+  try {
+    host = new URL(raw).hostname.toLowerCase();
+  } catch {
+    // non-URL string; treat as local/fallback
+    return {
+      src: ICONS.local,
+      alt: "Apply here",
+      href: raw || `/jobs/${post._id}`,
+      title: "Apply here",
+    };
+  }
+
+  if (host.includes("linkedin.com")) {
+    return { src: ICONS.linkedin, alt: "LinkedIn", href: raw, title: "View on LinkedIn" };
+  }
+  if (host.includes("rozee.pk")) {
+    return { src: ICONS.rozee, alt: "ROZEE.PK", href: raw, title: "View on ROZEE.PK" };
+  }
+
+  // default/fallback
+  return { src: ICONS.local, alt: "Apply here", href: raw || `/jobs/${post._id}`, title: "Apply here" };
+}
 
 function capitalizeWords(str = "") {
   return str
@@ -55,6 +153,26 @@ export default function Posts({ jobs = [], viewMode = "grid", setViewMode, onFav
   const [selectedJob, setSelectedJob] = useState(null);
   const [favorites, setFavorites] = useState([]);
   const { user } = useAuth();
+  const sortedJobs = useMemo(() => {
+    const arr = Array.isArray(jobs) ? [...jobs] : [];
+    return arr.sort((a, b) => {
+      const tA = (a?.Title || "").trim();
+      const tB = (b?.Title || "").trim();
+      const byTitle = tA.localeCompare(tB, undefined, { numeric: true, sensitivity: "base" });
+      if (byTitle !== 0) return byTitle;
+
+      const cA = (a?.Company || "").trim();
+      const cB = (b?.Company || "").trim();
+      const byCompany = cA.localeCompare(cB, undefined, { numeric: true, sensitivity: "base" });
+      if (byCompany !== 0) return byCompany;
+
+      // tie-breaker: newer first if titles & companies are same
+      const dA = new Date(a?.["Posting Date"] || a?.postingDate || 0).getTime();
+      const dB = new Date(b?.["Posting Date"] || b?.postingDate || 0).getTime();
+      return dB - dA;
+    });
+  }, [jobs]);
+ 
 
   // Fetch job details
   async function openJobDetails(id) {
@@ -158,29 +276,22 @@ export default function Posts({ jobs = [], viewMode = "grid", setViewMode, onFav
               border hover:shadow-xl transition-transform hover:-translate-y-1 
               flex flex-col h-auto overflow-hidden relative ${viewMode === "list" ? "w-full" : ""}`}
             >
-              {/* LinkedIn icon */}
-              <div className="absolute top-3 right-3 z-10">
-                <a href={post.LinkedInURL || "#"} target="_blank" rel="noopener noreferrer">
-                  <img
-                    src="Images/LinkedIn.png"
-                    alt="LinkedIn"
-                    className="w-5 h-5"
-                    title="View on LinkedIn"
-                  />
-                  {/* <img
-                      src="https://s.rozee.pk/v6/i/fl/azadee-rozee.svg"
-                      alt="Azadee Rozee"
-                      className="w-5 h-5"
-                      title="View on Rozee"
-                    /> */}
-                  {/* <img
-                    src="Images/j..png"
-                    alt="LinkedIn"
-                    className="w-5 h-5"
-                    title="View on LinkedIn"
-                  /> */}
-                </a>
-              </div>
+              {(() => {
+                const badge = getSourceBadge(post);
+                if (!badge) return null;
+                return (
+                  <div className="absolute top-3 right-3 z-10">
+                    <a href={badge.href} target="_blank" rel="noopener noreferrer">
+                      <img
+                        src={badge.src}
+                        alt={badge.alt}
+                        className="w-5 h-5"
+                        title={badge.title}
+                      />
+                    </a>
+                  </div>
+                );
+              })()}
               {/* Heart icon */}
               <div
                 onClick={(e) => {

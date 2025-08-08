@@ -4,6 +4,63 @@ import { useEffect, useState } from "react";
 
 export const dynamic = "force-dynamic";
 
+const ICONS = {
+  linkedin: "/Images/LinkedIn.png",
+  rozee: "/images/rozee.pk.png",
+  local: "/images/j..png",
+};
+
+
+function getApplyUrl(post) {
+  // Prefer the “Job URL” used by the Apply Now button (different keys just in case)
+  return (
+    post["Job URL"] ??
+    post.JobURL ??
+    post.LinkedInURL ?? // legacy
+    post.jobUrl ??      // safety
+    ""
+  );
+}
+
+function getSourceBadge(post) {
+  // Jobs created on our website
+  if (post.userId) {
+    return {
+      src: ICONS.local,
+      alt: "Posted on our site",
+      href: getApplyUrl(post) || `/jobs/${post._id}`,
+      title: "Job posted on our site",
+    };
+  }
+
+  const raw = getApplyUrl(post);
+  if (!raw) return null;
+
+  let host = "";
+  try {
+    host = new URL(raw).hostname.toLowerCase();
+  } catch {
+    // non-URL string; treat as local/fallback
+    return {
+      src: ICONS.local,
+      alt: "Apply here",
+      href: raw || `/jobs/${post._id}`,
+      title: "Apply here",
+    };
+  }
+
+  if (host.includes("linkedin.com")) {
+    return { src: ICONS.linkedin, alt: "LinkedIn", href: raw, title: "View on LinkedIn" };
+  }
+  if (host.includes("rozee.pk")) {
+    return { src: ICONS.rozee, alt: "ROZEE.PK", href: raw, title: "View on ROZEE.PK" };
+  }
+
+  // default/fallback
+  return { src: ICONS.local, alt: "Apply here", href: raw || `/jobs/${post._id}`, title: "Apply here" };
+}
+
+
 export default function JobDetailsPage({ params }) {
   const { id } = params;
   const [job, setJob] = useState(null);
@@ -123,15 +180,24 @@ export default function JobDetailsPage({ params }) {
   return (
     <div>
       <div className="mx-12 p-16">
-        {/* LinkedIn icon */}
-        <div className="absolute right-14 mr-14 z-10">
-          <img
-            src="../Images/LinkedIn.png"
-            alt="LinkedIn"
-            className="w-16 h-16"
-            title="View on LinkedIn"
-          />
-        </div>
+        {/* Source badge (LinkedIn / ROZEE / Local) */}
+          {(() => {
+            const badge = getSourceBadge(job);
+            if (!badge) return null;
+            return (
+              <div className="absolute right-14 mr-14 z-10">
+                <a href={badge.href} target="_blank" rel="noopener noreferrer">
+                  <img
+                    src={badge.src}
+                    alt={badge.alt}
+                    className="w-16 h-16"
+                    title={badge.title}
+                  />
+                </a>
+              </div>
+            );
+          })()}
+
         <h2 className="text-4xl font-bold text-gray-800 mb-4">
           {capitalizeWords(job.Title)}
         </h2>
