@@ -6,6 +6,7 @@ import { FaHeart, FaRegHeart } from "react-icons/fa";
 import JobDetailsModal from "../JobDetailsModal";
 import { useAuth } from "../../context/AuthContext";
 import Link from "next/link";
+import { FaBriefcase, FaIdBadge, FaUserTie } from "react-icons/fa";
 
 function capitalizeWords(str = "") {
   return str
@@ -24,6 +25,7 @@ function capitalizeSentences(text) {
     )
     .join("");
 }
+
 function formatSalary(post) {
   const lower = post.salary_lower;
   const upper = post.salary_upper;
@@ -39,10 +41,13 @@ function formatSalary(post) {
     return `${currency.toLowerCase()}. ${formatWithCommas(lower)} - ${formatWithCommas(upper)}/month`;
   }
 
-  // Fallback to Salary string (dataset jobs)
-  if (post.Salary && typeof post.Salary === "string") {
-    return post.Salary;
+  // Fallback to Salary string (dataset jobs) — fix "not mentioned" casing
+  if (typeof post.Salary === "string") {
+    const s = post.Salary.trim();
+    if (/^not\s+mentioned$/i.test(s)) return "Not mentioned";
+    return s.replace(/\bnot\s+mentioned\b/gi, "Not mentioned");
   }
+
   return "Not disclosed";
 }
 
@@ -216,8 +221,14 @@ export default function Posts({ jobs = [], viewMode = "grid", setViewMode, onFav
               <p className="text-sm text-gray-600 line-clamp-2 mb-3 overflow-hidden">
                 {capitalizeSentences(post.Description)}
               </p>
+              
+              <div className="flex flex-col text-sm text-blue-500 mb-3">
+               <p className="truncate flex items-center gap-2 text-blue">
+              <FaBriefcase className="inline w-4 h-4 text-blue" aria-hidden />
+                <strong>Role:</strong>{" "}
+                {capitalizeWords(post?.ExtractedRole || "Not mentioned")}
+              </p>
 
-              <div className="flex flex-col text-sm text-gray-500 mb-3">
                 <p className="truncate flex items-center gap-2 text-[#B81212]">
                   <img src="/Images/pin.png" alt="Location" className="w-4 h-4 inline" />
                   <strong>Area:</strong> {post.Area || "Not mentioned"}
