@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 import { useRef } from "react";
 
 export const dynamic = "force-dynamic";
@@ -8,8 +9,8 @@ export const dynamic = "force-dynamic";
 
 const ICONS = {
   linkedin: "/Images/LinkedIn.png",
-  rozee: "/images/rozee.pk.png",
-  local: "/images/j..png",
+  rozee: "/Images/rozee.pk.png",
+  local: "/Images/j..png",
 };
 
 
@@ -63,8 +64,8 @@ function getSourceBadge(post) {
 }
 
 
-export default function JobDetailsPage({ params }) {
-  const { id } = params;
+export default function JobDetailsPage() {
+  const { id } = useParams();
   const [job, setJob] = useState(null);
   const [copied, setCopied] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
@@ -76,6 +77,7 @@ export default function JobDetailsPage({ params }) {
   }, []);
 
   useEffect(() => {
+    if (!id) return;
     fetch(`${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/api/jobs/${id}`)
       .then((res) => res.json())
       .then(setJob)

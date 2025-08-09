@@ -9,8 +9,8 @@ import JobTotal from "@/app/components/Home/JobTotal";
 
 const ICONS = {
   linkedin: "/Images/LinkedIn.png",
-  rozee: "/images/rozee.pk.png",
-  local: "/images/j..png",
+  rozee: "/Images/rozee.pk.png",
+  local: "/Images/j..png",
 };
 
 function getApplyUrl(post) {

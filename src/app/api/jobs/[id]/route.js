@@ -81,28 +81,6 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // import { NextResponse } from "next/server";
 // import { connectDB } from "../../../../library/mongodb";
 // import Job from "../../../models/Job";
@@ -146,27 +124,6 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import { NextResponse } from "next/server";
 import { connectDB } from "../../../../library/mongodb";
 import Job from "../../../models/Job";
@@ -183,7 +140,7 @@ const SECRET = process.env.JWT_SECRET || "your-secret";
 export async function GET(req, { params }) {
   await connectDB();
 
-  const { id } = params;
+  const { id } = await params;
 
   if (!mongoose.Types.ObjectId.isValid(id)) {
     return NextResponse.json(
@@ -214,7 +171,7 @@ return NextResponse.json({ job }); // only wrapped if ?raw=false
 export async function PUT(req, { params }) {
   try {
     await connectDB();
-    const jobId = params.id;
+    const jobId = await params.id;
 
     const cookieStore = cookies();
     const token = cookieStore.get("token")?.value;
@@ -283,7 +240,7 @@ export async function PUT(req, { params }) {
 // ==============================
 export async function DELETE(req, { params }) {
   await connectDB();
-  const jobId = params.id;
+  const jobId = await params.id;
 
   const cookieStore = cookies();
   const token = cookieStore.get("token")?.value;
