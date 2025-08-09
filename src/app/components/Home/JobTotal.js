@@ -31,9 +31,16 @@ export default function JobTotal({ className = "" }) {
     };
   }, []);
 
-  return (
-    <span className={className}>
-      {count == null ? "…" : `${count} job opportunities waiting.`}
-    </span>
-  );
+    return (
+      <span className={className}>
+        {count == null ? "…" : (
+          <>
+            <strong className="font-bold">
+              {Number(count).toLocaleString()}
+            </strong>{" "}
+            job opportunities waiting.
+          </>
+        )}
+      </span>
+    );
 }

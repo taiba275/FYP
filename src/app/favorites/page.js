@@ -5,7 +5,7 @@ import { useEffect, useState, useCallback, useRef, useMemo } from "react";
 import JobDetailsModal from "../components/JobDetailsModal";
 import Posts from "../components/Home/Posts";
 import { useUI } from "../context/UIContext";
-import { FaThLarge, FaList, FaRegHeart } from "react-icons/fa";
+import { FaThLarge, FaList, FaRegHeart, FaHeart } from "react-icons/fa";
 
 export default function FavoritesPage() {
   const [favorites, setFavorites] = useState([]);
@@ -156,11 +156,21 @@ export default function FavoritesPage() {
                 onClick={clearAllFavorites}
                 disabled={clearing || favorites.length === 0}
                 className={`bg-gray-200 hover:bg-gray-400 p-1 rounded transition
-                  ${clearing || favorites.length === 0 ? "opacity-50 cursor-not-allowed" : ""} `}
-                title={clearing ? "Unfavoriting…" : "Unfavorite all"}
-                aria-label={clearing ? "Unfavoriting…" : "Unfavorite all"}
+                  ${clearing || favorites.length === 0 ? "opacity-50 cursor-not-allowed" : ""}`}
+                title={
+                  clearing
+                    ? "Unfavoriting…"
+                    : favorites.length > 0
+                    ? `Unfavorite all (${favorites.length})`
+                    : "No favorites"
+                }
+                aria-label="Unfavorite all"
               >
-                <FaRegHeart className="w-4 h-4 text-gray-700" />
+                {favorites.length > 0 && !clearing ? (
+                  <FaHeart className="w-4 h-4 text-gray-600" />   
+                ) : (
+                  <FaRegHeart className="w-4 h-4 text-gray-600" />
+                )}
               </button>
 
               <button

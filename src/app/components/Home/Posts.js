@@ -8,6 +8,7 @@ import { useAuth } from "../../context/AuthContext";
 import Link from "next/link";
 import { FaBriefcase, FaIdBadge, FaUserTie } from "react-icons/fa";
 import JobTotal from "@/app/components/Home/JobTotal";
+import { useRef } from "react";
 
 // const sortedJobs = useMemo(() => {
 //   const arr = Array.isArray(jobs) ? [...jobs] : [];
@@ -153,6 +154,12 @@ export default function Posts({ jobs = [], viewMode = "grid", setViewMode, onFav
   const [selectedJob, setSelectedJob] = useState(null);
   const [favorites, setFavorites] = useState([]);
   const [loadingPreviewId, setLoadingPreviewId] = useState(null);
+  const bcRef = useRef(null);
+
+  useEffect(() => {
+    try { bcRef.current = new BroadcastChannel("favorites"); } catch {}
+    return () => { try { bcRef.current?.close(); } catch {} };
+  }, []);
 
   const { user } = useAuth();
   const sortedJobs = useMemo(() => {
@@ -190,58 +197,106 @@ export default function Posts({ jobs = [], viewMode = "grid", setViewMode, onFav
   }
 }
 
+useEffect(() => {
+  if (!user) { setFavorites([]); return; }
+  fetch("/api/user/favorites", { credentials: "include" })
+    .then((res) => res.json())
+    .then((data) => {
+      const favIds = (data.favorites || []).map((j) => (j._id || j).toString());
+      setFavorites(favIds);
+    })
+    .catch(() => {});
+}, [user]);
 
-  // Fetch user's favorite jobs
-  useEffect(() => {
-    if (!user) return;
-    fetch("/api/user/favorites", { credentials: "include" })
-      .then((res) => res.json())
-      .then((data) => {
-        const favIds = data.favorites?.map((j) => j._id) || [];
-        setFavorites(favIds);
-      });
-  }, [user]);
+useEffect(() => {
+  const onFavChanged = (payload) => {
+    const { jobId, isFavorite } =
+      payload?.detail || payload?.data || payload || {};
+    if (!jobId) return;
+    const id = String(jobId);
+    setFavorites((prev) => {
+      const has = prev.includes(id);
+      if (isFavorite && !has) return [...prev, id];
+      if (!isFavorite && has) return prev.filter((x) => x !== id);
+      return prev;
+    });
+  };
+
+  // same-tab custom event (you already had this)
+  const onWindow = (e) => onFavChanged(e);
+  window.addEventListener("favorites:changed", onWindow);
+
+  // cross-tab via BroadcastChannel
+  let bc;
+  try {
+    bc = new BroadcastChannel("favorites");
+    bc.onmessage = (e) => onFavChanged(e);
+  } catch {}
+
+  // fallback: storage event
+  const onStorage = (e) => {
+    if (e.key !== "favorites:changed") return;
+    try {
+      onFavChanged(JSON.parse(e.newValue || "{}"));
+    } catch {}
+  };
+  window.addEventListener("storage", onStorage);
+
+  return () => {
+    window.removeEventListener("favorites:changed", onWindow);
+    window.removeEventListener("storage", onStorage);
+    try { bc && bc.close(); } catch {}
+  };
+}, []);
 
   // Toggle favorite for a job
   // Replace your current toggleFavorite with this:
-  const toggleFavorite = async (jobId) => {
-    if (!user) return alert("Please log in to save jobs.");
+const toggleFavorite = async (jobId) => {
+  if (!user) return alert("Please log in to save jobs.");
 
-    const wasFavorite = favorites.includes(jobId);
-    const prevFavorites = favorites; // snapshot for rollback
-    const optimistic = wasFavorite
-      ? favorites.filter((id) => id !== jobId)
-      : [...favorites, jobId];
+  const idStr = String(jobId);
+  const wasFavorite = favorites.includes(idStr);
+  const prevFavorites = favorites;
 
-    // 1) Optimistic local update (heart icon updates immediately)
-    setFavorites(optimistic);
+  // optimistic UI
+  setFavorites(wasFavorite ? favorites.filter((id) => id !== idStr) : [...favorites, idStr]);
+  onFavoriteToggle?.(idStr, !wasFavorite);
 
-    // 2) Tell parent the NEW state so it can drop the card on Favorites page
-    onFavoriteToggle?.(jobId, !wasFavorite);
+  try {
+    const res = await fetch("/api/user/favorites", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ jobId }),
+    });
+    if (!res.ok) throw new Error("Failed to toggle favorite");
 
-    try {
-      const res = await fetch("/api/user/favorites", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ jobId }),
-      });
-      if (!res.ok) throw new Error("Failed to toggle favorite");
+    const data = await res.json();
+    const serverFavIds = (data.favorites || []).map((j) => (j._id || j).toString());
+    setFavorites(serverFavIds);
 
-      // Optional: stay perfectly in sync with server
-      const data = await res.json();
-      const serverFavIds =
-        (data.favorites || []).map((j) =>
-          typeof j === "string" ? j : (j?._id || j).toString()
-        );
-      setFavorites(serverFavIds);
-    } catch (err) {
-      console.error("Error updating favorites:", err);
-      // Rollback UI + inform parent to undo
-      setFavorites(prevFavorites);
-      onFavoriteToggle?.(jobId, wasFavorite);
-    }
-  };
+    // broadcast truth from server
+    const isNowFavorite = serverFavIds.includes(idStr);
+    window.dispatchEvent(new CustomEvent("favorites:changed", {
+      detail: { jobId: idStr, isFavorite: isNowFavorite },
+    }));
+    try { bcRef.current?.postMessage({ jobId: idStr, isFavorite: isNowFavorite }); } catch {}
+    try { localStorage.setItem("favorites:changed", JSON.stringify({ jobId: idStr, isFavorite: isNowFavorite, ts: Date.now() })); } catch {}
+  } catch (err) {
+    console.error("Error updating favorites:", err);
+    setFavorites(prevFavorites);
+    onFavoriteToggle?.(idStr, wasFavorite);
+
+    // rollback broadcast
+    window.dispatchEvent(new CustomEvent("favorites:changed", {
+      detail: { jobId: idStr, isFavorite: wasFavorite },
+    }));
+    try { bcRef.current?.postMessage({ jobId: idStr, isFavorite: wasFavorite }); } catch {}
+    try { localStorage.setItem("favorites:changed", JSON.stringify({ jobId: idStr, isFavorite: wasFavorite, ts: Date.now() })); } catch {}
+  }
+};
+
+
 
   const [rightClickedJobId, setRightClickedJobId] = useState(null);
 
@@ -329,12 +384,12 @@ export default function Posts({ jobs = [], viewMode = "grid", setViewMode, onFav
                 title={
                   !user
                     ? "Login to save jobs"
-                    : favorites.includes(post._id)
+                    : favorites.includes(String(post._id))
                       ? "Remove from favorites"
                       : "Add to favorites"
                 }
               >
-                {favorites.includes(post._id) ? (
+                {favorites.includes(String(post._id)) ? (
                   <FaHeart className="text-red-500" />
                 ) : (
                   <FaRegHeart className="text-gray-400 hover:text-red-500" />
