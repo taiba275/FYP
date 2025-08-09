@@ -111,7 +111,9 @@ export default function LoginModal({ onClose }) {
   useEffect(() => {
     const handler = (e) => e.key === "Escape" && onClose();
     window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
+    return () => {
+      window.removeEventListener("keydown", handler);
+    };
   }, [onClose]);
 
   // Open reset modal automatically if token + email are present
@@ -122,58 +124,58 @@ export default function LoginModal({ onClose }) {
   }, [resetToken, resetEmail]);
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  setError("");
+    e.preventDefault();
+    setError("");
 
-  if (stage === "login") {
-    setLoadingLogin(true);
-    try {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ email, password }),
-      });
+    if (stage === "login") {
+      setLoadingLogin(true);
+      try {
+        const res = await fetch("/api/auth/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ email, password }),
+        });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Login failed");
-      setStage("otp");
-    } catch (err) {
-      setError(err.message || "Error logging in");
-    } finally {
-      setLoadingLogin(false);
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || "Login failed");
+        setStage("otp");
+      } catch (err) {
+        setError(err.message || "Error logging in");
+      } finally {
+        setLoadingLogin(false);
+      }
+    } else if (stage === "otp") {
+      setLoadingOtp(true);
+      try {
+        const res = await fetch("/api/auth/verify-login-otp", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ email, otp, rememberMe }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || "OTP invalid");
+
+        const meRes = await fetch("/api/auth/me", {
+          credentials: "include",
+          cache: "no-store",
+        });
+        const meData = await meRes.json();
+
+        if (meData.authenticated) {
+          setUser(meData.user);
+          onClose();
+        } else {
+          throw new Error("Failed to complete login");
+        }
+      } catch (err) {
+        setError(err.message || "OTP error");
+      } finally {
+        setLoadingOtp(false);
+      }
     }
-  } else if (stage === "otp") {
-  setLoadingOtp(true);
-  try {
-    const res = await fetch("/api/auth/verify-login-otp", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ email, otp, rememberMe }),
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.message || "OTP invalid");
-
-    const meRes = await fetch("/api/auth/me", {
-      credentials: "include",
-      cache: "no-store",
-    });
-    const meData = await meRes.json();
-
-    if (meData.authenticated) {
-      setUser(meData.user);
-      onClose();
-    } else {
-      throw new Error("Failed to complete login");
-    }
-  } catch (err) {
-    setError(err.message || "OTP error");
-  } finally {
-    setLoadingOtp(false);
-  }
-}
-};
+  };
 
   return (
     <>
@@ -268,7 +270,7 @@ export default function LoginModal({ onClose }) {
                             required
                           />
                         </div>
-                          <div className="relative">
+                        <div className="relative">
                           <input
                             type={showPassword ? "text" : "password"}
                             className="w-full p-3 border-b border-gray-300 focus:outline-none text-black pr-10"
@@ -284,7 +286,7 @@ export default function LoginModal({ onClose }) {
                           >
                             {showPassword ? <FaEyeSlash /> : <FaEye />}
                           </span>
-                            </div>
+                        </div>
 
                         <div className="flex items-center">
                           <input

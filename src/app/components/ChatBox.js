@@ -13,13 +13,18 @@ export default function ChatBox({ onClose }) {
   const [matchedJobs, setMatchedJobs] = useState([]);
 
   useEffect(() => {
+    const originalStyle = window.getComputedStyle(document.body).overflow;
+    document.body.style.overflow = "hidden";
     const handleEsc = (e) => {
-    if (e.key === 'Escape') {
-      onClose?.(); // ✅ Notify parent to stop rendering
-    }
+      if (e.key === 'Escape') {
+        onClose?.(); // ✅ Notify parent to stop rendering
+      }
     };
     window.addEventListener('keydown', handleEsc);
-    return () => window.removeEventListener('keydown', handleEsc);
+    return () => {
+      window.removeEventListener('keydown', handleEsc);
+      document.body.style.overflow = originalStyle;
+    };
   }, []);
 
   const sendMessage = async () => {
@@ -65,20 +70,19 @@ export default function ChatBox({ onClose }) {
     }
   };
 
-
   return (
     <div
       className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center"
       onClick={(e) => {
-      if (e.target === e.currentTarget) {
-        onClose?.(); // ✅ Notify parent to stop rendering
-      }
+        if (e.target === e.currentTarget) {
+          onClose?.(); // ✅ Notify parent to stop rendering
+        }
       }}
     >
       <div
         ref={modalRef}
         onClick={(e) => e.stopPropagation()}
-        className="bg-white w-full max-w-6xl h-[90vh] rounded-xl shadow-xl flex flex-col overflow-hidden"
+        className="bg-white w-full max-w-6xl h-[90vh] rounded-xl shadow-xl flex flex-col overflow-hidden "
       >
         {/* Header */}
         <div className="bg-blue-600 text-white px-6 py-4 text-xl font-semibold">
@@ -86,14 +90,13 @@ export default function ChatBox({ onClose }) {
         </div>
 
         {/* Chat Content */}
-        <div className="flex-1 flex flex-col px-6 py-4 overflow-hidden">
-          <div className="flex-1 overflow-y-auto p-4 border rounded bg-gray-50 text-sm whitespace-pre-wrap">
+        <div className="flex-1 flex flex-col px-6 py-4 overflow-hidden ">
+          <div className="flex-1 overflow-y-auto p-4 border rounded bg-gray-50 text-sm whitespace-pre-wrap custom-scrollbar">
             {messages.slice(1).map((msg, i) => (
               <div
                 key={i}
-                className={`mb-2 ${
-                  msg.role === 'user' ? 'text-right text-blue-600' : 'text-left text-gray-800'
-                }`}
+                className={`mb-2 ${msg.role === 'user' ? 'text-right text-blue-600' : 'text-left text-gray-800'
+                  }`}
               >
                 <p className="break-words whitespace-pre-wrap">
                   <strong>{msg.role === 'user' ? 'You' : 'Bot'}:</strong>{' '}

@@ -11,6 +11,8 @@ export default function JobDetailsModal({ job, onClose }) {
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
+    const originalStyle = window.getComputedStyle(document.body).overflow;
+    document.body.style.overflow = "hidden";
     function handleClickOutside(event) {
       if (
         modalRef.current &&
@@ -20,7 +22,6 @@ export default function JobDetailsModal({ job, onClose }) {
         onClose();
       }
     }
-
 
     function handleEsc(event) {
       if (event.key === "Escape") {
@@ -33,48 +34,49 @@ export default function JobDetailsModal({ job, onClose }) {
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
       document.removeEventListener("keydown", handleEsc);
+      document.body.style.overflow = originalStyle;
     };
   }, [onClose]);
 
- useEffect(() => {
-  if (!user || !job?._id) return;
-  fetch("/api/user/favorites", { credentials: "include" })
-    .then((res) => res.json())
-    .then((data) => {
-      const ids = (data.favorites || []).map((j) => (j._id || j).toString());
-      setIsFavorite(ids.includes(job._id.toString()));
-    })
-    .catch(() => {});
-}, [user, job]);
+  useEffect(() => {
+    if (!user || !job?._id) return;
+    fetch("/api/user/favorites", { credentials: "include" })
+      .then((res) => res.json())
+      .then((data) => {
+        const ids = (data.favorites || []).map((j) => (j._id || j).toString());
+        setIsFavorite(ids.includes(job._id.toString()));
+      })
+      .catch(() => { });
+  }, [user, job]);
 
 
   const toggleFavorite = async () => {
-  if (!user) {
-    alert("Please log in to save jobs.");
-    return;
-  }
+    if (!user) {
+      alert("Please log in to save jobs.");
+      return;
+    }
 
-  const res = await fetch("/api/user/favorites", {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include",
-    body: JSON.stringify({ jobId: job._id }),
-  });
+    const res = await fetch("/api/user/favorites", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ jobId: job._id }),
+    });
 
-  const data = await res.json();
+    const data = await res.json();
 
-  // Normalize to strings (works for ObjectIds or populated docs)
-  const ids = (data.favorites || []).map((j) => (j._id || j).toString());
-  const isNowFav = ids.includes(job._id.toString());
-  setIsFavorite(isNowFav);
+    // Normalize to strings (works for ObjectIds or populated docs)
+    const ids = (data.favorites || []).map((j) => (j._id || j).toString());
+    const isNowFav = ids.includes(job._id.toString());
+    setIsFavorite(isNowFav);
 
-  // 🔊 Tell Posts.js (and others) that this job’s favorite state changed
-  window.dispatchEvent(
-    new CustomEvent("favorites:changed", {
-      detail: { jobId: job._id.toString(), isFavorite: isNowFav },
-    })
-  );
-};
+    // 🔊 Tell Posts.js (and others) that this job’s favorite state changed
+    window.dispatchEvent(
+      new CustomEvent("favorites:changed", {
+        detail: { jobId: job._id.toString(), isFavorite: isNowFav },
+      })
+    );
+  };
 
   if (!job) return null;
 
