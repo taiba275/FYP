@@ -24,6 +24,8 @@ ChartJS.register(
   Legend
 );
 
+const API_BASE = process.env.NEXT_PUBLIC_TRENDS_API; // or NEXT_PUBLIC_FAISS_API
+
 const industries = [
   "All Industries",
   "Computer Science",
@@ -61,7 +63,7 @@ export default function TrendsPage() {
 
     const fetchTrends = async () => {
       try {
-        const res = await fetch(`http://localhost:8000/trends/${selectedIndustry}`);
+        const res = await fetch(`${API_BASE}/trends/${selectedIndustry}`);
         const json = await res.json();
 
         if (!res.ok) {

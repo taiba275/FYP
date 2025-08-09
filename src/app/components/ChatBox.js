@@ -130,7 +130,7 @@ export default function ChatBox({ onClose, userId }) {
     if (!id) return;
 
     try {
-      await fetch("http://localhost:5010/chat/new", {
+      await fetch("http://chatbot-production-f34b.up.railway.app/chat/new", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ user_id: id }),
@@ -150,7 +150,7 @@ export default function ChatBox({ onClose, userId }) {
     if (!id) return;
 
     try {
-      await fetch(`http://localhost:5010/chat/history/${encodeURIComponent(id)}`, {
+      await fetch(`http://chatbot-production-f34b.up.railway.app/chat/history/${encodeURIComponent(id)}`, {
         method: "DELETE",
       });
     } catch (e) {
