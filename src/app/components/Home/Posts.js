@@ -152,6 +152,8 @@ function formatSalary(post) {
 export default function Posts({ jobs = [], viewMode = "grid", setViewMode, onFavoriteToggle, showTotals = true, showViewToggle = true, }) {
   const [selectedJob, setSelectedJob] = useState(null);
   const [favorites, setFavorites] = useState([]);
+  const [loadingPreviewId, setLoadingPreviewId] = useState(null);
+
   const { user } = useAuth();
   const sortedJobs = useMemo(() => {
     const arr = Array.isArray(jobs) ? [...jobs] : [];
@@ -176,14 +178,18 @@ export default function Posts({ jobs = [], viewMode = "grid", setViewMode, onFav
 
   // Fetch job details
   async function openJobDetails(id) {
-    try {
-      const res = await fetch(`/api/jobs/${id}`);
-      const data = await res.json();
-      setSelectedJob(data);
-    } catch (err) {
-      console.error("Failed to fetch job:", err);
-    }
+  setLoadingPreviewId(id);
+  try {
+    const res = await fetch(`/api/jobs/${id}`);
+    const data = await res.json();
+    setSelectedJob(data);
+  } catch (err) {
+    console.error("Failed to fetch job:", err);
+  } finally {
+    setLoadingPreviewId(null);
   }
+}
+
 
   // Fetch user's favorite jobs
   useEffect(() => {
@@ -387,14 +393,15 @@ export default function Posts({ jobs = [], viewMode = "grid", setViewMode, onFav
 
 
               <button
-                onClick={(e) => {
-                  e.preventDefault(); // Prevent navigation
-                  openJobDetails(post._id);
-                }}
-                className="w-full bg-gray-900 text-white py-2 rounded-md text-sm font-medium hover:bg-gray-800 transition"
-              >
-                Quick View
-              </button>
+  onClick={(e) => { e.preventDefault(); openJobDetails(post._id); }}
+  disabled={loadingPreviewId === post._id}
+  aria-busy={loadingPreviewId === post._id}
+  className={`w-full bg-gray-900 text-white py-2 rounded-md text-sm font-medium transition
+    ${loadingPreviewId === post._id ? "opacity-70 cursor-wait" : "hover:bg-gray-800"}`}
+>
+  {loadingPreviewId === post._id ? "Loading..." : "Preview"}
+</button>
+
             </div>
           </Link>
         ))}
