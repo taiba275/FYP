@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import LoginModal from "./LoginModal";
 import SignupModal from "./SignupModel";
 import ChatBox from "./ChatBox";
+import IndustryModal from "./IndustriesModel";
 // import Resume from "./Resume";
 import PostaJobModel from "./PostaJobModel";
 import { useRouter } from "next/navigation";
@@ -25,6 +26,7 @@ const Header = () => {
 
   const [showDropdown, setShowDropdown] = useState(false);
   const [showChatbot, setShowChatbot] = useState(false);
+  const [showIndustryModal, setShowIndustryModal] = useState(false);
   //const [showResume, setShowResume] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -99,12 +101,12 @@ const Header = () => {
 
   const renderNavLinks = () => (
     <>
+      <li><button onClick={() => setShowIndustryModal(true)} className="hover:text-blue-600 block py-2">Browse</button></li>
       <li><a href="/trends" className="hover:text-blue-600 block py-2">Trends</a></li>
       <li><a href="/recommendation" className="hover:text-blue-600 block py-2">Recommendation</a></li>
-      <li><a href="/industry" className="hover:text-blue-600 block py-2">Industry</a></li>
+      {/* <li><a href="/industry" className="hover:text-blue-600 block py-2">Industry</a></li> */}
       <li><button onClick={() => setShowChatbot(true)} className="hover:text-blue-600 block py-2">Chatbot</button></li>
       <li><a href="/resume" className="hover:text-blue-600 block py-2">Resume</a></li>
-    
     </>
   );
 
@@ -285,6 +287,9 @@ const Header = () => {
       {showLoginModal && <LoginModal onClose={() => setShowLoginModal(false)} />}
       {showPostaJobModel && <PostaJobModel onClose={() => setShowPostaJobModel(false)} />}
       {showChatbot && <ChatBox onClose={() => setShowChatbot(false)} />}
+      {showIndustryModal && (
+        <IndustryModal onClose={() => setShowIndustryModal(false)} />
+      )}
       {/* {showResume && <Resume onClose={() => setShowResume(false)} />} */}
     </>
   );

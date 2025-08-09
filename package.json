@@ -21,6 +21,7 @@
     "flowbite-react": "^0.10.2",
     "formidable": "^3.5.4",
     "jsonwebtoken": "^9.0.2",
+    "lucide-react": "^0.539.0",
     "mongoose": "^8.9.5",
     "natural": "^8.1.0",
     "next": "15.1.5",
