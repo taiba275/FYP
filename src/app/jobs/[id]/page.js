@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRef } from "react";
 
 export const dynamic = "force-dynamic";
+
 
 const ICONS = {
   linkedin: "/Images/LinkedIn.png",
@@ -66,6 +68,12 @@ export default function JobDetailsPage({ params }) {
   const [job, setJob] = useState(null);
   const [copied, setCopied] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
+  const bcRef = useRef(null);
+
+    useEffect(() => {
+    try { bcRef.current = new BroadcastChannel("favorites"); } catch {}
+    return () => { try { bcRef.current?.close(); } catch {} };
+  }, []);
 
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/api/jobs/${id}`)
@@ -73,6 +81,29 @@ export default function JobDetailsPage({ params }) {
       .then(setJob)
       .catch(console.error);
   }, [id]);
+
+  useEffect(() => {
+  if (!job) return;
+  fetch("/api/user/favorites", { credentials: "include" })
+    .then((r) => r.json())
+    .then((data) => {
+      const ids = (data.favorites || []).map((j) => (j._id || j).toString());
+      setIsFavorite(ids.includes(job._id));
+    })
+    .catch(() => {});
+}, [job]);
+
+
+useEffect(() => {
+  const handler = (e) => {
+    const { jobId, isFavorite } = e.detail || {};
+    if (!job || jobId !== job._id) return;
+    setIsFavorite(!!isFavorite);
+  };
+  window.addEventListener("favorites:changed", handler);
+  return () => window.removeEventListener("favorites:changed", handler);
+}, [job]);
+
 
   const formatDate = (dateValue) => {
     if (!dateValue) return "N/A";
@@ -126,18 +157,32 @@ export default function JobDetailsPage({ params }) {
       .join("");
 
 
-  const toggleFavorite = async () => {
+ const toggleFavorite = async () => {
     const res = await fetch("/api/user/favorites", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
       body: JSON.stringify({ jobId: job._id }),
     });
-
     const data = await res.json();
-    const fav = data.favorites?.some((j) => j.toString() === job._id);
+
+    const fav = (data.favorites || []).some(
+      (j) => (j._id || j).toString() === job._id
+    );
     setIsFavorite(fav);
+
+    const payload = { jobId: job._id.toString(), isFavorite: fav };
+
+    // same-tab (modal/list on same page)
+    window.dispatchEvent(new CustomEvent("favorites:changed", { detail: payload }));
+
+    // cross-tab
+    try { bcRef.current?.postMessage(payload); } catch {}
+
+    // fallback to storage (fires only on other tabs)
+    try { localStorage.setItem("favorites:changed", JSON.stringify({ ...payload, ts: Date.now() })); } catch {}
   };
+
 
   const handleShare = () => {
     const jobUrl = `${window.location.origin}/jobs/${job._id}`;
