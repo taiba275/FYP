@@ -1,5 +1,7 @@
+"use client";
+
 import { useForm } from "react-hook-form";
-import { useRef } from "react";
+import pakistanCities from "@/utils/pakistanCities"; // full list
 
 const qualifications = [
   "Matric",
@@ -8,21 +10,6 @@ const qualifications = [
   "Master",
   "PhD",
   "Other",
-];
-
-const cities = [
-  "Karachi",
-  "Lahore",
-  "Islamabad",
-  "Rawalpindi",
-  "Faisalabad",
-  "Multan",
-  "Peshawar",
-  "Quetta",
-  "Sialkot",
-  "Gujranwala",
-  "Hyderabad",
-  "Sukkur",
 ];
 
 export default function JobRecommendationForm({ setJobs, setLoading, loading }) {
@@ -43,13 +30,14 @@ export default function JobRecommendationForm({ setJobs, setLoading, loading }) 
   });
 
   const selectedQualification = watch("qualification");
-  const fileInputRef = useRef();
 
   const onSubmit = async (data) => {
     setLoading(true);
     try {
       const finalQualification =
-        data.qualification === "Other" ? data.customQualification : data.qualification;
+        data.qualification === "Other"
+          ? data.customQualification
+          : data.qualification;
 
       const payload = {
         skills: data.skills.split(",").map((s) => s.trim()),
@@ -72,156 +60,146 @@ export default function JobRecommendationForm({ setJobs, setLoading, loading }) 
     setLoading(false);
   };
 
-  const handleFileUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    setLoading(true);
-
-    const formData = new FormData();
-    formData.append("resume", file);
-
-    try {
-      const res = await fetch("http://localhost:8001/extract-resume", {
-        method: "POST",
-        body: formData,
-      });
-
-      const extracted = await res.json();
-      reset({
-        skills: extracted.skills || "",
-        experience: extracted.experience || "",
-        qualification: extracted.qualification || "",
-        customQualification: extracted.qualification === "Other" ? extracted.customQualification : "",
-        location: extracted.location || "",
-      });
-
-      // Auto-trigger submit with new values
-      handleSubmit(onSubmit)();
-    } catch (err) {
-      alert("Failed to extract resume details.");
-    }
-
-    setLoading(false);
-  };
-
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-      {/* Skills */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Skills <span className="text-red-600">*</span>
-        </label>
-        <textarea
-          rows={3}
-          placeholder="e.g., React, Python, SEO"
-          {...register("skills", { required: true })}
-          className={`w-full p-3 border ${
-            errors.skills ? "border-red-500" : "border-gray-300"
-          } bg-gray-100 text-black rounded focus:outline-none focus:border-blue-600 placeholder-gray-500`}
-        />
-        {errors.skills && (
-          <span className="text-red-500 text-xs">Required field</span>
-        )}
-      </div>
-
-      {/* Experience */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Experience (in years) <span className="text-red-600">*</span>
-        </label>
-        <input
-          type="number"
-          min={0}
-          placeholder="e.g., 2"
-          {...register("experience", {
-            required: true,
-            min: { value: 0, message: "Experience cannot be negative" },
-          })}
-          className={`w-full p-3 border ${
-            errors.experience ? "border-red-500" : "border-gray-300"
-          } bg-gray-100 text-black rounded focus:outline-none focus:border-blue-600 placeholder-gray-500`}
-        />
-        {errors.experience && (
-          <span className="text-red-500 text-xs">
-            {errors.experience.message || "Required field"}
-          </span>
-        )}
-      </div>
-
-      {/* Qualification */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Qualification <span className="text-red-600">*</span>
-        </label>
-        <select
-          {...register("qualification", { required: true })}
-          className={`w-full p-3 border ${
-            errors.qualification ? "border-red-500" : "border-gray-300"
-          } bg-gray-100 text-black rounded focus:outline-none focus:border-blue-600`}
-        >
-          <option value="">Select qualification</option>
-          {qualifications.map((q) => (
-            <option key={q} value={q}>
-              {q}
-            </option>
-          ))}
-        </select>
-        {errors.qualification && (
-          <span className="text-red-500 text-xs">Required field</span>
-        )}
-      </div>
-
-      {/* Custom qualification */}
-      {selectedQualification === "Other" && (
+    <div className="form-container bg-white rounded-2xl shadow-lg p-8 text-left">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        {/* Skills */}
         <div>
-          <input
-            type="text"
-            placeholder="Enter your qualification"
-            {...register("customQualification", { required: true })}
-            className={`w-full p-3 border ${
-              errors.customQualification ? "border-red-500" : "border-gray-300"
-            } bg-gray-100 text-black rounded focus:outline-none focus:border-blue-600 placeholder-gray-500`}
+          <label className="block text-sm font-semibold text-gray-700 mb-3">
+            Skills <span className="text-red-600">*</span>
+          </label>
+          <textarea
+            rows={3}
+            placeholder="e.g., JavaScript, Python, Project Management, Communication..."
+            {...register("skills", { required: true })}
+            className={`w-full px-4 py-3 border rounded-xl transition-all resize-none text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+              errors.skills ? "border-red-300" : "border-gray-300"
+            }`}
           />
-          {errors.customQualification && (
+          {errors.skills && (
             <span className="text-red-500 text-xs">Required field</span>
           )}
         </div>
-      )}
 
-      {/* City */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          City <span className="text-red-600">*</span>
-        </label>
-        <select
-          {...register("location", { required: true })}
-          className={`w-full p-3 border ${
-            errors.location ? "border-red-500" : "border-gray-300"
-          } bg-gray-100 text-black rounded focus:outline-none focus:border-blue-600`}
-        >
-          <option value="">Select city</option>
-          {cities.map((city) => (
-            <option key={city} value={city}>
-              {city}
-            </option>
-          ))}
-        </select>
-        {errors.location && (
-          <span className="text-red-500 text-xs">Required field</span>
+        {/* Experience */}
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-3">
+            Experience (in years) <span className="text-red-600">*</span>
+          </label>
+          <input
+            type="number"
+            min={0}
+            placeholder="e.g., 3"
+            {...register("experience", {
+              required: true,
+              min: { value: 0, message: "Experience cannot be negative" },
+            })}
+            className={`w-full px-4 py-3 border rounded-xl transition-all text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+              errors.experience ? "border-red-300" : "border-gray-300"
+            }`}
+          />
+          {errors.experience && (
+            <span className="text-red-500 text-xs">
+              {errors.experience.message || "Required field"}
+            </span>
+          )}
+        </div>
+
+        {/* Qualification — typable */}
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-3">
+            Qualification <span className="text-red-600">*</span>
+          </label>
+          <input
+            type="text"
+            list="qualification-list"
+            placeholder="Select or type your qualification"
+            {...register("qualification", { required: true })}
+            className={`w-full px-4 py-3 border rounded-xl transition-all text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+              errors.qualification ? "border-red-300" : "border-gray-300"
+            }`}
+            autoComplete="off"
+          />
+          <datalist id="qualification-list">
+            {qualifications.map((q) => (
+              <option key={q} value={q} />
+            ))}
+          </datalist>
+          {errors.qualification && (
+            <span className="text-red-500 text-xs">Required field</span>
+          )}
+        </div>
+
+        {/* Custom qualification (unchanged logic) */}
+        {selectedQualification === "Other" && (
+          <div>
+            <input
+              type="text"
+              placeholder="Enter your qualification"
+              {...register("customQualification", { required: true })}
+              className={`w-full px-4 py-3 border rounded-xl transition-all text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                errors.customQualification ? "border-red-300" : "border-gray-300"
+              }`}
+            />
+            {errors.customQualification && (
+              <span className="text-red-500 text-xs">Required field</span>
+            )}
+          </div>
         )}
-      </div>
 
-      {/* Submit */}
-      <div className="w-full flex justify-center pt-4">
-        <button
-          type="submit"
-          disabled={loading}
-          className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-        >
-          {loading ? "Fetching..." : "Get Recommendations"}
-        </button>
-      </div>
-    </form>
+        {/* City — typable from pakistanCities */}
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-3">
+            City <span className="text-red-600">*</span>
+          </label>
+          <input
+            type="text"
+            list="city-list"
+            placeholder="Select or type your city"
+            {...register("location", { required: true })}
+            className={`w-full px-4 py-3 border rounded-xl transition-all text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+              errors.location ? "border-red-300" : "border-gray-300"
+            }`}
+            autoComplete="off"
+          />
+          <datalist id="city-list">
+            {pakistanCities.map((city) => (
+              <option key={city} value={city} />
+            ))}
+          </datalist>
+          {errors.location && (
+            <span className="text-red-500 text-xs">Required field</span>
+          )}
+        </div>
+
+        {/* Submit */}
+        <div className="pt-2">
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-gradient-to-r from-blue-600 to-blue-800 text-white py-4 px-6 rounded-xl font-semibold text-lg hover:from-blue-700 hover:to-blue-900 focus:ring-4 focus:ring-blue-200 transition-all duration-200 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {loading ? "Fetching…" : "Get My Recommendations"}
+          </button>
+        </div>
+      </form>
+
+      {/* slide-in animation */}
+      <style jsx>{`
+        .form-container {
+          animation: slideIn 0.6s ease-out;
+        }
+        @keyframes slideIn {
+          from {
+            opacity: 0;
+            transform: translateY(30px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+      `}</style>
+    </div>
   );
 }
