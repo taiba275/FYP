@@ -94,7 +94,7 @@ const makeId = () =>
 // ---------- GET ----------
 export async function GET() {
   try {
-    const jar = cookies();
+    const jar = await cookies();
     let guest_id = jar.get("guest_id")?.value;
 
     // Build response so we can set cookie if needed
@@ -142,7 +142,7 @@ export async function POST(req) {
   try {
     const { messages, previousResults = [], user_id } = await req.json();
 
-    const jar = cookies();
+    const jar = await cookies();
     let guest_id = jar.get("guest_id")?.value;
 
     const ensureResponse = (payload) => {

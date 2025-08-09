@@ -176,7 +176,6 @@ export default function HomeClient({ initialJobs, initialCategory = "" }) {
         )}
       </div>
       <ScrollToTop />
-      <ChatbotWidget />
       {showLoginModal && <LoginModal onClose={() => setShowLoginModal(false)} />}
       {showSignupModal && <SignupModal onClose={() => setShowSignupModal(false)} />}
     </div>
