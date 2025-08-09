@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@headlessui/react": "^2.2.7",
+    "@heroicons/react": "^2.2.0",
     "@lottiefiles/lottie-player": "^2.0.12",
     "@vercel/speed-insights": "^1.2.0",
     "bcryptjs": "^3.0.2",

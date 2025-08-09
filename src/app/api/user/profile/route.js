@@ -1,3 +1,5 @@
+"use client"
+
 import { NextResponse } from "next/server";
 import { connectDB } from "../../../../library/mongodb";
 import User from "../../../models/User";
