@@ -5,6 +5,7 @@ from pymongo import MongoClient
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from sentence_transformers import SentenceTransformer
+from pymongo import MongoClient, ReturnDocument
 from dotenv import load_dotenv
 import os
 import math
@@ -69,69 +70,111 @@ def normalize_vector(vec):
     norm = np.linalg.norm(vec)
     return vec / norm if norm > 0 else vec
 
+def pick_skills_text(job):
+    # Prefer Skills; fall back to Description, ExtractedRole, Title
+    return (
+        safe_str(job.get("Skills"))
+        or safe_str(job.get("Description"))
+        or safe_str(job.get("ExtractedRole"))
+        or safe_str(job.get("Title"))
+    )
+
+def pick_title_text(job):
+    # Prefer Title; fall back to ExtractedRole; then "Role at Company"; finally Skills
+    title = safe_str(job.get("Title"))
+    if title:
+        return title
+    role = safe_str(job.get("ExtractedRole"))
+    if role:
+        return role
+    company = safe_str(job.get("Company"))
+    if role or company:
+        return f"{role} at {company}".strip()
+    return safe_str(job.get("Skills"))
+
+
 @app.on_event("startup")
 def build_faiss_indices():
     global skills_index, title_index, job_docs
 
     print("🚀 Building FAISS indices...")
 
-    # STEP 1: Backfill embeddings for jobs that are missing them
-    jobs_to_update = list(jobs_collection.find({
+    # Look for: missing fields OR empty arrays
+    missing_filter = {
         "$or": [
             {"skills_embedding": {"$exists": False}},
-            {"title_embedding": {"$exists": False}}
+            {"skills_embedding.0": {"$exists": False}},
+            {"title_embedding": {"$exists": False}},
+            {"title_embedding.0": {"$exists": False}},
         ]
-    }))
+    }
 
+    jobs_to_update = list(jobs_collection.find(missing_filter, {"_id": 1, "Skills": 1, "Title": 1, "Description": 1, "ExtractedRole": 1, "Company": 1}))
     print(f"🛠 Backfilling {len(jobs_to_update)} jobs without embeddings...")
 
+    fixed = 0
     for job in jobs_to_update:
         try:
-            skills_text = safe_str(job.get("Skills"))
-            title_text = safe_str(job.get("Title"))
-            if not skills_text or not title_text:
-                continue
+            update_fields = {}
 
-            skills_vec = normalize_vector(model.encode(skills_text))
-            title_vec = normalize_vector(model.encode(title_text))
+            # Only fill what's missing/empty
+            need_skills = not job.get("skills_embedding") or (isinstance(job.get("skills_embedding"), list) and len(job["skills_embedding"]) == 0)
+            need_title  = not job.get("title_embedding")  or (isinstance(job.get("title_embedding"), list)  and len(job["title_embedding"])  == 0)
 
-            if len(skills_vec) != embedding_dim or len(title_vec) != embedding_dim:
-                continue
+            if need_skills:
+                st = pick_skills_text(job)
+                if st:
+                    s_vec = normalize_vector(model.encode(st)).astype("float32")
+                    if len(s_vec) == embedding_dim and np.isfinite(s_vec).all():
+                        update_fields["skills_embedding"] = s_vec.tolist()
 
-            jobs_collection.update_one(
-                {"_id": job["_id"]},
-                {
-                    "$set": {
-                        "skills_embedding": skills_vec.tolist(),
-                        "title_embedding": title_vec.tolist()
-                    }
-                }
-            )
+            if need_title:
+                tt = pick_title_text(job)
+                if tt:
+                    t_vec = normalize_vector(model.encode(tt)).astype("float32")
+                    if len(t_vec) == embedding_dim and np.isfinite(t_vec).all():
+                        update_fields["title_embedding"] = t_vec.tolist()
+
+            if update_fields:
+                jobs_collection.update_one({"_id": job["_id"]}, {"$set": update_fields})
+                fixed += 1
 
         except Exception as e:
-            print(f"⚠️ Failed to backfill job {_id}: {e}")
+            print(f"⚠️ Failed to backfill job {job.get('_id')}: {e}")
 
-    # STEP 2: Load jobs with embeddings into FAISS (same as before)
-    jobs = list(jobs_collection.find({
-        "skills_embedding": {"$exists": True},
-        "title_embedding": {"$exists": True}
-    }))
+    if fixed:
+        print(f"✅ Backfilled {fixed} job(s).")
+
+    # Re-check remaining missing
+    remaining_missing = jobs_collection.count_documents(missing_filter)
+    if remaining_missing:
+        print(f"⚠️ {remaining_missing} job(s) still missing one or both embeddings (will be skipped).")
+
+    # Load only jobs that now have both embeddings (keeps a 1:1 mapping for both indices)
+    jobs = list(jobs_collection.find(
+        {"skills_embedding.383": {"$exists": True}, "title_embedding.383": {"$exists": True}},
+        {
+            "skills_embedding": 1,
+            "title_embedding": 1,
+            "Title": 1, "Company": 1, "Job Location": 1, "Experience": 1, "Job Type": 1,
+            "Posting Date": 1, "Apply Before": 1, "Salary": 1, "Job URL": 1, "Description": 1, "Skills": 1
+        }
+    ))
 
     if not jobs:
         print("❌ No jobs with required embeddings found.")
         return
 
-    skills_vectors = []
-    title_vectors = []
-    job_docs.clear()
+    skills_vectors, title_vectors = [], []
+    job_docs = []  # reset
 
     for job in jobs:
         try:
-            skills_vec = normalize_vector(job["skills_embedding"])
-            title_vec = normalize_vector(job["title_embedding"])
-            if len(skills_vec) == embedding_dim and len(title_vec) == embedding_dim:
-                skills_vectors.append(skills_vec)
-                title_vectors.append(title_vec)
+            s_vec = normalize_vector(job["skills_embedding"]).astype("float32")
+            t_vec = normalize_vector(job["title_embedding"]).astype("float32")
+            if len(s_vec) == embedding_dim and len(t_vec) == embedding_dim and np.isfinite(s_vec).all() and np.isfinite(t_vec).all():
+                skills_vectors.append(s_vec)
+                title_vectors.append(t_vec)
                 job_docs.append(job)
         except Exception as e:
             print(f"⚠️ Skipped a job due to vector error: {e}")
@@ -140,11 +183,10 @@ def build_faiss_indices():
         print("❌ No valid vectors to index.")
         return
 
-    # Convert to numpy
-    skills_matrix = np.array(skills_vectors, dtype="float32")
-    title_matrix = np.array(title_vectors, dtype="float32")
+    # Build FAISS
+    skills_matrix = np.vstack(skills_vectors)
+    title_matrix  = np.vstack(title_vectors)
 
-    # Build FAISS indices
     skills_index = faiss.IndexFlatIP(embedding_dim)
     skills_index.add(skills_matrix)
 
@@ -240,30 +282,37 @@ async def update_faiss(job: dict):
     title = job.get("title", "")
     skills = job.get("skills", "")
 
-    title_vec = normalize_vector(model.encode(title)).tolist()
-    skills_vec = normalize_vector(model.encode(skills)).tolist()
+    title = title.strip() or job.get("extractedRole", "") or job.get("role", "")
+    skills = skills.strip()
 
-    # Store embeddings in MongoDB
+    title_vec = normalize_vector(model.encode(title)).astype("float32").tolist()
+    skills_vec = normalize_vector(model.encode(skills)).astype("float32").tolist()
+
+    # Store embeddings in MongoDB (get the updated doc back)
     job_in_db = jobs_collection.find_one_and_update(
         {"_id": ObjectId(job_id)},
-        {
-            "$set": {
-                "skills_embedding": skills_vec,
-                "title_embedding": title_vec
-            }
-        },
-        return_document=True,
+        {"$set": {"skills_embedding": skills_vec, "title_embedding": title_vec}},
+        return_document=ReturnDocument.AFTER,  # ← important
+        projection={
+            "skills_embedding": 1, "title_embedding": 1,
+            "Title": 1, "Company": 1, "Job Location": 1, "Experience": 1, "Job Type": 1,
+            "Posting Date": 1, "Apply Before": 1, "Salary": 1, "Job URL": 1, "Description": 1, "Skills": 1
+        }
     )
-
     if not job_in_db:
         raise HTTPException(status_code=404, detail="Job not found in DB")
 
-    # Update FAISS
+    # Ensure indices exist
+    if skills_index is None or title_index is None:
+        raise HTTPException(status_code=503, detail="FAISS index not ready")
+
+    # Append consistently
     job_docs.append(job_in_db)
-    skills_index.add(np.array([skills_vec], dtype="float32"))
-    title_index.add(np.array([title_vec], dtype="float32"))
+    skills_index.add(np.array([job_in_db["skills_embedding"]], dtype="float32"))
+    title_index.add(np.array([job_in_db["title_embedding"]], dtype="float32"))
 
     return {"success": True, "message": "Job embedded and indexed."}
+
 
 
 @app.post("/delete-faiss")
