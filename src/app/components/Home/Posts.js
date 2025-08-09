@@ -1,56 +1,11 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
-import { FaThLarge, FaList } from "react-icons/fa";
-import { FaHeart, FaRegHeart } from "react-icons/fa";
+import { useState, useEffect, useMemo, useRef } from "react";
+import { FaThLarge, FaList, FaBriefcase, FaIdBadge, FaUserTie, FaHeart, FaRegHeart } from "react-icons/fa";
 import JobDetailsModal from "../JobDetailsModal";
 import { useAuth } from "../../context/AuthContext";
 import Link from "next/link";
-import { FaBriefcase, FaIdBadge, FaUserTie } from "react-icons/fa";
 import JobTotal from "@/app/components/Home/JobTotal";
-import { useRef } from "react";
-
-// const sortedJobs = useMemo(() => {
-//   const arr = Array.isArray(jobs) ? [...jobs] : [];
-
-//   const normRole = (p) =>
-//     ((p?.ExtractedRole ?? p?.["Functional Area"] ?? "") + "")
-//       .trim()
-//       .toLowerCase();
-
-//   const isNotMentioned = (r) => r === "" || r === "not mentioned";
-
-//   return arr.sort((a, b) => {
-//     const rA = normRole(a);
-//     const rB = normRole(b);
-
-//     // Put real roles first, "Not mentioned"/empty last
-//     if (isNotMentioned(rA) !== isNotMentioned(rB)) {
-//       return isNotMentioned(rA) ? 1 : -1;
-//     }
-
-//     // Alphabetical by role (case-insensitive, natural)
-//     const byRole = rA.localeCompare(rB, undefined, { numeric: true, sensitivity: "base" });
-//     if (byRole !== 0) return byRole;
-
-//     // Tie-breakers
-//     const tA = (a?.Title || "").trim();
-//     const tB = (b?.Title || "").trim();
-//     const byTitle = tA.localeCompare(tB, undefined, { numeric: true, sensitivity: "base" });
-//     if (byTitle !== 0) return byTitle;
-
-//     const cA = (a?.Company || "").trim();
-//     const cB = (b?.Company || "").trim();
-//     const byCompany = cA.localeCompare(cB, undefined, { numeric: true, sensitivity: "base" });
-//     if (byCompany !== 0) return byCompany;
-
-//     // Newer first if still tied
-//     const dA = new Date(a?.["Posting Date"] || a?.postingDate || 0).getTime();
-//     const dB = new Date(b?.["Posting Date"] || b?.postingDate || 0).getTime();
-//     return dB - dA;
-//   });
-// }, [jobs]);
-
 
 const ICONS = {
   linkedin: "/Images/LinkedIn.png",
@@ -59,18 +14,16 @@ const ICONS = {
 };
 
 function getApplyUrl(post) {
-  // Prefer the “Job URL” used by the Apply Now button (different keys just in case)
   return (
     post["Job URL"] ??
     post.JobURL ??
-    post.LinkedInURL ?? // legacy
-    post.jobUrl ??      // safety
+    post.LinkedInURL ??
+    post.jobUrl ??
     ""
   );
 }
 
 function getSourceBadge(post) {
-  // Jobs created on our website
   if (post.userId) {
     return {
       src: ICONS.local,
@@ -87,7 +40,6 @@ function getSourceBadge(post) {
   try {
     host = new URL(raw).hostname.toLowerCase();
   } catch {
-    // non-URL string; treat as local/fallback
     return {
       src: ICONS.local,
       alt: "Apply here",
@@ -103,7 +55,6 @@ function getSourceBadge(post) {
     return { src: ICONS.rozee, alt: "ROZEE.PK", href: raw, title: "View on ROZEE.PK" };
   }
 
-  // default/fallback
   return { src: ICONS.local, alt: "Apply here", href: raw || `/jobs/${post._id}`, title: "Apply here" };
 }
 
@@ -136,11 +87,9 @@ function formatSalary(post) {
   if (isValidNumber(lower) && isValidNumber(upper)) {
     const formatWithCommas = (num) =>
       num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-
     return `${currency.toLowerCase()}. ${formatWithCommas(lower)} - ${formatWithCommas(upper)}/month`;
   }
 
-  // Fallback to Salary string (dataset jobs) — fix "not mentioned" casing
   if (typeof post.Salary === "string") {
     const s = post.Salary.trim();
     if (/^not\s+mentioned$/i.test(s)) return "Not mentioned";
@@ -150,10 +99,18 @@ function formatSalary(post) {
   return "Not disclosed";
 }
 
-export default function Posts({ jobs = [], viewMode = "grid", setViewMode, onFavoriteToggle, showTotals = true, showViewToggle = true, }) {
+export default function Posts({
+  jobs = [],
+  viewMode = "grid",
+  setViewMode,
+  onFavoriteToggle,
+  showTotals = true,
+  showViewToggle = true,
+}) {
   const [selectedJob, setSelectedJob] = useState(null);
   const [favorites, setFavorites] = useState([]);
   const [loadingPreviewId, setLoadingPreviewId] = useState(null);
+  const [rightClickedJobId, setRightClickedJobId] = useState(null);
   const bcRef = useRef(null);
 
   useEffect(() => {
@@ -162,6 +119,7 @@ export default function Posts({ jobs = [], viewMode = "grid", setViewMode, onFav
   }, []);
 
   const { user } = useAuth();
+
   const sortedJobs = useMemo(() => {
     const arr = Array.isArray(jobs) ? [...jobs] : [];
     return arr.sort((a, b) => {
@@ -175,136 +133,120 @@ export default function Posts({ jobs = [], viewMode = "grid", setViewMode, onFav
       const byCompany = cA.localeCompare(cB, undefined, { numeric: true, sensitivity: "base" });
       if (byCompany !== 0) return byCompany;
 
-      // tie-breaker: newer first if titles & companies are same
       const dA = new Date(a?.["Posting Date"] || a?.postingDate || 0).getTime();
       const dB = new Date(b?.["Posting Date"] || b?.postingDate || 0).getTime();
       return dB - dA;
     });
   }, [jobs]);
 
-
-  // Fetch job details
   async function openJobDetails(id) {
-  setLoadingPreviewId(id);
-  try {
-    const res = await fetch(`/api/jobs/${id}`);
-    const data = await res.json();
-    setSelectedJob(data);
-  } catch (err) {
-    console.error("Failed to fetch job:", err);
-  } finally {
-    setLoadingPreviewId(null);
-  }
-}
-
-useEffect(() => {
-  if (!user) { setFavorites([]); return; }
-  fetch("/api/user/favorites", { credentials: "include" })
-    .then((res) => res.json())
-    .then((data) => {
-      const favIds = (data.favorites || []).map((j) => (j._id || j).toString());
-      setFavorites(favIds);
-    })
-    .catch(() => {});
-}, [user]);
-
-useEffect(() => {
-  const onFavChanged = (payload) => {
-    const { jobId, isFavorite } =
-      payload?.detail || payload?.data || payload || {};
-    if (!jobId) return;
-    const id = String(jobId);
-    setFavorites((prev) => {
-      const has = prev.includes(id);
-      if (isFavorite && !has) return [...prev, id];
-      if (!isFavorite && has) return prev.filter((x) => x !== id);
-      return prev;
-    });
-  };
-
-  // same-tab custom event (you already had this)
-  const onWindow = (e) => onFavChanged(e);
-  window.addEventListener("favorites:changed", onWindow);
-
-  // cross-tab via BroadcastChannel
-  let bc;
-  try {
-    bc = new BroadcastChannel("favorites");
-    bc.onmessage = (e) => onFavChanged(e);
-  } catch {}
-
-  // fallback: storage event
-  const onStorage = (e) => {
-    if (e.key !== "favorites:changed") return;
+    setLoadingPreviewId(id);
     try {
-      onFavChanged(JSON.parse(e.newValue || "{}"));
-    } catch {}
-  };
-  window.addEventListener("storage", onStorage);
-
-  return () => {
-    window.removeEventListener("favorites:changed", onWindow);
-    window.removeEventListener("storage", onStorage);
-    try { bc && bc.close(); } catch {}
-  };
-}, []);
-
-  // Toggle favorite for a job
-  // Replace your current toggleFavorite with this:
-const toggleFavorite = async (jobId) => {
-  if (!user) return alert("Please log in to save jobs.");
-
-  const idStr = String(jobId);
-  const wasFavorite = favorites.includes(idStr);
-  const prevFavorites = favorites;
-
-  // optimistic UI
-  setFavorites(wasFavorite ? favorites.filter((id) => id !== idStr) : [...favorites, idStr]);
-  onFavoriteToggle?.(idStr, !wasFavorite);
-
-  try {
-    const res = await fetch("/api/user/favorites", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ jobId }),
-    });
-    if (!res.ok) throw new Error("Failed to toggle favorite");
-
-    const data = await res.json();
-    const serverFavIds = (data.favorites || []).map((j) => (j._id || j).toString());
-    setFavorites(serverFavIds);
-
-    // broadcast truth from server
-    const isNowFavorite = serverFavIds.includes(idStr);
-    window.dispatchEvent(new CustomEvent("favorites:changed", {
-      detail: { jobId: idStr, isFavorite: isNowFavorite },
-    }));
-    try { bcRef.current?.postMessage({ jobId: idStr, isFavorite: isNowFavorite }); } catch {}
-    try { localStorage.setItem("favorites:changed", JSON.stringify({ jobId: idStr, isFavorite: isNowFavorite, ts: Date.now() })); } catch {}
-  } catch (err) {
-    console.error("Error updating favorites:", err);
-    setFavorites(prevFavorites);
-    onFavoriteToggle?.(idStr, wasFavorite);
-
-    // rollback broadcast
-    window.dispatchEvent(new CustomEvent("favorites:changed", {
-      detail: { jobId: idStr, isFavorite: wasFavorite },
-    }));
-    try { bcRef.current?.postMessage({ jobId: idStr, isFavorite: wasFavorite }); } catch {}
-    try { localStorage.setItem("favorites:changed", JSON.stringify({ jobId: idStr, isFavorite: wasFavorite, ts: Date.now() })); } catch {}
+      const res = await fetch(`/api/jobs/${id}`);
+      const data = await res.json();
+      setSelectedJob(data);
+    } catch (err) {
+      console.error("Failed to fetch job:", err);
+    } finally {
+      setLoadingPreviewId(null);
+    }
   }
-};
 
+  useEffect(() => {
+    if (!user) { setFavorites([]); return; }
+    fetch("/api/user/favorites", { credentials: "include" })
+      .then((res) => res.json())
+      .then((data) => {
+        const favIds = (data.favorites || []).map((j) => (j._id || j).toString());
+        setFavorites(favIds);
+      })
+      .catch(() => {});
+  }, [user]);
 
+  useEffect(() => {
+    const onFavChanged = (payload) => {
+      const { jobId, isFavorite } =
+        payload?.detail || payload?.data || payload || {};
+      if (!jobId) return;
+      const id = String(jobId);
+      setFavorites((prev) => {
+        const has = prev.includes(id);
+        if (isFavorite && !has) return [...prev, id];
+        if (!isFavorite && has) return prev.filter((x) => x !== id);
+        return prev;
+      });
+    };
 
-  const [rightClickedJobId, setRightClickedJobId] = useState(null);
+    const onWindow = (e) => onFavChanged(e);
+    window.addEventListener("favorites:changed", onWindow);
+
+    let bc;
+    try {
+      bc = new BroadcastChannel("favorites");
+      bc.onmessage = (e) => onFavChanged(e);
+    } catch {}
+
+    const onStorage = (e) => {
+      if (e.key !== "favorites:changed") return;
+      try {
+        onFavChanged(JSON.parse(e.newValue || "{}"));
+      } catch {}
+    };
+    window.addEventListener("storage", onStorage);
+
+    return () => {
+      window.removeEventListener("favorites:changed", onWindow);
+      window.removeEventListener("storage", onStorage);
+      try { bc && bc.close(); } catch {}
+    };
+  }, []);
+
+  const toggleFavorite = async (jobId) => {
+    if (!user) return alert("Please log in to save jobs.");
+
+    const idStr = String(jobId);
+    const wasFavorite = favorites.includes(idStr);
+    const prevFavorites = favorites;
+
+    setFavorites(wasFavorite ? favorites.filter((id) => id !== idStr) : [...favorites, idStr]);
+    onFavoriteToggle?.(idStr, !wasFavorite);
+
+    try {
+      const res = await fetch("/api/user/favorites", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ jobId }),
+      });
+      if (!res.ok) throw new Error("Failed to toggle favorite");
+
+      const data = await res.json();
+      const serverFavIds = (data.favorites || []).map((j) => (j._id || j).toString());
+      setFavorites(serverFavIds);
+
+      const isNowFavorite = serverFavIds.includes(idStr);
+      window.dispatchEvent(new CustomEvent("favorites:changed", {
+        detail: { jobId: idStr, isFavorite: isNowFavorite },
+      }));
+      try { bcRef.current?.postMessage({ jobId: idStr, isFavorite: isNowFavorite }); } catch {}
+      try { localStorage.setItem("favorites:changed", JSON.stringify({ jobId: idStr, isFavorite: isNowFavorite, ts: Date.now() })); } catch {}
+    } catch (err) {
+      console.error("Error updating favorites:", err);
+      setFavorites(prevFavorites);
+      onFavoriteToggle?.(idStr, wasFavorite);
+
+      window.dispatchEvent(new CustomEvent("favorites:changed", {
+        detail: { jobId: idStr, isFavorite: wasFavorite },
+      }));
+      try { bcRef.current?.postMessage({ jobId: idStr, isFavorite: wasFavorite }); } catch {}
+      try { localStorage.setItem("favorites:changed", JSON.stringify({ jobId: idStr, isFavorite: wasFavorite, ts: Date.now() })); } catch {}
+    }
+  };
 
   useEffect(() => {
     const handleClickOutside = () => {
       if (rightClickedJobId) setRightClickedJobId(null);
     };
-
     document.addEventListener("click", handleClickOutside);
     return () => document.removeEventListener("click", handleClickOutside);
   }, [rightClickedJobId]);
@@ -333,136 +275,143 @@ const toggleFavorite = async (jobId) => {
 
       {/* Job cards */}
       <div
-        className={`w-full ${viewMode === "list"
-          ? "flex flex-col gap-4"
-          : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-          }`}
+        className={`w-full ${
+          viewMode === "list"
+            ? "flex flex-col gap-4"
+            : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+        }`}
       >
-        {jobs.map((post) => (
-          <Link
-            key={post._id}
-            href={`/jobs/${post._id}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="block"
-          >
-            <div
-              onContextMenu={(e) => {
-                e.stopPropagation();
-                setRightClickedJobId(post._id);
-              }}
-              className={`cursor-pointer bg-white rounded-lg shadow-md p-5 
-              ${rightClickedJobId === post._id ? "border-black" : "border-gray-200"}
-              border hover:shadow-xl transition-transform hover:-translate-y-1 
-              flex flex-col h-auto overflow-hidden relative ${viewMode === "list" ? "w-full" : ""}`}
-            >
-              {(() => {
-                const badge = getSourceBadge(post);
-                if (!badge) return null;
-                return (
-                  <div className="absolute top-3 right-3 z-10">
-                    <a href={badge.href} target="_blank" rel="noopener noreferrer">
-                      <img
-                        src={badge.src}
-                        alt={badge.alt}
-                        className="w-5 h-5"
-                        title={badge.title}
-                      />
-                    </a>
-                  </div>
-                );
-              })()}
-              {/* Heart icon */}
-              <div
-                onClick={(e) => {
-                  e.stopPropagation();
-                  e.preventDefault(); // Prevent navigation
-                  if (user) toggleFavorite(post._id);
-                }}
-                className={`absolute top-3 right-10 text-xl z-10 ${user ? "cursor-pointer" : "cursor-not-allowed opacity-50"
-                  }`}
-                title={
-                  !user
-                    ? "Login to save jobs"
-                    : favorites.includes(String(post._id))
-                      ? "Remove from favorites"
-                      : "Add to favorites"
-                }
+        {sortedJobs.map((post) => {
+          const badge = getSourceBadge(post);
+          return (
+            <div key={post._id} className="relative">
+              {/* The ONLY anchor: the card link */}
+              <Link
+                href={`/jobs/${post._id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block"
               >
-                {favorites.includes(String(post._id)) ? (
-                  <FaHeart className="text-red-500" />
-                ) : (
-                  <FaRegHeart className="text-gray-400 hover:text-red-500" />
-                )}
-              </div>
-
-              <div className="flex justify-between items-center mb-3">
-                <h5 className="text-lg font-semibold text-gray-900 truncate w-4/5">
-                  {capitalizeWords(post.Company)}
-                </h5>
-                {post.Remote && (
-                  <span className="px-3 py-1 text-xs font-medium text-blue-700 bg-blue-100 rounded-md">
-                    REMOTE
-                  </span>
-                )}
-              </div>
-              <h3 className="text-xl font-bold text-gray-800 mb-2 truncate">
-                {capitalizeWords(post.Title)}
-              </h3>
-              <p className="text-sm text-gray-600 line-clamp-2 mb-3 overflow-hidden">
-                {capitalizeSentences(post.Description)}
-              </p>
-
-              <div className="flex flex-col text-sm text-blue-500 mb-3">
-                <p className="truncate flex items-center gap-2 text-blue">
-                  <FaBriefcase className="inline w-4 h-4 text-blue" aria-hidden />
-                  <strong>Role:</strong>{" "}
-                  {capitalizeWords(post?.ExtractedRole || "Not mentioned")}
-                </p>
-
-                <p className="truncate flex items-center gap-2 text-black">
-                  <img src="/Images/city.png" alt="City" className="w-4 h-4 inline" />
-                  <strong>City:</strong>{" "}
-                  {post.City?.toLowerCase()
-                    .split(" ")
-                    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-                    .join(" ")}
-                </p>
-
-                <p className="truncate flex items-center gap-2 text-[#B81212]">
-                  <img src="/Images/pin.png" alt="Location" className="w-4 h-4 inline" />
-                  <strong>Area:</strong> {post.Area || "Not mentioned"}
-                </p>
-                <p
-                  className={`font-bold flex items-center gap-2 ${post.salary_lower && post.salary_upper
-                    ? "text-green-500"
-                    : post.Salary
-                      ? "text-green-500"
-                      : "text-yellow-500"
-                    }`}
+                <div
+                  onContextMenu={(e) => {
+                    e.stopPropagation();
+                    setRightClickedJobId(post._id);
+                  }}
+                  className={`cursor-pointer bg-white rounded-lg shadow-md p-5 
+                    ${rightClickedJobId === post._id ? "border-black" : "border-gray-200"}
+                    border hover:shadow-xl transition-transform hover:-translate-y-1 
+                    flex flex-col h-auto overflow-hidden relative ${viewMode === "list" ? "w-full" : ""}`}
                 >
-                  <img src="/Images/salary.png" alt="Salary" className="w-4 h-4 inline" />
-                  <strong>Salary:</strong> {formatSalary(post)}
-                </p>
-              </div>
+                  {/* Heart icon (button, not anchor) */}
+                  <div
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      if (user) toggleFavorite(post._id);
+                    }}
+                    className={`absolute top-3 right-10 text-xl z-10 ${
+                      user ? "cursor-pointer" : "cursor-not-allowed opacity-50"
+                    }`}
+                    title={
+                      !user
+                        ? "Login to save jobs"
+                        : favorites.includes(String(post._id))
+                          ? "Remove from favorites"
+                          : "Add to favorites"
+                    }
+                  >
+                    {favorites.includes(String(post._id)) ? (
+                      <FaHeart className="text-red-500" />
+                    ) : (
+                      <FaRegHeart className="text-gray-400 hover:text-red-500" />
+                    )}
+                  </div>
 
+                  <div className="flex justify-between items-center mb-3">
+                    <h5 className="text-lg font-semibold text-gray-900 truncate w-4/5">
+                      {capitalizeWords(post.Company)}
+                    </h5>
+                    {post.Remote && (
+                      <span className="px-3 py-1 text-xs font-medium text-blue-700 bg-blue-100 rounded-md">
+                        REMOTE
+                      </span>
+                    )}
+                  </div>
 
-              <button
-  onClick={(e) => { e.preventDefault(); openJobDetails(post._id); }}
-  disabled={loadingPreviewId === post._id}
-  aria-busy={loadingPreviewId === post._id}
-  className={`w-full bg-gray-900 text-white py-2 rounded-md text-sm font-medium transition
-    ${loadingPreviewId === post._id ? "opacity-70 cursor-wait" : "hover:bg-gray-800"}`}
->
-  {loadingPreviewId === post._id ? "Loading..." : "Preview"}
-</button>
+                  <h3 className="text-xl font-bold text-gray-800 mb-2 truncate">
+                    {capitalizeWords(post.Title)}
+                  </h3>
 
+                  <p className="text-sm text-gray-600 line-clamp-2 mb-3 overflow-hidden">
+                    {capitalizeSentences(post.Description)}
+                  </p>
+
+                  <div className="flex flex-col text-sm text-blue-500 mb-3">
+                    <p className="truncate flex items-center gap-2 text-blue">
+                      <FaBriefcase className="inline w-4 h-4 text-blue" aria-hidden />
+                      <strong>Role:</strong>{" "}
+                      {capitalizeWords(post?.ExtractedRole || "Not mentioned")}
+                    </p>
+
+                    <p className="truncate flex items-center gap-2 text-black">
+                      <img src="/Images/city.png" alt="City" className="w-4 h-4 inline" />
+                      <strong>City:</strong>{" "}
+                      {post.City?.toLowerCase()
+                        .split(" ")
+                        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                        .join(" ")}
+                    </p>
+
+                    <p className="truncate flex items-center gap-2 text-[#B81212]">
+                      <img src="/Images/pin.png" alt="Location" className="w-4 h-4 inline" />
+                      <strong>Area:</strong> {post.Area || "Not mentioned"}
+                    </p>
+
+                    <p
+                      className={`font-bold flex items-center gap-2 ${
+                        post.salary_lower && post.salary_upper
+                          ? "text-green-500"
+                          : post.Salary
+                            ? "text-green-500"
+                            : "text-yellow-500"
+                      }`}
+                    >
+                      <img src="/Images/salary.png" alt="Salary" className="w-4 h-4 inline" />
+                      <strong>Salary:</strong> {formatSalary(post)}
+                    </p>
+                  </div>
+
+                  <button
+                    onClick={(e) => { e.preventDefault(); openJobDetails(post._id); }}
+                    disabled={loadingPreviewId === post._id}
+                    aria-busy={loadingPreviewId === post._id}
+                    className={`w-full bg-gray-900 text-white py-2 rounded-md text-sm font-medium transition
+                      ${loadingPreviewId === post._id ? "opacity-70 cursor-wait" : "hover:bg-gray-800"}`}
+                  >
+                    {loadingPreviewId === post._id ? "Loading..." : "Preview"}
+                  </button>
+                </div>
+              </Link>
+
+              {/* Badge rendered as a SIBLING (not inside the Link) */}
+              {badge && (
+                <div className="absolute top-3 right-3 z-20">
+                  <a
+                    href={badge.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title={badge.title}
+                    aria-label={badge.title}
+                  >
+                    <img src={badge.src} alt={badge.alt} className="w-5 h-5" />
+                  </a>
+                </div>
+              )}
             </div>
-          </Link>
-        ))}
+          );
+        })}
       </div>
 
-      {/* Job Details Modal */}
       {selectedJob && (
         <JobDetailsModal job={selectedJob} onClose={() => setSelectedJob(null)} />
       )}
