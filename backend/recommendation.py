@@ -70,6 +70,16 @@ def normalize_vector(vec):
     norm = np.linalg.norm(vec)
     return vec / norm if norm > 0 else vec
 
+def _cos_to_01(x: float) -> float:
+    # map cosine from [-1, 1] to [0, 1]
+    v = (float(x) + 1.0) / 2.0
+    if v < 0.0: 
+        return 0.0
+    if v > 1.0:
+        return 1.0
+    return v
+
+
 def pick_skills_text(job):
     # Prefer Skills; fall back to Description, ExtractedRole, Title
     return (
@@ -221,11 +231,11 @@ def recommend_jobs(user: UserProfile):
         for idx in matched_ids:
             job = job_docs[idx]
             job['_id'] = str(job['_id'])
-
-            # Skills similarity
-            skill_sim = float(np.dot(user_skills_vec, normalize_vector(job["skills_embedding"])))
-            # Title similarity
-            title_sim = float(np.dot(user_title_vec, normalize_vector(job["title_embedding"])))
+            # Skills similarity (mapped for absolute scaling)
+            raw_skill = float(np.dot(user_skills_vec, normalize_vector(job["skills_embedding"])))
+            raw_title = float(np.dot(user_title_vec,  normalize_vector(job["title_embedding"])))
+            skill_sim = _cos_to_01(raw_skill)
+            title_sim = _cos_to_01(raw_title)
 
             # Rule-based scoring
             job_qual = safe_str(job.get("Minimum Education")).lower()
@@ -402,7 +412,6 @@ async def extract_resume(resume: UploadFile = File(...)):
     except Exception as e:
         print("❌ Error parsing resume:", e)
         raise HTTPException(status_code=500, detail="Failed to parse resume")
-
 
 
 
