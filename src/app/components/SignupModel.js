@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { FcGoogle } from "react-icons/fc";
-import { FaFacebookF, FaTwitter, FaEye, FaEyeSlash } from "react-icons/fa";
+import { FaFacebookF, FaTwitter, FaEye, FaEyeSlash, FaArrowLeft } from "react-icons/fa";
 import Image from "next/image";
 import { useAuth } from "../context/AuthContext";
 import { signInWithPopup } from "firebase/auth";
@@ -23,6 +23,8 @@ export default function SignupModal({ onClose }) {
   const [otp, setOtp] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [loadingSignup, setLoadingSignup] = useState(false);
+  const [loadingOtp, setLoadingOtp] = useState(false); 
 
   const { setUser } = useAuth();
 
@@ -96,67 +98,74 @@ export default function SignupModal({ onClose }) {
   }, [onClose]);
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
+  e.preventDefault();
+  setError("");
 
-    if (!email.includes("@") || !email.includes(".")) {
-      setError("Please enter a valid email address.");
-      return;
-    }
-    if (password.length < 6) {
-      setError("Password must be at least 6 characters.");
-      return;
-    }
-    if (password !== confirmPassword) {
-      setError("Passwords do not match.");
-      return;
-    }
-    if (!agreeTerms) {
-      setError("You must accept the Terms and Conditions.");
-      return;
-    }
+  // validations (unchanged)
+  if (!email.includes("@") || !email.includes(".")) {
+    setError("Please enter a valid email address.");
+    return;
+  }
+  if (password.length < 6) {
+    setError("Password must be at least 6 characters.");
+    return;
+  }
+  if (password !== confirmPassword) {
+    setError("Passwords do not match.");
+    return;
+  }
+  if (!agreeTerms) {
+    setError("You must accept the Terms and Conditions.");
+    return;
+  }
 
-    try {
-      const res = await fetch("/api/auth/signup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ username, email, password }),
-      });
+  setLoadingSignup(true);          // ✅ start loading
+  try {
+    const res = await fetch("/api/auth/signup", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ username, email, password }),
+    });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Something went wrong");
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || "Something went wrong");
 
-      setShowOtp(true);
-    } catch (err) {
-      setError(err.message || "Failed to sign up");
-    }
-  };
+    setShowOtp(true);
+  } catch (err) {
+    setError(err.message || "Failed to sign up");
+  } finally {
+    setLoadingSignup(false);       
+  }
+};
 
-  const handleOtpVerify = async () => {
-    setError("");
+const handleOtpVerify = async () => {
+  setError("");
+  setLoadingOtp(true);                 // ✅ start loading
+  try {
+    const res = await fetch("/api/auth/verify-otp", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ email, otp, rememberMe }),
+    });
 
-    try {
-      const res = await fetch("/api/auth/verify-otp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ email, otp, rememberMe }),
-      });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || "OTP verification failed");
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "OTP verification failed");
+    const me = await fetch("/api/auth/me", { credentials: "include", cache: "no-store" });
+    const meData = await me.json();
+    if (meData.authenticated) setUser(meData.user);
 
-      const me = await fetch("/api/auth/me");
-      const meData = await me.json();
-      if (meData.authenticated) setUser(meData.user);
+    onClose();
+    router.push("/UserProfile");
+  } catch (err) {
+    setError(err.message || "OTP verification failed");
+  } finally {
+    setLoadingOtp(false);             
+  }
+};
 
-      onClose();
-      router.push("/UserProfile");
-    } catch (err) {
-      setError(err.message || "OTP verification failed");
-    }
-  };
 
   return (
     <>
@@ -203,10 +212,30 @@ export default function SignupModal({ onClose }) {
 
           {/* Right Panel */}
           <div className="w-1/2 flex flex-col justify-center items-center px-10 relative">
-            <div className="w-full max-w-sm">
-              <h2 className="text-4xl font-bold text-gray-800 mb-6">
+          <div className="w-full max-w-sm">
+            <div className="flex items-center gap-3 mb-6">
+              {showOtp && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowOtp(false);
+                    setOtp("");
+                    setError("");
+                  }}
+                  disabled={loadingOtp}
+                  aria-label="Back"
+                  title="Back"
+                  className={`p-2 rounded hover:bg-gray-100 transition ${
+                    loadingOtp ? "opacity-60 cursor-not-allowed" : ""
+                  }`}
+                >
+                  <FaArrowLeft className="w-5 h-5 text-gray-700" />
+                </button>
+              )}
+              <h2 className="text-4xl font-bold text-gray-800">
                 {showOtp ? "Verify OTP" : "Create Account"}
               </h2>
+            </div>
 
               {error && <p className="text-red-500 text-center mb-4 text-sm">{error}</p>}
 
@@ -328,10 +357,20 @@ export default function SignupModal({ onClose }) {
 
                 <button
                   type="submit"
-                  className="w-full p-3 rounded-lg bg-black text-white font-semibold hover:bg-gray-800 transition-all"
+                  disabled={showOtp ? loadingOtp : loadingSignup}
+                  aria-busy={showOtp ? loadingOtp : loadingSignup}
+                  className={`w-full p-3 rounded-lg text-white font-semibold transition-all
+                    ${showOtp
+                      ? (loadingOtp ? "bg-blue-600 opacity-70 cursor-wait" : "bg-blue-600 hover:bg-blue-800")
+                      : (loadingSignup ? "bg-black opacity-70 cursor-wait" : "bg-black hover:bg-gray-800")
+                    }`}
                 >
-                  {showOtp ? "Verify OTP & Continue" : "Sign up"}
+                  {showOtp
+                    ? (loadingOtp ? "Verifying...." : "Verify OTP & Continue")
+                    : (loadingSignup ? "Signing up...." : "Sign up")}
                 </button>
+
+
               </form>
 
               {!showOtp && (

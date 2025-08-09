@@ -24,6 +24,8 @@ export default function LoginModal({ onClose }) {
   const [otp, setOtp] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState("");
+  const [loadingLogin, setLoadingLogin] = useState(false);
+  const [loadingOtp, setLoadingOtp] = useState(false);
 
   const resetToken = params.get("resetToken");
   const resetEmail = params.get("email");
@@ -120,53 +122,58 @@ export default function LoginModal({ onClose }) {
   }, [resetToken, resetEmail]);
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
+  e.preventDefault();
+  setError("");
 
-    if (stage === "login") {
-      try {
-        const res = await fetch("/api/auth/login", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({ email, password }),
-        });
+  if (stage === "login") {
+    setLoadingLogin(true);
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ email, password }),
+      });
 
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.message || "Login failed");
-        setStage("otp");
-      } catch (err) {
-        setError(err.message || "Error logging in");
-      }
-    } else if (stage === "otp") {
-      try {
-        const res = await fetch("/api/auth/verify-login-otp", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({ email, otp, rememberMe }),
-        });
-
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.message || "OTP invalid");
-
-        const meRes = await fetch("/api/auth/me", {
-          credentials: "include",
-          cache: "no-store",
-        });
-        const meData = await meRes.json();
-
-        if (meData.authenticated) {
-          setUser(meData.user);
-          onClose();
-        } else {
-          throw new Error("Failed to complete login");
-        }
-      } catch (err) {
-        setError(err.message || "OTP error");
-      }
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Login failed");
+      setStage("otp");
+    } catch (err) {
+      setError(err.message || "Error logging in");
+    } finally {
+      setLoadingLogin(false);
     }
-  };
+  } else if (stage === "otp") {
+  setLoadingOtp(true);
+  try {
+    const res = await fetch("/api/auth/verify-login-otp", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ email, otp, rememberMe }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || "OTP invalid");
+
+    const meRes = await fetch("/api/auth/me", {
+      credentials: "include",
+      cache: "no-store",
+    });
+    const meData = await meRes.json();
+
+    if (meData.authenticated) {
+      setUser(meData.user);
+      onClose();
+    } else {
+      throw new Error("Failed to complete login");
+    }
+  } catch (err) {
+    setError(err.message || "OTP error");
+  } finally {
+    setLoadingOtp(false);
+  }
+}
+};
 
   return (
     <>
@@ -296,9 +303,12 @@ export default function LoginModal({ onClose }) {
                         </div>
                         <button
                           type="submit"
-                          className="w-full p-3 bg-black text-white font-semibold rounded-lg hover:bg-gray-800 transition"
+                          disabled={loadingLogin}
+                          aria-busy={loadingLogin}
+                          className={`w-full p-3 bg-black text-white font-semibold rounded-lg transition
+                            ${loadingLogin ? "opacity-70 cursor-wait" : "hover:bg-gray-800"}`}
                         >
-                          Log in now
+                          {loadingLogin ? "Logging in..." : "Log in now"}
                         </button>
                       </>
                     )}
@@ -319,9 +329,12 @@ export default function LoginModal({ onClose }) {
                         </div>
                         <button
                           type="submit"
-                          className="w-full p-3 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-800 transition-all"
+                          disabled={loadingOtp}
+                          aria-busy={loadingOtp}
+                          className={`w-full p-3 rounded-lg bg-blue-600 text-white font-semibold transition-all
+                            ${loadingOtp ? "opacity-70 cursor-wait" : "hover:bg-blue-800"}`}
                         >
-                          Verify OTP & Login
+                          {loadingOtp ? "Verifying...." : "Verify OTP & Login"}
                         </button>
                       </>
                     )}
