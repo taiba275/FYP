@@ -34,6 +34,8 @@ const Header = () => {
   const router = useRouter();
   const [dropdownCoords, setDropdownCoords] = useState({ top: 0, left: 0 });
   const dropdownTimeout = useRef(null);
+  const [authOpen, setAuthOpen] = useState(false); // replaces showLoginModal/showSignupModal
+  const [authMode, setAuthMode] = useState("login"); // "login" or "signup"
 
   useEffect(() => {
     return () => clearTimeout(dropdownTimeout.current);
