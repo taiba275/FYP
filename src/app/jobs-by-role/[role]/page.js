@@ -61,7 +61,7 @@ export default function RoleJobsPage() {
         Jobs for: {decodedRole}
       </h1>
 
-      {loading && page === 1 ? (
+      {loading ? (
         <div className="w-full h-[50vh] flex flex-col justify-center items-center bg-white">
           <div className="custom-loader wrapper scale-[1.4] mb-6">
             <div className="circle"></div>
