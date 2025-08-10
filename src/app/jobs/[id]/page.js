@@ -78,7 +78,7 @@ export default function JobDetailsPage() {
 
   useEffect(() => {
     if (!id) return;
-    fetch(`${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/api/jobs/${id}`)
+    fetch(`/api/jobs/${encodeURIComponent(id)}`, { cache: "no-store" })
       .then((res) => res.json())
       .then(setJob)
       .catch(console.error);
