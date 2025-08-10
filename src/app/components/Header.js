@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import LoginModal from "./LoginModal";
 import SignupModal from "./SignupModel";
 import ChatBox from "./ChatBox";
-import IndustryModal from "./IndustriesModel";
+import IndustryModal from "./BrowseJobsModel";
 // import Resume from "./Resume";
 import PostaJobModel from "./PostaJobModel";
 import { useRouter } from "next/navigation";
