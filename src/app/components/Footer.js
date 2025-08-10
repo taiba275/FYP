@@ -7,17 +7,7 @@ function Footer() {
         <div className="max-w-screen-xl mx-auto flex justify-between items-center">
           <div className="flex items-center space-x-10">
             <div className="text-2xl font-bold text-gray-900 mb-1 md:mb-0">JobFinder.</div>
-            {/* <div className="flex space-x-10">
-              <div className="flex flex-col space-y-3 ">
-                <a href="/trends" className="text-base hover:text-gray-600">Trends</a>
-                <a href="/industry" className="text-base hover:text-gray-600">Industry</a>
-                <a href="#" className="text-base hover:text-gray-600">About Us</a>
-              </div>
-            </div> */}
           </div>
-          {/* <div className="flex items-center space-x-4">
-            <a href="#" className="bg-gray-100 hover:bg-gray-200 text-sm px-4 py-2 rounded-md"></a>
-          </div> */}
         </div>
 
         <div className="max-w-screen-xl mx-auto flex justify-between items-center border-t border-gray-300 mt-3 pt-3">
@@ -25,13 +15,10 @@ function Footer() {
             Cookies Policy | Legal Terms | Privacy Policy
           </div>
           <div className="flex items-center space-x-4">
-            <a href="#" className="hover:text-gray-600">Instagram</a>
-            <a href="#" className="hover:text-gray-600">LinkedIn</a>
-            <a href="#" className="hover:text-gray-600">Twitter</a>
-            <a href="#" className="hover:text-gray-600">Facebook</a>
-            <a href="#" className="hover:text-gray-600">YouTube</a>
-            <a href="#" className="hover:text-gray-600">TikTok</a>
-            <a href="#" className="hover:text-gray-600">Pinterest</a>
+            <a href="https://www.instagram.com/finder7838/" target="_blank" rel="noopener noreferrer" className="hover:text-gray-600">Instagram</a>
+            <a href="https://www.linkedin.com/in/job-finder-071a17379/" target="_blank" rel="noopener noreferrer" className="hover:text-gray-600">LinkedIn</a>
+            <a href="https://x.com/JobFinder110907" target="_blank" rel="noopener noreferrer" className="hover:text-gray-600">Twitter</a>
+            <a href="https://www.facebook.com/profile.php?id=61578826785190" target="_blank" rel="noopener noreferrer" className="hover:text-gray-600">Facebook</a>
           </div>
           <div className="text-gray-600">
             Sponsored by Us
