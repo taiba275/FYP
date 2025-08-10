@@ -24,7 +24,7 @@ ChartJS.register(
   Legend
 );
 
-const API_BASE = process.env.NEXT_PUBLIC_TRENDS_API; // or NEXT_PUBLIC_FAISS_API
+// const API_BASE = process.env.NEXT_PUBLIC_TRENDS_API; // or NEXT_PUBLIC_FAISS_API
 
 const industries = [
   "All Industries",
@@ -63,7 +63,7 @@ export default function TrendsPage() {
 
     const fetchTrends = async () => {
       try {
-        const res = await fetch(`${API_BASE}/trends/${selectedIndustry}`);
+        const res = await fetch(`/api/trends/${encodeURIComponent(selectedIndustry)}`);
         const json = await res.json();
 
         if (!res.ok) {
@@ -92,7 +92,7 @@ export default function TrendsPage() {
     datasets: [
       {
         label,
-        data: roleData.map((r) => r[field] !== null ? r[field] : null),
+        data: roleData.map((r) => (r[field] !== null ? r[field] : null)),
         backgroundColor: color,
         borderColor: color,
         tension: 0.3,
@@ -185,18 +185,18 @@ export default function TrendsPage() {
       {/* Loading Animation */}
       {loading && (
         <div className="w-full h-[50vh] flex flex-col justify-center items-center bg-white">
-            <div className="custom-loader wrapper scale-[1.4] mb-6">
-              <div className="circle"></div>
-              <div className="circle"></div>
-              <div className="circle"></div>
-            </div>
-            <p className="text-gray-700 text-xl font-semibold mb-1">
-              Loading Job Trends for You…
-            </p>
-            <p className="text-gray-500 text-base">
-              Please wait while we fetch the current & forecasted trends
-            </p>
+          <div className="custom-loader wrapper scale-[1.4] mb-6">
+            <div className="circle"></div>
+            <div className="circle"></div>
+            <div className="circle"></div>
           </div>
+          <p className="text-gray-700 text-xl font-semibold mb-1">
+            Loading Job Trends for You…
+          </p>
+          <p className="text-gray-500 text-base">
+            Please wait while we fetch the current & forecasted trends
+          </p>
+        </div>
       )}
 
       {/* Error or No Data */}
@@ -228,8 +228,7 @@ export default function TrendsPage() {
 
           {/* Forecast Chart */}
           {roleData.some((r) => r.forecast !== null) ? (
-<div className="flex-1 text-center" style={{ height: "600px" }}>
-
+            <div className="flex-1 text-center" style={{ height: "600px" }}>
               <Line
                 data={buildChartData(forecastLabel, "forecast", "#72C472")}
                 options={chartOptions(forecastLabel)}
@@ -245,5 +244,3 @@ export default function TrendsPage() {
     </div>
   );
 }
-
-

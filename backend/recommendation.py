@@ -29,7 +29,7 @@ MONGO_URI = os.getenv("MONGODB_URI", "mongodb://localhost:27017")
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=["https://fyp-e7ifx8lyj-mtti-bc46b27f.vercel.app/", "http://localhost:3000"],  # tighten in prod
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -413,5 +413,5 @@ async def extract_resume(resume: UploadFile = File(...)):
         print("❌ Error parsing resume:", e)
         raise HTTPException(status_code=500, detail="Failed to parse resume")
 
-
-
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8001)

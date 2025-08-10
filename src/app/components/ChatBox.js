@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useRef } from "react";
 
+const CHATBOT_BASE = process.env.NEXT_PUBLIC_CHATBOT_API; // https://chatbot-production-f34b.up.railway.app
+
 export default function ChatBox({ onClose, userId }) {
   const modalRef = useRef(null);
 
@@ -127,10 +129,10 @@ export default function ChatBox({ onClose, userId }) {
   // ── Start new chat (wipe for this session) ──────────────────────────────
   const startNewChat = async () => {
     const id = userId || sessionId;
-    if (!id) return;
+    if (!id || !CHATBOT_BASE) return;
 
     try {
-      await fetch("http://chatbot-production-f34b.up.railway.app/chat/new", {
+      await fetch(`${CHATBOT_BASE}/chat/new`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ user_id: id }),
@@ -147,10 +149,10 @@ export default function ChatBox({ onClose, userId }) {
   // ── Delete chat (wipe + reset) ──────────────────────────────────────────
   const deleteChat = async () => {
     const id = userId || sessionId;
-    if (!id) return;
+    if (!id || !CHATBOT_BASE) return;
 
     try {
-      await fetch(`http://chatbot-production-f34b.up.railway.app/chat/history/${encodeURIComponent(id)}`, {
+      await fetch(`${CHATBOT_BASE}/chat/history/${encodeURIComponent(id)}`, {
         method: "DELETE",
       });
     } catch (e) {

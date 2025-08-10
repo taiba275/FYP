@@ -21,6 +21,38 @@ function ReqLabel({ children }) {
   );
 }
 
+function TypeaheadField({
+  label,
+  name,
+  value,
+  onChange,
+  options = [],
+  required,
+  placeholder = "", // 👈 add default
+}) {
+  const listId = `${name}-list`;
+  return (
+    <div>
+      <ReqLabel>{label}</ReqLabel>
+      <input
+        name={name}
+        list={listId}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder} // 👈 now defined
+        className="w-full border rounded p-2"
+        required={required}
+      />
+      <datalist id={listId}>
+        {options.map((opt) => (
+          <option key={opt} value={opt} />
+        ))}
+      </datalist>
+    </div>
+  );
+}
+
+
 export default function JobForm({ initialData = null, editMode = false, jobId = null }) {
   const router = useRouter();
   const [error, setError] = useState("");
@@ -262,15 +294,17 @@ export default function JobForm({ initialData = null, editMode = false, jobId = 
               <input name="skills" value={formData.skills} onChange={handleChange} className="w-full border rounded p-2" required />
             </div>
             <div>
-              <ReqLabel>Functional Area</ReqLabel>
-              <select name="functionalArea" value={formData.functionalArea} onChange={handleChange} className="w-full border rounded p-2" required>
-                <option value="">Select Functional Area</option>
-                {functionalAreas.map((area) => (
-                  <option key={area} value={area}>
-                    {area}
-                  </option>
-                ))}
-              </select>
+              
+              <TypeaheadField
+              label="Functional Area"
+              name="functionalArea"
+              value={formData.functionalArea}
+              onChange={handleChange}
+              options={functionalAreas}
+              required
+              placeholder="Select Functional Area"
+            />
+
             </div>
             <div>
               <ReqLabel>Job Shift</ReqLabel>
@@ -295,15 +329,16 @@ export default function JobForm({ initialData = null, editMode = false, jobId = 
               </select>
             </div>
             <div>
-              <ReqLabel>Degree Title</ReqLabel>
-              <select name="degreeTitle" value={formData.degreeTitle} onChange={handleChange} className="w-full border rounded p-2" required>
-                <option value="">Select Degree</option>
-                {degrees.map((deg) => (
-                  <option key={deg} value={deg}>
-                    {deg}
-                  </option>
-                ))}
-              </select>
+              <TypeaheadField
+              label="Degree Title"
+              name="degreeTitle"
+              value={formData.degreeTitle}
+              onChange={handleChange}
+              options={degrees}
+              required
+              placeholder="Select Degree"
+            />
+
             </div>
           </div>
 
@@ -318,15 +353,17 @@ export default function JobForm({ initialData = null, editMode = false, jobId = 
               <input name="jobRole" value={formData.jobRole} onChange={handleChange} className="w-full border rounded p-2" required />
             </div>
             <div>
-              <ReqLabel>City</ReqLabel>
-              <select name="city" value={formData.city} onChange={handleChange} className="w-full border rounded p-2" required>
-                <option value="">Select City</option>
-                {cities.map((city) => (
-                  <option key={city} value={city}>
-                    {city}
-                  </option>
-                ))}
-              </select>
+              
+            <TypeaheadField
+              label="City"
+              name="city"
+              value={formData.city}
+              onChange={handleChange}
+              options={cities}
+              required
+              placeholder="Select City"
+            />
+
             </div>
 
             <div>
@@ -345,15 +382,15 @@ export default function JobForm({ initialData = null, editMode = false, jobId = 
             </div>
 
             <div>
-              <ReqLabel>Industry</ReqLabel>
-              <select name="industry" value={formData.industry} onChange={handleChange} className="w-full border rounded p-2" required>
-                <option value="">Select Industry</option>
-                {industries.map((ind) => (
-                  <option key={ind} value={ind}>
-                    {ind}
-                  </option>
-                ))}
-              </select>
+              <TypeaheadField
+                label="Industry"
+                name="industry"
+                value={formData.industry}
+                onChange={handleChange}
+                options={industries}
+                required
+                placeholder="Select Industry"
+              />
             </div>
             <div>
               <ReqLabel>Total Positions</ReqLabel>

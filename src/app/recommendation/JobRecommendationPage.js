@@ -4,8 +4,6 @@ import { useState } from "react";
 import JobRecommendationForm from "./JobRecommendationForm";
 import JobResultsList from "./JobResultsList";
 
-const API_BASE_RECOMMEND = process.env.NEXT_PUBLIC_RECOMMENDATION_API || ""; // change to 'resume' if your FastAPI expects that
-
 export default function JobRecommendationPage() {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -14,22 +12,16 @@ export default function JobRecommendationPage() {
   const handleResumeUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
-    if (!API_BASE_RECOMMEND) {
-      alert("API base URL is not set. Check .env.local and restart dev server.");
-      return;
-    }
-
     setLoading(true);
 
     try {
       // ---------- 1) Extract fields from resume ----------
       const formData = new FormData();
-      formData.append(UPLOAD_FIELD, file); // match your FastAPI parameter name
+      formData.append("resume", file);
 
-      const extractRes = await fetch(`${API_BASE_RECOMMEND}/extract-resume`, {
+      const extractRes = await fetch(`/api/resume/extract`, {
         method: "POST",
-        body: formData, // don't set Content-Type for FormData
+        body: formData,
       });
 
       if (!extractRes.ok) {
@@ -41,17 +33,19 @@ export default function JobRecommendationPage() {
 
       // ---------- 2) Build payload for recommendation ----------
       const payload = {
-        skills: (extracted?.skills || "")
-          .split(",")
-          .map((s) => s.trim())
-          .filter(Boolean),
+        skills: Array.isArray(extracted?.skills)
+          ? extracted.skills
+          : String(extracted?.skills || "")
+              .split(",")
+              .map((s) => s.trim())
+              .filter(Boolean),
         experience: Number.parseInt(extracted?.experience ?? 0) || 0,
         qualification: extracted?.qualification || "",
         location: extracted?.location || "",
       };
 
       // ---------- 3) Get recommendations ----------
-      const recommendRes = await fetch(`${API_BASE_RECOMMEND}/recommend`, {
+      const recommendRes = await fetch(`/api/resume/recommend`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -69,11 +63,9 @@ export default function JobRecommendationPage() {
       alert(err?.message || "Failed to extract or fetch recommendations.");
     } finally {
       setLoading(false);
-      // reset the input so user can re-upload the same file if needed
       e.target.value = "";
     }
   };
-
   return (
     <div className="min-h-screen flex items-center justify-center px-4 bg-gradient-to-r from-gray-100 to-gray-200">
       <div className="w-full max-w-2xl bg-white shadow-lg rounded-lg p-8">
