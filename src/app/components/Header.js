@@ -5,8 +5,6 @@ import LoginModal from "./LoginModal";
 import SignupModal from "./SignupModel";
 import ChatBox from "./ChatBox";
 import IndustryModal from "./BrowseJobsModel";
-// import Resume from "./Resume";
-import PostaJobModel from "./PostaJobModel";
 import { useRouter } from "next/navigation";
 import { FaSearch, FaBars, FaTimes } from "react-icons/fa";
 import { useAuth } from "../context/AuthContext";
@@ -104,10 +102,10 @@ const Header = () => {
   const renderNavLinks = () => (
     <>
       <li><button onClick={() => setShowIndustryModal(true)} className="hover:text-blue-600 block py-2">Browse</button></li>
-      <li><a href="/trends" className="hover:text-blue-600 block py-2">Trends</a></li>    
       <li><button onClick={() => setShowChatbot(true)} className="hover:text-blue-600 block py-2">Chatbot</button></li>
       <li><a href="/recommendation" className="hover:text-blue-600 block py-2">Recommendation</a></li>
       <li><a href="/resume" className="hover:text-blue-600 block py-2">Resume</a></li>
+      <li><a href="/trends" className="hover:text-blue-600 block py-2">Trends</a></li>
     </>
   );
 
