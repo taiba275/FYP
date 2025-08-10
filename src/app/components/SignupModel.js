@@ -497,6 +497,18 @@ export default function SignupModal({ onClose, switchTo }) {
                       </label>
                     </div>
                   </div>
+                   <button
+                        type="submit"
+                        disabled={loadingSignup}
+                        aria-busy={loadingSignup}
+                        className={`w-full p-3 bg-black text-white font-semibold rounded-lg transition ${
+                          loadingSignup
+                            ? "opacity-70 cursor-wait"
+                            : "hover:bg-gray-800"
+                        }`}
+                      >
+                        {loadingSignup ? "Signing in..." : "Sign up now"}
+                      </button>
                 </>
               )}
 
@@ -549,7 +561,7 @@ export default function SignupModal({ onClose, switchTo }) {
             </form>
 
             {!showOtp && (
-              <div className="mt-6">
+              <div className="text-black mt-6">
                 <p className="text-left text-gray-600 mb-2">Or sign up with</p>
                 <div className="flex space-x-3 justify-center">
                   <button
@@ -561,7 +573,7 @@ export default function SignupModal({ onClose, switchTo }) {
                         : "hover:bg-gray-100"
                     }`}
                   >
-                    <FcGoogle className="text-xl" /> Google
+                    <FcGoogle className="text-black text-xl" /> Google
                   </button>
                   <button
                     onClick={handleFacebookLogin}
@@ -572,7 +584,7 @@ export default function SignupModal({ onClose, switchTo }) {
                         : "hover:bg-gray-100"
                     }`}
                   >
-                    <FaFacebookF className="text-blue-600 text-xl" /> Facebook
+                    <FaFacebookF className="text-black text-xl" /> Facebook
                   </button>
                   <button
                     onClick={handleGithubLogin}
@@ -583,7 +595,7 @@ export default function SignupModal({ onClose, switchTo }) {
                         : "hover:bg-gray-100"
                     }`}
                   >
-                    <FaGithub className="text-xl" /> GitHub
+                    <FaGithub className="text-black text-xl" /> GitHub
                   </button>
                 </div>
               </div>
