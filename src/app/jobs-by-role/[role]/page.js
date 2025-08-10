@@ -13,7 +13,11 @@ export default function RoleJobsPage() {
   useEffect(() => {
     async function fetchJobs() {
       try {
-        const res = await fetch(`http://localhost:8000/jobs-by-role?role=${encodeURIComponent(decodedRole)}`);
+        const res = await fetch(
+          `/api/jobs-by-role?role=${encodeURIComponent(decodedRole)}`,
+          { cache: "no-store" }
+        );
+        if (!res.ok) throw new Error(`Failed: ${res.status}`);
         const data = await res.json();
         setJobs(data.jobs || []);
       } catch (err) {
@@ -29,8 +33,9 @@ export default function RoleJobsPage() {
 
   return (
     <div className="p-6">
-    <h1 className="text-2xl font-bold mb-4 text-center w-full">Jobs for: {decodedRole}</h1>
-
+      <h1 className="text-2xl font-bold mb-4 text-center w-full">
+        Jobs for: {decodedRole}
+      </h1>
 
       {loading ? (
         <div className="w-full h-[50vh] flex flex-col justify-center items-center bg-white">
