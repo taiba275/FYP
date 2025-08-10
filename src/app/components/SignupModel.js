@@ -573,7 +573,7 @@ export default function SignupModal({ onClose, switchTo }) {
                         : "hover:bg-gray-100"
                     }`}
                   >
-                    <FcGoogle className="text-xl" /> Google
+                    <FcGoogle className="text-black text-xl" /> Google
                   </button>
                   <button
                     onClick={handleFacebookLogin}
@@ -584,7 +584,7 @@ export default function SignupModal({ onClose, switchTo }) {
                         : "hover:bg-gray-100"
                     }`}
                   >
-                    <FaFacebookF className="text-blue-600 text-xl" /> Facebook
+                    <FaFacebookF className="text-black text-xl" /> Facebook
                   </button>
                   <button
                     onClick={handleGithubLogin}
@@ -595,7 +595,7 @@ export default function SignupModal({ onClose, switchTo }) {
                         : "hover:bg-gray-100"
                     }`}
                   >
-                    <FaGithub className="text-xl" /> GitHub
+                    <FaGithub className="text-black text-xl" /> GitHub
                   </button>
                 </div>
               </div>
