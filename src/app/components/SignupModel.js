@@ -497,6 +497,18 @@ export default function SignupModal({ onClose, switchTo }) {
                       </label>
                     </div>
                   </div>
+                   <button
+                        type="submit"
+                        disabled={loadingSignup}
+                        aria-busy={loadingSignup}
+                        className={`w-full p-3 bg-black text-white font-semibold rounded-lg transition ${
+                          loadingSignup
+                            ? "opacity-70 cursor-wait"
+                            : "hover:bg-gray-800"
+                        }`}
+                      >
+                        {loadingSignup ? "Signing in..." : "Sign up now"}
+                      </button>
                 </>
               )}
 
