@@ -24,6 +24,8 @@ ChartJS.register(
   Legend
 );
 
+// const API_BASE = process.env.NEXT_PUBLIC_TRENDS_API; // or NEXT_PUBLIC_FAISS_API
+
 const industries = [
   "All Industries",
   "Computer Science",
@@ -61,7 +63,6 @@ export default function TrendsPage() {
 
     const fetchTrends = async () => {
       try {
-        // 🔁 Call our Next.js API proxy (avoids mixed-content/CORS in production)
         const res = await fetch(`/api/trends/${encodeURIComponent(selectedIndustry)}`);
         const json = await res.json();
 
@@ -105,6 +106,7 @@ export default function TrendsPage() {
   const chartOptions = (title) => ({
     responsive: true,
     maintainAspectRatio: false,
+
     plugins: {
       legend: { display: true },
       title: {
@@ -152,7 +154,7 @@ export default function TrendsPage() {
           <div className="flex justify-between items-center cursor-pointer">
             <span>{selectedIndustry}</span>
             <svg
-              className={`w-5 h-5 transition-transform duration-300 ${showDropdown ? "rotate-180" : ""}`}
+              className={`w-5 h-5 transition-transform duration-300 ${showDropdown ? 'rotate-180' : ''}`}
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -188,8 +190,12 @@ export default function TrendsPage() {
             <div className="circle"></div>
             <div className="circle"></div>
           </div>
-          <p className="text-gray-700 text-xl font-semibold mb-1">Loading Job Trends for You…</p>
-          <p className="text-gray-500 text-base">Please wait while we fetch the current & forecasted trends</p>
+          <p className="text-gray-700 text-xl font-semibold mb-1">
+            Loading Job Trends for You…
+          </p>
+          <p className="text-gray-500 text-base">
+            Please wait while we fetch the current & forecasted trends
+          </p>
         </div>
       )}
 
