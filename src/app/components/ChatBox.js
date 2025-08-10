@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 
-const CHATBOT_BASE = process.env.NEXT_PUBLIC_CHATBOT_API; // https://chatbot-production-f34b.up.railway.app
+// const CHATBOT_BASE = process.env.NEXT_PUBLIC_CHATBOT_API; // https://chatbot-production-f34b.up.railway.app
 
 export default function ChatBox({ onClose, userId }) {
   const modalRef = useRef(null);
