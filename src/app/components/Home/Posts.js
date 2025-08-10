@@ -115,8 +115,8 @@ export default function Posts({
   const bcRef = useRef(null);
 
   useEffect(() => {
-    try { bcRef.current = new BroadcastChannel("favorites"); } catch {}
-    return () => { try { bcRef.current?.close(); } catch {} };
+    try { bcRef.current = new BroadcastChannel("favorites"); } catch { }
+    return () => { try { bcRef.current?.close(); } catch { } };
   }, []);
 
   const { user } = useAuth();
@@ -142,7 +142,7 @@ export default function Posts({
         const favIds = (data.favorites || []).map((j) => (j._id || j).toString());
         setFavorites(favIds);
       })
-      .catch(() => {});
+      .catch(() => { });
   }, [user]);
 
   useEffect(() => {
@@ -166,20 +166,20 @@ export default function Posts({
     try {
       bc = new BroadcastChannel("favorites");
       bc.onmessage = (e) => onFavChanged(e);
-    } catch {}
+    } catch { }
 
     const onStorage = (e) => {
       if (e.key !== "favorites:changed") return;
       try {
         onFavChanged(JSON.parse(e.newValue || "{}"));
-      } catch {}
+      } catch { }
     };
     window.addEventListener("storage", onStorage);
 
     return () => {
       window.removeEventListener("favorites:changed", onWindow);
       window.removeEventListener("storage", onStorage);
-      try { bc && bc.close(); } catch {}
+      try { bc && bc.close(); } catch { }
     };
   }, []);
 
@@ -210,8 +210,8 @@ export default function Posts({
       window.dispatchEvent(new CustomEvent("favorites:changed", {
         detail: { jobId: idStr, isFavorite: isNowFavorite },
       }));
-      try { bcRef.current?.postMessage({ jobId: idStr, isFavorite: isNowFavorite }); } catch {}
-      try { localStorage.setItem("favorites:changed", JSON.stringify({ jobId: idStr, isFavorite: isNowFavorite, ts: Date.now() })); } catch {}
+      try { bcRef.current?.postMessage({ jobId: idStr, isFavorite: isNowFavorite }); } catch { }
+      try { localStorage.setItem("favorites:changed", JSON.stringify({ jobId: idStr, isFavorite: isNowFavorite, ts: Date.now() })); } catch { }
     } catch (err) {
       console.error("Error updating favorites:", err);
       setFavorites(prevFavorites);
@@ -220,8 +220,8 @@ export default function Posts({
       window.dispatchEvent(new CustomEvent("favorites:changed", {
         detail: { jobId: idStr, isFavorite: wasFavorite },
       }));
-      try { bcRef.current?.postMessage({ jobId: idStr, isFavorite: wasFavorite }); } catch {}
-      try { localStorage.setItem("favorites:changed", JSON.stringify({ jobId: idStr, isFavorite: wasFavorite, ts: Date.now() })); } catch {}
+      try { bcRef.current?.postMessage({ jobId: idStr, isFavorite: wasFavorite }); } catch { }
+      try { localStorage.setItem("favorites:changed", JSON.stringify({ jobId: idStr, isFavorite: wasFavorite, ts: Date.now() })); } catch { }
     }
   };
 
@@ -235,7 +235,7 @@ export default function Posts({
 
   return (
     <div className="flex flex-col items-center justify-center w-full px-4 md:px-8">
-        {(showTotals || showViewToggle) && (
+      {(showTotals || showViewToggle) && (
         <div className="w-full flex items-center justify-between mb-6">
           {showTotals && (
             <p className="text-sm md:text-base text-gray-700">
@@ -277,11 +277,10 @@ export default function Posts({
 
       {/* Job cards */}
       <div
-        className={`w-full ${
-          viewMode === "list"
+        className={`w-full ${viewMode === "list"
             ? "flex flex-col gap-4"
             : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-        }`}
+          }`}
       >
         {jobs.map((post) => {
           const badge = getSourceBadge(post);
@@ -311,9 +310,8 @@ export default function Posts({
                       e.preventDefault();
                       if (user) toggleFavorite(post._id);
                     }}
-                    className={`absolute top-3 right-10 text-xl z-10 ${
-                      user ? "cursor-pointer" : "cursor-not-allowed opacity-50"
-                    }`}
+                    className={`absolute top-3 right-10 text-xl z-10 ${user ? "cursor-pointer" : "cursor-not-allowed opacity-50"
+                      }`}
                     title={
                       !user
                         ? "Login to save jobs"
@@ -328,6 +326,20 @@ export default function Posts({
                       <FaRegHeart className="text-gray-400 hover:text-red-500" />
                     )}
                   </div>
+
+                  {badge && (
+                    <div className="absolute top-3 right-3 z-20">
+                      <a
+                        href={badge.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title={badge.title}
+                        aria-label={badge.title}
+                      >
+                        <img src={badge.src} alt={badge.alt} className="w-5 h-5" />
+                      </a>
+                    </div>
+                  )}
 
                   <div className="flex justify-between items-center mb-3">
                     <h5 className="text-lg font-semibold text-gray-900 truncate w-4/5">
@@ -370,13 +382,12 @@ export default function Posts({
                     </p>
 
                     <p
-                      className={`font-bold flex items-center gap-2 ${
-                        post.salary_lower && post.salary_upper
+                      className={`font-bold flex items-center gap-2 ${post.salary_lower && post.salary_upper
                           ? "text-green-500"
                           : post.Salary
                             ? "text-green-500"
                             : "text-yellow-500"
-                      }`}
+                        }`}
                     >
                       <img src="/Images/salary.png" alt="Salary" className="w-4 h-4 inline" />
                       <strong>Salary:</strong> {formatSalary(post)}
@@ -396,7 +407,7 @@ export default function Posts({
               </Link>
 
               {/* Badge rendered as a SIBLING (not inside the Link) */}
-              {badge && (
+              {/* {badge && (
                 <div className="absolute top-3 right-3 z-20">
                   <a
                     href={badge.href}
@@ -408,7 +419,7 @@ export default function Posts({
                     <img src={badge.src} alt={badge.alt} className="w-5 h-5" />
                   </a>
                 </div>
-              )}
+              )} */}
             </div>
           );
         })}

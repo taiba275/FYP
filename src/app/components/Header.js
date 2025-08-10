@@ -104,10 +104,9 @@ const Header = () => {
   const renderNavLinks = () => (
     <>
       <li><button onClick={() => setShowIndustryModal(true)} className="hover:text-blue-600 block py-2">Browse</button></li>
-      <li><a href="/trends" className="hover:text-blue-600 block py-2">Trends</a></li>
-      <li><a href="/recommendation" className="hover:text-blue-600 block py-2">Recommendation</a></li>
-      {/* <li><a href="/industry" className="hover:text-blue-600 block py-2">Industry</a></li> */}
+      <li><a href="/trends" className="hover:text-blue-600 block py-2">Trends</a></li>    
       <li><button onClick={() => setShowChatbot(true)} className="hover:text-blue-600 block py-2">Chatbot</button></li>
+      <li><a href="/recommendation" className="hover:text-blue-600 block py-2">Recommendation</a></li>
       <li><a href="/resume" className="hover:text-blue-600 block py-2">Resume</a></li>
     </>
   );
