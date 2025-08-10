@@ -106,6 +106,7 @@ export default function Posts({
   onFavoriteToggle,
   showTotals = true,
   showViewToggle = true,
+  totalsOverride = null,
 }) {
   const [selectedJob, setSelectedJob] = useState(null);
   const [favorites, setFavorites] = useState([]);
@@ -234,7 +235,27 @@ export default function Posts({
 
   return (
     <div className="flex flex-col items-center justify-center w-full px-4 md:px-8">
-      {(showTotals || showViewToggle) && (
+        {(showTotals || showViewToggle) && (
+        <div className="w-full flex items-center justify-between mb-6">
+          {showTotals && (
+            <p className="text-sm md:text-base text-gray-700">
+              {totalsOverride ?? <JobTotal className="w-full md:w-auto" />} {/* 👈 NEW */}
+            </p>
+          )}
+          {showViewToggle && (
+            <div className="flex items-center space-x-3">
+              <button onClick={() => setViewMode("list")} className="bg-gray-200 hover:bg-gray-400 p-1 rounded transition" title="List View">
+                <FaList className="w-4 h-4 text-gray-700" />
+              </button>
+              <button onClick={() => setViewMode("grid")} className="bg-gray-200 hover:bg-gray-400 p-1 rounded transition" title="Grid View">
+                <FaThLarge className="w-4 h-4 text-gray-700" />
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* {(showTotals || showViewToggle) && (
         <div className="w-full flex items-center justify-between mb-6">
           {showTotals && (
             <p className="text-sm md:text-base text-gray-700">
@@ -252,7 +273,7 @@ export default function Posts({
             </div>
           )}
         </div>
-      )}
+      )} */}
 
       {/* Job cards */}
       <div
