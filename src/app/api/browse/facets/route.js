@@ -10,18 +10,20 @@ async function distinctWithCounts(field) {
       $group: {
         _id: {
           $toLower: {
-            $trim: { input: { $ifNull: [`$${field}`, ""] } }
-          }
+            $trim: { input: { $ifNull: [`$${field}`, ""] } },
+          },
         },
         rawAny: { $first: `$${field}` },
-        count: { $sum: 1 }
-      }
+        count: { $sum: 1 },
+      },
     },
     { $match: { _id: { $ne: "" } } },
-    { $sort: { count: -1, _id: 1 } }
+    { $sort: { count: -1, _id: 1 } },
   ];
+
   const rows = await Job.aggregate(pipeline).allowDiskUse(true);
-  return rows.map(r => ({
+
+  return rows.map((r) => ({
     value: (r.rawAny && String(r.rawAny).trim()) || r._id,
     count: r.count,
   }));

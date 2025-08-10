@@ -2,10 +2,15 @@
 
 import React, { useState, useEffect } from 'react';
 
-const FilterComponent = ({ onFilterChange, initialCategory = '' }) => {
+const FilterComponent = ({
+  onFilterChange,
+  initialCategory = '',
+  categorySource = 'role', // 👈 new prop
+}) => {
   const [hovered, setHovered] = useState(null);
   const [hoverTimeout, setHoverTimeout] = useState(null);
 
+  // ✅ include the four facet fields locally so we never drop them
   const [filters, setFilters] = useState({
     category: initialCategory,
     type: '',
@@ -13,24 +18,38 @@ const FilterComponent = ({ onFilterChange, initialCategory = '' }) => {
     salaryOrder: '',
     experience: '',
     sortOrder: '',
+    industry: '',
+    function: '',
+    company: '',
+    role: '',
   });
 
   const [filterOptions, setFilterOptions] = useState({
     extractedRoles: [],
+    industries: [],
+    functions: [],
+    companies: [],
     jobTypes: [],
     cities: [],
     experiences: [],
   });
 
-  // ✅ Count active filters
-  const appliedFiltersCount = Object.values(filters).filter(val => val !== '').length;
+  const appliedFiltersCount = Object.values(filters).filter(val => (val ?? '') !== '').length;
 
   useEffect(() => {
     const fetchFilters = async () => {
       try {
         const res = await fetch('/api/filters');
         const data = await res.json();
-        setFilterOptions(data);
+        setFilterOptions({
+          extractedRoles: data.extractedRoles || [],
+          industries: data.industries || [],
+          functions: data.functions || [],
+          companies: data.companies || [],
+          jobTypes: data.jobTypes || [],
+          cities: (data.cities || []),
+          experiences: ['Not mentioned', '0', '1', '2', '3', '4'],
+        });
       } catch (err) {
         console.error('Failed to load filter options:', err);
       }
@@ -38,19 +57,57 @@ const FilterComponent = ({ onFilterChange, initialCategory = '' }) => {
     fetchFilters();
   }, []);
 
+  // Seed initialCategory into the correct facet based on categorySource
   useEffect(() => {
-    if (initialCategory) {
-      const updatedFilters = { ...filters, category: initialCategory };
-      setFilters(updatedFilters);
-      onFilterChange(updatedFilters);
-    }
-  }, [initialCategory]);
+    if (!initialCategory) return;
+
+    const next = { ...filters, category: initialCategory };
+
+    // clear all facets first
+    next.industry = '';
+    next.function = '';
+    next.company = '';
+    next.role = '';
+
+    if (categorySource === 'industry') next.industry = initialCategory;
+    else if (categorySource === 'function') next.function = initialCategory;
+    else if (categorySource === 'company') next.company = initialCategory;
+    else next.role = initialCategory; // default: role
+
+    setFilters(next);
+    onFilterChange(next);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialCategory, categorySource]);
+
+  const pushChange = (partial) => {
+    const next = { ...filters, ...partial };
+    setFilters(next);
+    onFilterChange(next);
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    const updatedFilters = { ...filters, [name]: value };
-    setFilters(updatedFilters);
-    onFilterChange(updatedFilters);
+
+    if (name === 'category') {
+      // when user picks a "Category", map it to the active facet
+      const next = { ...filters, category: value };
+
+      // clear all facets then set the active one
+      next.industry = '';
+      next.function = '';
+      next.company = '';
+      next.role = '';
+
+      if (categorySource === 'industry') next.industry = value;
+      else if (categorySource === 'function') next.function = value;
+      else if (categorySource === 'company') next.company = value;
+      else next.role = value; // default role
+
+      pushChange(next);
+      return;
+    }
+
+    pushChange({ [name]: value });
   };
 
   const handleResetFilters = () => {
@@ -61,6 +118,10 @@ const FilterComponent = ({ onFilterChange, initialCategory = '' }) => {
       salaryOrder: '',
       experience: '',
       sortOrder: '',
+      industry: '',
+      function: '',
+      company: '',
+      role: '',
     };
     setFilters(resetFilters);
     onFilterChange(resetFilters);
@@ -81,16 +142,14 @@ const FilterComponent = ({ onFilterChange, initialCategory = '' }) => {
           setHoverTimeout(timeout);
         }}
       >
-        {/* Dropdown Button */}
         <div className="p-2 bg-white rounded flex items-center justify-between cursor-pointer w-48 min-w-[12rem]">
           <span className="truncate">{filters[name] || label}</span>
 
           <div className="flex items-center space-x-2 ml-2">
-            {/* ❌ Clear individual filter */}
             {filters[name] && (
               <button
                 onClick={(e) => {
-                  e.stopPropagation(); // Prevent dropdown from opening
+                  e.stopPropagation();
                   handleChange({ target: { name, value: '' } });
                 }}
                 className="text-gray-400 hover:text-red-500 focus:outline-none"
@@ -100,20 +159,15 @@ const FilterComponent = ({ onFilterChange, initialCategory = '' }) => {
               </button>
             )}
 
-            {/* ▼ Dropdown icon */}
             <svg
               className={`w-4 h-4 transition-transform ${hovered === name ? 'rotate-180' : ''}`}
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              viewBox="0 0 24 24"
+              fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"
             >
               <path d="M19 9l-7 7-7-7" />
             </svg>
           </div>
         </div>
 
-        {/* Dropdown Options */}
         {hovered === name && (
           <ul className="absolute z-50 bg-white border rounded shadow w-64 min-w-[16rem] mt-3 max-h-60 overflow-y-auto custom-scrollbar">
             {uniqueOptions.map(option => (
@@ -134,11 +188,27 @@ const FilterComponent = ({ onFilterChange, initialCategory = '' }) => {
     );
   };
 
+  // Pick correct list for the “Categories” dropdown based on the active source
+  const categoryOptions =
+    categorySource === 'industry'
+      ? (filterOptions.industries || [])
+      : categorySource === 'function'
+      ? (filterOptions.functions || [])
+      : categorySource === 'company'
+      ? (filterOptions.companies || [])
+      : (filterOptions.extractedRoles || []); // default role
+
   return (
     <div className="flex text-black flex-wrap p-2 mx-8 bg-[#ededed] rounded-lg gap-4 z-10 items-center">
-      {renderDropdown('Categories', 'category', filterOptions.extractedRoles || [])}
+      {renderDropdown('Categories', 'category', categoryOptions)}
       {renderDropdown('Job Type', 'type', ['Permanent', 'Contract', 'Internship', 'Part Time'])}
-      {renderDropdown('City', 'city', filterOptions.cities.filter(c => c.toLowerCase() !== 'city').map(c => c.charAt(0).toUpperCase() + c.slice(1).toLowerCase()))}
+      {renderDropdown(
+        'City',
+        'city',
+        (filterOptions.cities || [])
+          .filter(c => c.toLowerCase() !== 'city')
+          .map(c => c.charAt(0).toUpperCase() + c.slice(1).toLowerCase())
+      )}
       {renderDropdown('Sort Salary', 'salaryOrder', ['Ascending', 'Descending'])}
       {renderDropdown('Experience', 'experience', ['Not mentioned', '0', '1', '2', '3', '4'])}
       {renderDropdown('Sort by Date', 'sortOrder', ['Newest', 'Oldest'])}
