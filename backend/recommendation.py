@@ -414,6 +414,4 @@ async def extract_resume(resume: UploadFile = File(...)):
         raise HTTPException(status_code=500, detail="Failed to parse resume")
 
 if __name__ == "__main__":
-    port = int(os.getenv("PORT", 8001))  # use Railway-assigned port if available
-    import uvicorn
-    uvicorn.run("faiss_job_search:app", host="0.0.0.0", port=port, reload=False)
+    uvicorn.run(app, host="0.0.0.0", port=8001)

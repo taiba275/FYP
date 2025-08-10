@@ -393,5 +393,4 @@ def delete_chat(user_id: str):
     return {"status": "ok", "action": "delete_chat", **result}
 
 if __name__ == "__main__":
-    port = int(os.getenv("PORT", 5010))  # use Railway's PORT if available
-    uvicorn.run(app, host="0.0.0.0", port=port)
+    uvicorn.run(app, host="0.0.0.0", port=5010)

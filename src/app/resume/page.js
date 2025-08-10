@@ -5,7 +5,7 @@ import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import JobResultsList from "../recommendation/JobResultsList";
 
-const API_BASE = process.env.NEXT_PUBLIC_RECOMMENDATION_API; // or NEXT_PUBLIC_FAISS_API
+// const API_BASE = process.env.NEXT_PUBLIC_RECOMMENDATION_API; // or NEXT_PUBLIC_FAISS_API
 
 export default function ResumePage() {
   const router = useRouter();
@@ -79,7 +79,7 @@ export default function ResumePage() {
       // 1) extract
       const fd = new FormData();
       fd.append("resume", file);
-      const res = await fetch(`${API_BASE}/extract-resume`, { method: "POST", body: fd });
+      const res = await fetch(`http://35.227.145.87:8001/extract-resume`, { method: "POST", body: fd });
       const resText = await res.text();
       if (!res.ok) throw new Error(`extract-resume ${res.status}: ${resText}`);
       let extracted;
@@ -100,7 +100,7 @@ export default function ResumePage() {
       };
 
       // 3) recommend
-      const rec = await fetch(`${API_BASE}/recommend`, {
+      const rec = await fetch(`http://35.227.145.87:8001/recommend`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

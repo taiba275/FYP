@@ -4,7 +4,7 @@ export const runtime = "nodejs";
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
-const CHATBOT_BASE = process.env.BACKEND_CHATBOT_API; // <-- server-only
+// const CHATBOT_BASE = process.env.BACKEND_CHATBOT_API; // <-- server-only
 
 // ---------- HELPERS ----------
 function isFollowUp(message) {
@@ -96,9 +96,9 @@ const makeId = () =>
 // ---------- GET ----------
 export async function GET() {
   try {
-     if (!CHATBOT_BASE) {
-      return NextResponse.json({ error: "BACKEND_CHATBOT_API not set" }, { status: 500 });
-    }
+    //  if (!CHATBOT_BASE) {
+    //   return NextResponse.json({ error: "BACKEND_CHATBOT_API not set" }, { status: 500 });
+    // }
 
     const jar = await cookies();
     let guest_id = jar.get("guest_id")?.value;
@@ -121,12 +121,12 @@ export async function GET() {
     const sessionId = `guest:${guest_id ?? "pending"}`;
 
     const historyRes = await fetch(
-    `${CHATBOT_BASE}/chat/history/${encodeURIComponent(sessionId)}?minutes=60`
+    `http://35.227.145.87:5010/chat/history/${encodeURIComponent(sessionId)}?minutes=60`
     );
     const history = historyRes.ok ? await historyRes.json() : [];
 
     const jobsRes = await fetch(
-      `${CHATBOT_BASE}/last-jobs/${encodeURIComponent(sessionId)}`
+      `http://35.227.145.87:5010/last-jobs/${encodeURIComponent(sessionId)}`
     );
     const jobsData = jobsRes.ok ? await jobsRes.json() : { jobs: [] };
 
@@ -144,9 +144,9 @@ export async function GET() {
 // ---------- POST ----------
 export async function POST(req) {
   try {
-    if (!CHATBOT_BASE) {
-      return NextResponse.json({ error: "BACKEND_CHATBOT_API not set" }, { status: 500 });
-    }
+  //   if (!CHATBOT_BASE) {
+  //     return NextResponse.json({ error: "BACKEND_CHATBOT_API not set" }, { status: 500 });
+  //   }
 
     const { messages, previousResults = [], user_id } = await req.json();
 
@@ -208,7 +208,7 @@ export async function POST(req) {
       if (detailMatch) {
         const jobIndex = parseInt(detailMatch[1], 10);
         const detailsRes = await fetch(
-          `${CHATBOT_BASE}/job-details/${jobIndex}?user_id=${encodeURIComponent(sessionId)}`
+          `http://35.227.145.87:5010/job-details/${jobIndex}?user_id=${encodeURIComponent(sessionId)}`
         );
         const detailsData = await detailsRes.json();
         const md =
@@ -261,7 +261,7 @@ ${strictBlock()}
     }
 
     // ---------- INITIAL SEARCH (FAISS)
-    const faissRes = await fetch(`${CHATBOT_BASE}/retrieve-jobs`, {
+    const faissRes = await fetch(`http://35.227.145.87:5010/retrieve-jobs`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ message: userMessage, user_id: sessionId }),
