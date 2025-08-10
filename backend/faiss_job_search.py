@@ -28,7 +28,7 @@ app = FastAPI(title="FAISS Job Search", version="1.0.0")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # tighten in prod
+    allow_origins=["https://fyp-e7ifx8lyj-mtti-bc46b27f.vercel.app/", "http://localhost:3000"],  # tighten in prod
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -393,4 +393,5 @@ def delete_chat(user_id: str):
     return {"status": "ok", "action": "delete_chat", **result}
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=5010)
+    port = int(os.getenv("PORT", 5010))  # use Railway's PORT if available
+    uvicorn.run(app, host="0.0.0.0", port=port)

@@ -17,7 +17,7 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["https://fyp-e7ifx8lyj-mtti-bc46b27f.vercel.app/", "http://localhost:3000"],  # tighten in prod
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -188,6 +188,10 @@ def get_trends_by_industry(industry: str):
     print(f"✅ Returning {len(result)} roles for {industry}")
     return {"roles": result}
 
+if __name__ == "__main__":
+    port = int(os.getenv("PORT", 8000))  # Railway will inject PORT
+    import uvicorn
+    uvicorn.run("trends:app", host="0.0.0.0", port=port, reload=False)
 
 
 

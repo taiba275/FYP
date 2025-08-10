@@ -24,6 +24,8 @@ export default function JobRecommendationPage() {
 
     try {
       // ---------- 1) Extract fields from resume ----------
+      const UPLOAD_FIELD = "resume"; // must match FastAPI param name
+
       const formData = new FormData();
       formData.append(UPLOAD_FIELD, file); // match your FastAPI parameter name
 
