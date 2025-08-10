@@ -1,13 +1,14 @@
 export const runtime = "nodejs";
 import { NextResponse } from "next/server";
 
-const BASE = "http://35.227.145.87:8000"; // your backend HTTP address
+const BASE = "http://35.227.145.87:8000"; // backend HTTP address
 
-export async function GET(req, { params }) {
+export async function GET(_req, { params }) {
   try {
-    const industry = decodeURIComponent(params.industry || "All Industries");
+    const industry = params?.industry || "All Industries";
+    const encodedIndustry = encodeURIComponent(industry);
 
-    const upstream = await fetch(`${BASE}/trends/${encodeURIComponent(industry)}`, {
+    const upstream = await fetch(`${BASE}/trends/${encodedIndustry}`, {
       cache: "no-store",
     });
 
