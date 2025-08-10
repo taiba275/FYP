@@ -23,10 +23,17 @@ async function distinctWithCounts(field) {
 
   const rows = await Job.aggregate(pipeline).allowDiskUse(true);
 
+  function capitalizeFirst(s) {
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
   return rows.map((r) => ({
-    value: (r.rawAny && String(r.rawAny).trim()) || r._id,
+    value: capitalizeFirst(
+      (r.rawAny && String(r.rawAny).trim()) || r._id
+    ),
     count: r.count,
   }));
+
 }
 
 export async function GET() {

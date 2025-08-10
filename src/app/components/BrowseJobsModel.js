@@ -340,20 +340,22 @@ export default function IndustryModal({ onClose }) {
   }, [facets]);
 
   // “Show more …” (kept to your existing pages)
-  const linkFor = (key) => {
-    switch (key) {
-      case "industry":
-        return "/industry/";
-      case "functionalArea":
-        return "/browse/function/__all__";
-      case "company":
-        return "/browse/company/__all__";
-      case "role":
-        return "/browse/role/__all__";
-      default:
-        return "#";
-    }
-  };
+  // “Show more …” → new A–Z list pages
+const linkFor = (key) => {
+  switch (key) {
+    case "industry":
+      return "/industry";
+    case "functionalArea":
+      return "/function";
+    case "company":
+      return "/company";
+    case "role":
+      return "/role";
+    default:
+      return "#";
+  }
+};
+
 
   // Build per-item homepage href with query param
   const facetToHomeParam = {

@@ -34,7 +34,24 @@ const FilterComponent = ({
     experiences: [],
   });
 
-  const appliedFiltersCount = Object.values(filters).filter(val => (val ?? '') !== '').length;
+  // Count only real filters (exclude the derived "category")
+const COUNT_KEYS = [
+  'type',
+  'city',
+  'salaryOrder',
+  'experience',
+  'sortOrder',
+  'industry',
+  'function',
+  'company',
+  'role',
+];
+
+const appliedFiltersCount = COUNT_KEYS.reduce((n, k) => {
+  const v = (filters[k] ?? '').toString().trim();
+  return v ? n + 1 : n;
+}, 0);
+
 
   useEffect(() => {
     const fetchFilters = async () => {

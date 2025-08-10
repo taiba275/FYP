@@ -83,11 +83,12 @@ const IndustryPage = () => {
                     {industryMap[letter].map((title) => (
                       <Link
                       key={title}
-                      href={`/industries/${encodeURIComponent(title)}`}
+                      href={`/?industry=${encodeURIComponent(title)}&page=1&clear=1`}
                       className="block text-sm hover:text-blue-600 transition"
                     >
                       {title}
                     </Link>
+
                     ))}
                   </div>
                 </div>

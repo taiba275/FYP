@@ -218,6 +218,8 @@ export async function PUT(req, { params }) {
       ExtractedRole: body.jobRole,
     };
 
+    delete updateData["Posting Date"];
+
     console.log("🔧 Mapped update data:", updateData);
 
     const updatedJob = await Job.findOneAndUpdate(

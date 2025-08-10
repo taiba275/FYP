@@ -1,9 +1,10 @@
-"use client"
-
 import { NextResponse } from "next/server";
 import { connectDB } from "../../../../library/mongodb";
 import User from "../../../models/User";
-import { getUserFromRequest } from "../../../../utils/auth"; // adjust path if needed
+import { getUserFromRequest } from "../../../../utils/auth"; // must be server-safe (no "use client")
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 // Helper: validate profile data on update
 function validateProfileData(data) {
@@ -17,7 +18,6 @@ function validateProfileData(data) {
     }
   }
 
-  // Education array validation
   if (!Array.isArray(data.education) || data.education.length === 0) {
     return "At least one education entry is required";
   }
@@ -26,12 +26,9 @@ function validateProfileData(data) {
     if (!edu.field) return `Education field is required (entry #${i + 1})`;
   }
 
-  // Phone (basic length/number check)
-  if (typeof data.phone === "string" && data.phone.replace(/\D/g, '').length < 10) {
+  if (typeof data.phone === "string" && data.phone.replace(/\D/g, "").length < 10) {
     return "Phone number is incomplete or invalid";
   }
-
-  // Add any further checks as needed
   return null;
 }
 
@@ -47,9 +44,9 @@ export async function GET(req) {
   if (!user) return NextResponse.json({ message: "User not found" }, { status: 404 });
 
   const userObj = user.toObject();
-
   if (userObj.dob) {
-    userObj.dob = userObj.dob.toISOString().split("T")[0];
+    const d = new Date(userObj.dob);
+    if (!isNaN(d)) userObj.dob = d.toISOString().split("T")[0];
   }
 
   return NextResponse.json({ user: userObj, jobsPosted: userObj.jobsPosted }, { status: 200 });
@@ -65,10 +62,8 @@ export async function PUT(req) {
   // Ensure education is an array of objects before validation and saving
   if (data.education && !Array.isArray(data.education)) {
     try {
-      // If education is a JSON string, parse it
       data.education = JSON.parse(data.education);
     } catch {
-      // If parsing fails (education is a plain string), convert to array with default field
       data.education = [{ level: data.education, field: "" }];
     }
   }
@@ -98,9 +93,7 @@ export async function PUT(req) {
 
     const updateData = {};
     for (const key of allowedFields) {
-      if (data[key] !== undefined) {
-        updateData[key] = data[key];
-      }
+      if (data[key] !== undefined) updateData[key] = data[key];
     }
 
     const user = await User.findOneAndUpdate(
@@ -113,7 +106,7 @@ export async function PUT(req) {
     return NextResponse.json({ user }, { status: 200 });
   } catch (err) {
     if (err.name === "ValidationError") {
-      const errorMsg = Object.values(err.errors).map(e => e.message).join(", ");
+      const errorMsg = Object.values(err.errors).map((e) => e.message).join(", ");
       return NextResponse.json({ message: errorMsg }, { status: 400 });
     }
     return NextResponse.json({ message: "Failed to update", error: err.message }, { status: 500 });
