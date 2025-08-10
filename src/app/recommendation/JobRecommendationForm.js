@@ -46,8 +46,7 @@ export default function JobRecommendationForm({ setJobs, setLoading, loading }) 
         location: data.location,
       };
 
-      const base = process.env.NEXT_PUBLIC_RECOMMENDATION_API;
-      const res = await fetch(`${base}/recommend`, {
+      const res = await fetch(`/api/recommend`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
