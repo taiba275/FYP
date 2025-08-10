@@ -120,25 +120,6 @@ export default function Posts({
 
   const { user } = useAuth();
 
-  const sortedJobs = useMemo(() => {
-    const arr = Array.isArray(jobs) ? [...jobs] : [];
-    return arr.sort((a, b) => {
-      const tA = (a?.Title || "").trim();
-      const tB = (b?.Title || "").trim();
-      const byTitle = tA.localeCompare(tB, undefined, { numeric: true, sensitivity: "base" });
-      if (byTitle !== 0) return byTitle;
-
-      const cA = (a?.Company || "").trim();
-      const cB = (b?.Company || "").trim();
-      const byCompany = cA.localeCompare(cB, undefined, { numeric: true, sensitivity: "base" });
-      if (byCompany !== 0) return byCompany;
-
-      const dA = new Date(a?.["Posting Date"] || a?.postingDate || 0).getTime();
-      const dB = new Date(b?.["Posting Date"] || b?.postingDate || 0).getTime();
-      return dB - dA;
-    });
-  }, [jobs]);
-
   async function openJobDetails(id) {
     setLoadingPreviewId(id);
     try {
@@ -281,7 +262,7 @@ export default function Posts({
             : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
         }`}
       >
-        {sortedJobs.map((post) => {
+        {jobs.map((post) => {
           const badge = getSourceBadge(post);
           return (
             <div key={post._id} className="relative">
