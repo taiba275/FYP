@@ -33,7 +33,7 @@ export default function RoleJobsPage() {
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4 text-center w-full">
+      <h1 className="text-black text-2xl font-bold mb-4 text-center w-full">
         Jobs for: {decodedRole}
       </h1>
 

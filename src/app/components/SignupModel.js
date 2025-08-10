@@ -561,7 +561,7 @@ export default function SignupModal({ onClose, switchTo }) {
             </form>
 
             {!showOtp && (
-              <div className="mt-6">
+              <div className="text-black mt-6">
                 <p className="text-left text-gray-600 mb-2">Or sign up with</p>
                 <div className="flex space-x-3 justify-center">
                   <button

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-const BACKEND_BASE = "http://35.227.145.87:8000"; // same as trends backend
+const BACKEND_BASE = process.env.BACKEND_BASE || "http://35.227.145.87:8000";
 
 export async function GET(req) {
   try {
