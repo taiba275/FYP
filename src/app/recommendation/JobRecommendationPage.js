@@ -4,7 +4,7 @@ import { useState } from "react";
 import JobRecommendationForm from "./JobRecommendationForm";
 import JobResultsList from "./JobResultsList";
 
-const API_BASE_RECOMMEND = process.env.NEXT_PUBLIC_RECOMMENDATION_API || ""; // change to 'resume' if your FastAPI expects that
+// const API_BASE_RECOMMEND = process.env.NEXT_PUBLIC_RECOMMENDATION_API || ""; // change to 'resume' if your FastAPI expects that
 
 export default function JobRecommendationPage() {
   const [jobs, setJobs] = useState([]);
@@ -15,10 +15,10 @@ export default function JobRecommendationPage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (!API_BASE_RECOMMEND) {
-      alert("API base URL is not set. Check .env.local and restart dev server.");
-      return;
-    }
+    // if (!API_BASE_RECOMMEND) {
+    //   alert("API base URL is not set. Check .env.local and restart dev server.");
+    //   return;
+    // }
 
     setLoading(true);
 
@@ -29,7 +29,7 @@ export default function JobRecommendationPage() {
       const formData = new FormData();
       formData.append(UPLOAD_FIELD, file); // match your FastAPI parameter name
 
-      const extractRes = await fetch(`${API_BASE_RECOMMEND}/extract-resume`, {
+      const extractRes = await fetch(`http://35.227.145.87:8001/extract-resume`, {
         method: "POST",
         body: formData, // don't set Content-Type for FormData
       });
@@ -53,7 +53,7 @@ export default function JobRecommendationPage() {
       };
 
       // ---------- 3) Get recommendations ----------
-      const recommendRes = await fetch(`${API_BASE_RECOMMEND}/recommend`, {
+      const recommendRes = await fetch(`http://35.227.145.87:8001/recommend`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
