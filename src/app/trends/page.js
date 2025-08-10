@@ -63,7 +63,7 @@ export default function TrendsPage() {
 
     const fetchTrends = async () => {
       try {
-        const res = await fetch(`http://35.227.145.87:8000/trends/${selectedIndustry}`);
+        const res = await fetch(`/api/trends/${encodeURIComponent(selectedIndustry)}`);
         const json = await res.json();
 
         if (!res.ok) {
