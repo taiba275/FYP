@@ -115,14 +115,14 @@ export async function GET() {
     const sessionId = `guest:${guest_id ?? "pending"}`;
 
     const historyRes = await fetch(
-      `http://localhost:5010/chat/history/${encodeURIComponent(
+      `http://chatbot-production-f34b.up.railway.app/chat/history/${encodeURIComponent(
         sessionId
       )}?minutes=60`
     );
     const history = historyRes.ok ? await historyRes.json() : [];
 
     const jobsRes = await fetch(
-      `http://localhost:5010/last-jobs/${encodeURIComponent(sessionId)}`
+      `http://chatbot-production-f34b.up.railway.app/last-jobs/${encodeURIComponent(sessionId)}`
     );
     const jobsData = jobsRes.ok ? await jobsRes.json() : { jobs: [] };
 
@@ -200,7 +200,7 @@ export async function POST(req) {
       if (detailMatch) {
         const jobIndex = parseInt(detailMatch[1], 10);
         const detailsRes = await fetch(
-          `http://localhost:5010/job-details/${jobIndex}?user_id=${encodeURIComponent(
+          `http://chatbot-production-f34b.up.railway.app/job-details/${jobIndex}?user_id=${encodeURIComponent(
             sessionId
           )}`
         );
@@ -255,7 +255,7 @@ ${strictBlock()}
     }
 
     // ---------- INITIAL SEARCH (FAISS)
-    const faissRes = await fetch("http://localhost:5010/retrieve-jobs", {
+    const faissRes = await fetch("http://chatbot-production-f34b.up.railway.app/retrieve-jobs", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ message: userMessage, user_id: sessionId }),

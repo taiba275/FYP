@@ -17,23 +17,21 @@ export async function GET(req) {
 
     const { searchParams } = new URL(req.url);
 
-    const search = searchParams.get("search") || "";
-    const category = searchParams.get("category") || "";
-    const type = searchParams.get("type") || "";
-    const city = searchParams.get("city") || "";
-    const salaryOrder = searchParams.get("salaryOrder")?.toLowerCase() || "";
-    const sortOrder = searchParams.get("sortOrder")?.toLowerCase() || "";
-    const experience = searchParams.get("experience") || "";
+    const search      = (searchParams.get("search") || "");
+    const category    = (searchParams.get("category") || "");
+    const type        = (searchParams.get("type") || "");
+    const city        = (searchParams.get("city") || "");
+    const salaryOrder = (searchParams.get("salaryOrder") || "").trim().toLowerCase();
+    const sortOrder   = (searchParams.get("sortOrder") || "").trim().toLowerCase();
+    const experience  = (searchParams.get("experience") || "");
     const limit = parseInt(searchParams.get("limit")) || 20;
-    const page = parseInt(searchParams.get("page")) || 1;
-    const skip = (page - 1) * limit;
+    const page  = parseInt(searchParams.get("page")) || 1;
+    const skip  = (page - 1) * limit;
 
-    // Base match conditions
-    const match = {};
-
+    const baseMatch = {};
     if (search) {
       const regex = new RegExp(search.split(" ").join(".*"), "i");
-      match.$or = [
+      baseMatch.$or = [
         { Title: { $regex: regex } },
         { Company: { $regex: regex } },
         { Skills: { $regex: regex } },
@@ -41,131 +39,143 @@ export async function GET(req) {
         { ExtractedRole: { $regex: regex } },
       ];
     }
-
-    if (category) {
-      match.ExtractedRole = { $regex: `\\b${category}\\b`, $options: "i" };
-    }
-
-    if (type) {
-      match["Job Type"] = { $regex: `^${type}$`, $options: "i" };
-    }
-
-    if (city) {
-      match.City = { $regex: `^${city}$`, $options: "i" };
-    }
-
+    if (category) baseMatch.ExtractedRole = { $regex: `\\b${category}\\b`, $options: "i" };
+    if (type)     baseMatch["Job Type"]   = { $regex: `^${type}$`, $options: "i" };
+    if (city)     baseMatch.City          = { $regex: `^${city}$`, $options: "i" };
     if (experience) {
-      const mappedRanges = experienceMapping[experience];
-      if (mappedRanges && mappedRanges.length > 0) {
-        match["Experience Range"] = { $in: mappedRanges };
-      }
+      const mapped = experienceMapping[experience];
+      if (mapped?.length) baseMatch["Experience Range"] = { $in: mapped };
     }
 
     const pipeline = [];
+    const totalPipeline = [];
 
-    // Normalize salary_lower into numeric field if sorting by salary
-    if (salaryOrder === "ascending" || salaryOrder === "descending") {
-      pipeline.push({
-        $addFields: {
-          salary_lower_numeric: {
-            $switch: {
-              branches: [
-                {
-                  case: { $isNumber: "$salary_lower" },
-                  then: "$salary_lower"
-                },
-                {
-                  case: {
-                    $regexMatch: {
-                      input: "$salary_lower",
-                      regex: /^[0-9]+(\.[0-9]+)?$/
-                    }
-                  },
-                  then: { $toDouble: "$salary_lower" }
-                }
-              ],
-              default: null
+    const addComputed = (arr) => {
+      // Build numeric lower/upper once, used by sort + filtering
+      if (salaryOrder === "ascending" || salaryOrder === "descending") {
+        arr.push({
+          $addFields: {
+            salary_lower_numeric: {
+              $switch: {
+                branches: [
+                  { case: { $isNumber: "$salary_lower" }, then: "$salary_lower" },
+                  {
+                    case: {
+                      $and: [
+                        { $eq: [{ $type: "$salary_lower" }, "string"] },
+                        { $regexMatch: { input: "$salary_lower", regex: /^[0-9]+(\.[0-9]+)?$/ } }
+                      ]
+                    },
+                    then: { $toDouble: "$salary_lower" }
+                  }
+                ],
+                default: null
+              }
+            },
+            salary_upper_numeric: {
+              $switch: {
+                branches: [
+                  { case: { $isNumber: "$salary_upper" }, then: "$salary_upper" },
+                  {
+                    case: {
+                      $and: [
+                        { $eq: [{ $type: "$salary_upper" }, "string"] },
+                        { $regexMatch: { input: "$salary_upper", regex: /^[0-9]+(\.[0-9]+)?$/ } }
+                      ]
+                    },
+                    then: { $toDouble: "$salary_upper" }
+                  }
+                ],
+                default: null
+              }
+            },
+            // STRICT format flag: "pkr. <num> - <num>/month"
+            salary_format_valid: {
+              $regexMatch: {
+                input: { $ifNull: ["$Salary", ""] },
+                // require spaces around dash; allow 1+ digits on each side; allow commas
+                regex: /^pkr\.\s*\d+[\d,]*\s-\s\d+[\d,]*\/month$/i
+              }
             }
           }
-        }
-      });
-    }
+        });
+      }
 
-    // Normalize posting date into parsedDate
-    if (sortOrder === "newest" || sortOrder === "oldest") {
-      pipeline.push({
-        $addFields: {
-          parsedDate: {
-            $cond: [
-              { $eq: [{ $type: "$Posting Date" }, "date"] },
-              "$Posting Date",
-              {
-                $dateFromString: {
-                  dateString: "$Posting Date",
-                  format: "%d/%m/%Y",
-                  onError: null,
-                  onNull: null
+      if (sortOrder === "newest" || sortOrder === "oldest") {
+        arr.push({
+          $addFields: {
+            parsedDate: {
+              $cond: [
+                { $eq: [{ $type: "$Posting Date" }, "date"] },
+                "$Posting Date",
+                {
+                  $dateFromString: {
+                    dateString: "$Posting Date",
+                    format: "%d/%m/%Y",
+                    onError: null,
+                    onNull: null
+                  }
                 }
-              }
-            ]
+              ]
+            }
           }
-        }
-      });
+        });
+      }
+    };
+
+    addComputed(pipeline);
+    addComputed(totalPipeline);
+
+    // Build final match with computed-constraints
+    const matchConditions = { ...baseMatch };
+
+    // When salary sort is used, keep only rows with numeric salary AND the strict string format
+    if (salaryOrder === "ascending" || salaryOrder === "descending") {
+      matchConditions.$and = [
+        {
+          $or: [
+            { salary_lower_numeric: { $ne: null } },
+            { salary_upper_numeric: { $ne: null } },
+          ]
+        },
+        { salary_format_valid: true }
+      ];
     }
 
-    // Combine all filters in one $match stage
-    const matchConditions = { ...match };
-
-    if (salaryOrder && !matchConditions.salary_lower_numeric) {
-      matchConditions.salary_lower_numeric = { $ne: null };
-    }
-
-    if (sortOrder && !matchConditions.parsedDate) {
+    if (sortOrder === "newest" || sortOrder === "oldest") {
       matchConditions.parsedDate = { $ne: null };
     }
 
     pipeline.push({ $match: matchConditions });
 
-    // Apply sorting after filtering
-    // Combine sort keys if both salaryOrder and sortOrder are applied
-const sortStage = {};
+    const sortStage = {};
+    if (salaryOrder === "ascending" || salaryOrder === "descending") {
+      // Prefer sorting by lower if available; fall back to upper
+      sortStage.salary_lower_numeric = salaryOrder === "ascending" ? 1 : -1;
+      sortStage.salary_upper_numeric = salaryOrder === "ascending" ? 1 : -1;
+    }
+    if (sortOrder === "newest" || sortOrder === "oldest") {
+      sortStage.parsedDate = sortOrder === "newest" ? -1 : 1;
+    }
+    if (Object.keys(sortStage).length) pipeline.push({ $sort: sortStage });
 
-if (salaryOrder === "ascending" || salaryOrder === "descending") {
-  sortStage.salary_lower_numeric = salaryOrder === "ascending" ? 1 : -1;
-}
+    pipeline.push({ $skip: skip }, { $limit: limit });
 
-if (sortOrder === "newest" || sortOrder === "oldest") {
-  sortStage.parsedDate = sortOrder === "newest" ? -1 : 1;
-}
-
-if (Object.keys(sortStage).length > 0) {
-  pipeline.push({ $sort: sortStage });
-}
-
-
-    // Pagination
-    pipeline.push({ $skip: skip });
-    pipeline.push({ $limit: limit });
-
-    // Execute
     const jobs = await Job.aggregate(pipeline);
 
-    // Total count (based only on original match)
-    const totalPipeline = [{ $match: match }, { $count: "count" }];
+    // total with SAME constraints (so pagination is correct)
+    totalPipeline.push({ $match: matchConditions }, { $count: "count" });
     const totalResult = await Job.aggregate(totalPipeline);
     const total = totalResult[0]?.count || 0;
 
     return new Response(JSON.stringify({
-  jobs,
-  total,
-  totalPages: Math.ceil(total / limit)
-}), { status: 200 });
+      jobs,
+      total,
+      totalPages: Math.ceil(total / limit)
+    }), { status: 200 });
 
   } catch (error) {
     console.error("❌ Error fetching jobs:", error);
-    return new Response(
-      JSON.stringify({ message: "Error fetching jobs", error: error.message }),
-      { status: 500 }
-    );
+    return new Response(JSON.stringify({ message: "Error fetching jobs", error: error.message }), { status: 500 });
   }
 }

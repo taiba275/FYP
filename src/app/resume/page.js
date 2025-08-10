@@ -5,7 +5,7 @@ import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import JobResultsList from "../recommendation/JobResultsList";
 
-const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8001";
+const API_BASE = process.env.NEXT_PUBLIC_RECOMMENDATION_API; // or NEXT_PUBLIC_FAISS_API
 
 export default function ResumePage() {
   const router = useRouter();
