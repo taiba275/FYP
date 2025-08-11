@@ -89,6 +89,82 @@ Your task is to respond to the user's query using only the above job listings. F
 Be concise, helpful, and accurate.`.trim();
 }
 
+// ---------- NEW HELPERS (Interview + General Q&A) ----------
+function isInterviewIntent(message) {
+  const m = (message || "").toLowerCase();
+  return (
+    m.includes("interview") ||
+    m.includes("mock interview") ||
+    (m.includes("prepare") && m.includes("interview")) ||
+    m.includes("hr questions") ||
+    m.includes("behavioral questions")
+  );
+}
+
+function buildInterviewPrompt({ userMessage, jobs }) {
+  const hasJobs = Array.isArray(jobs) && jobs.length > 0;
+  const jobContext = buildJobContextFromList(jobs);
+
+  const preface = hasJobs
+    ? `Use ONLY the job listings below (titles, descriptions, skills) to tailor interview preparation.
+
+${jobContext}
+
+`
+    : `No job listings are available. Infer the target role/tech from the user's message and tailor the preparation accordingly.
+
+`;
+
+  return `${preface}The user asked: "${userMessage}".
+
+Return:
+1) 8–12 technical questions and 6–8 behavioral questions.
+2) Concise model answers or answering frameworks.
+3) A 7-day preparation plan (bulleted).
+4) 3–5 reputable resources with clickable markdown links.
+
+Do NOT list job openings. Use bullets and numbers.`;
+}
+
+function isJobSearchIntent(message) {
+  const m = (message || "").toLowerCase();
+
+  // strong job-search cues
+  const jobCues = [
+    "job", "jobs", "opening", "openings", "hiring", "vacancy", "vacancies",
+    "apply", "application", "role", "roles", "position", "positions",
+    "salary", "compensation", "remote", "onsite", "full-time", "part-time",
+    "intern", "internship", "fresh", "experience", "years of experience",
+    "eligibility", "requirements", "skills", "jd", "job description",
+    "benefits", "perks", "package", "ctc"
+  ];
+
+  // general question cues (usually *not* a job search)
+  const generalCues = [
+    "what is", "who is", "explain", "how to", "how do i", "why is",
+    "difference between", "compare", "write code", "example", "bug", "error",
+    "debug", "fix", "tutorial", "define", "formula", "prove", "history of",
+    "summarize", "translate", "math", "physics", "chemistry", "biology",
+    "economics", "finance", "program", "algorithm", "data structure"
+  ];
+
+  const hasJobCue = jobCues.some(k => m.includes(k));
+  const hasGeneralCue = generalCues.some(k => m.includes(k));
+
+  if (hasJobCue && !hasGeneralCue) return true;
+  return false; // interview handled separately
+}
+
+function buildGeneralQAPrompt(userMessage) {
+  return `
+You are a helpful, concise assistant. The user is **not** asking to search job listings.
+Answer directly and clearly, with examples or steps if useful. If code is helpful, provide it.
+Avoid mentioning job listings or FAISS. The user's question:
+
+"${userMessage}"
+`.trim();
+}
+
 // Generate an ID without importing Node crypto (works on Node runtime too)
 const makeId = () =>
   (globalThis.crypto?.randomUUID?.() ?? Math.random().toString(36).slice(2));
@@ -121,7 +197,7 @@ export async function GET() {
     const sessionId = `guest:${guest_id ?? "pending"}`;
 
     const historyRes = await fetch(
-    `http://35.227.145.87:5010/chat/history/${encodeURIComponent(sessionId)}?minutes=60`
+      `http://35.227.145.87:5010/chat/history/${encodeURIComponent(sessionId)}?minutes=60`
     );
     const history = historyRes.ok ? await historyRes.json() : [];
 
@@ -144,9 +220,9 @@ export async function GET() {
 // ---------- POST ----------
 export async function POST(req) {
   try {
-  //   if (!CHATBOT_BASE) {
-  //     return NextResponse.json({ error: "BACKEND_CHATBOT_API not set" }, { status: 500 });
-  //   }
+    // if (!CHATBOT_BASE) {
+    //   return NextResponse.json({ error: "BACKEND_CHATBOT_API not set" }, { status: 500 });
+    // }
 
     const { messages, previousResults = [], user_id } = await req.json();
 
@@ -186,6 +262,7 @@ export async function POST(req) {
       });
     }
 
+    // ---------- GREETING ----------
     if (isGreeting(userMessage)) {
       return ensureResponse({
         choices: [
@@ -202,7 +279,47 @@ export async function POST(req) {
       });
     }
 
-    // ---------- FOLLOW-UP (NO FRESH SEARCH) ----------
+    // ---------- DIRECT INTERVIEW INTENT (runs before follow-up & FAISS) ----------
+    if (isInterviewIntent(userMessage)) {
+      // If user says "job 2 interview questions", narrow context to that job
+      let contextJobs = previousResults;
+      const idxMatch = userMessage.match(/\bjob\s*(\d+)\b/i);
+      if (idxMatch) {
+        const n = parseInt(idxMatch[1], 10) - 1; // user-facing count starts at 1
+        if (previousResults[n]) contextJobs = [previousResults[n]];
+      }
+
+      const prompt = buildInterviewPrompt({ userMessage, jobs: contextJobs });
+
+      const llmRes = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model: "anthropic/claude-3-haiku",
+          messages: [{ role: "user", content: prompt }],
+          temperature: 0.4,
+        }),
+      });
+
+      const llmData = await llmRes.json();
+      const llmText =
+        llmData?.choices?.[0]?.message?.content ||
+        "Here’s an interview preparation plan.";
+
+      const md =
+        contextJobs?.length ? llmText + referencedMarkdown(previousResults) : llmText;
+
+      return ensureResponse({
+        choices: [{ message: { role: "assistant", content: md } }],
+        results: previousResults, // keep whatever was already shown
+        session_id: sessionId,
+      });
+    }
+
+    // ---------- FOLLOW-UP (NO FRESH SEARCH; uses previous results) ----------
     if (isFollowUp(userMessage) && previousResults.length > 0) {
       const detailMatch = userMessage.match(/job\s+(\d+)/i);
       if (detailMatch) {
@@ -260,7 +377,36 @@ ${strictBlock()}
       });
     }
 
-    // ---------- INITIAL SEARCH (FAISS)
+    // ---------- GENERAL Q&A (non-job/database questions) ----------
+    if (!isInterviewIntent(userMessage) && !isJobSearchIntent(userMessage)) {
+      const prompt = buildGeneralQAPrompt(userMessage);
+
+      const llmRes = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model: "anthropic/claude-3-haiku",
+          messages: [{ role: "user", content: prompt }],
+          temperature: 0.4,
+        }),
+      });
+
+      const llmData = await llmRes.json();
+      const llmText =
+        llmData?.choices?.[0]?.message?.content ||
+        "Here’s the information you asked for.";
+
+      return ensureResponse({
+        choices: [{ message: { role: "assistant", content: llmText } }],
+        results: [], // not a job query → no results array
+        session_id: sessionId,
+      });
+    }
+
+    // ---------- INITIAL SEARCH (FAISS) ----------
     const faissRes = await fetch(`http://35.227.145.87:5010/retrieve-jobs`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
