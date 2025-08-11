@@ -187,7 +187,7 @@ export default function ChatBox({ onClose, userId }) {
         <div className="bg-blue-600 text-white px-6 py-4 text-xl font-semibold flex items-center justify-between">
           <span>ChatBot</span>
           <div className="flex gap-2">
-            <button
+            {/* <button
               onClick={startNewChat}
               className="text-xs bg-white/10 hover:bg-white/20 px-3 py-1 rounded"
               title="Start New Chat"
@@ -200,7 +200,7 @@ export default function ChatBox({ onClose, userId }) {
               title="Delete Chat"
             >
               Delete Chat
-            </button>
+            </button> */}
           </div>
         </div>
 
